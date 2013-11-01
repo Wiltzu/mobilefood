@@ -2,7 +2,6 @@ package fi.nottingham.mobilefood;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 
 public class HelloAndroidActivity extends Activity {
