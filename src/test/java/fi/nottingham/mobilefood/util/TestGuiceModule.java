@@ -28,7 +28,9 @@ public class TestGuiceModule extends AbstractModule {
 	@Override
 	@SuppressWarnings("unchecked")
 	protected void configure() {
+		//bind dummy Android Activity provider because it can't be null
 		bind(Activity.class).toProvider(DummyActivityProvider.class).in(ContextSingleton.class);
+		
 		Set<Entry<Class<?>, Object>> entries = bindings.entrySet();
 		for (Entry<Class<?>, Object> entry : entries) {
 			bind((Class<Object>) entry.getKey()).toInstance(entry.getValue());
