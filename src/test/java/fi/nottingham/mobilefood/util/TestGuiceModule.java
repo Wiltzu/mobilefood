@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.robolectric.Robolectric;
+
 import roboguice.RoboGuice;
 import roboguice.config.DefaultRoboModule;
 import roboguice.inject.ContextSingleton;
@@ -12,10 +14,10 @@ import android.app.Activity;
 import android.app.Application;
 
 import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
 import com.google.inject.Module;
 import com.google.inject.Provider;
 import com.google.inject.util.Modules;
-import com.xtremelabs.robolectric.Robolectric;
 
 public class TestGuiceModule extends AbstractModule {
 
@@ -63,7 +65,7 @@ public class TestGuiceModule extends AbstractModule {
 class DummyActivityProvider implements Provider<Activity> {
 
 	public Activity get() {
-		return new Activity();
+		return Robolectric.buildActivity(Activity.class).create().get();
 	}
 
 }

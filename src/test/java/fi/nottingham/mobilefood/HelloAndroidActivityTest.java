@@ -7,13 +7,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.MockitoAnnotations;
+import org.robolectric.RobolectricTestRunner;
 
 import roboguice.inject.InjectResource;
 import roboguice.inject.InjectView;
 import android.widget.TextView;
 
 import com.google.inject.Inject;
-import com.xtremelabs.robolectric.RobolectricTestRunner;
 
 import fi.nottingham.mobilefood.util.TestGuiceModule;
 
