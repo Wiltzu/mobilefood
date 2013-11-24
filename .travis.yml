@@ -5,7 +5,7 @@ before_install:
   - if [ `uname -m` = x86_64 ]; then sudo apt-get install -qq --force-yes libgd2-xpm ia32-libs ia32-libs-multiarch > /dev/null; fi
   - wget http://dl.google.com/android/android-sdk_r22.3-linux.tgz
   - tar xzf android-sdk_r22.3-linux.tgz
-  - export ANDROID_HOME=$PWD/android-sdk-linux
+  - export ANDROID_HOME=`pwd`/android-sdk-linux
   - export PATH=${PATH}:${ANDROID_HOME}/tools:${ANDROID_HOME}/platform-tools:$ANDROID_HOME/build-tools
 
   # Maven 3.1.1
@@ -15,7 +15,7 @@ before_install:
   - export PATH=${MVN_HOME}/bin/:${PATH}
   - mvn --version
   #Updates android sdk
-  - echo y | android update sdk --filter platform-tools,android-19,addon-google_apis-google-19,extra-android-support,$ANDROID_SDKS --no-ui --force > /dev/null
+  - echo y | android update sdk --filter platform-tools,android-19,addon-google_apis-google-19,extra-android-support --no-ui --force > /dev/null
 
 install: mvn clean install -DskipTests=true -X
 script: mvn test
