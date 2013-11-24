@@ -8,11 +8,18 @@ before_install:
   - export ANDROID_HOME=`pwd`/android-sdk-linux
   - export PATH=${PATH}:${ANDROID_HOME}/tools:${ANDROID_HOME}/platform-tools:$ANDROID_HOME/build-tools
 
+  # install android build tools
+  - wget https://dl-ssl.google.com/android/repository/build-tools_r19-linux.zip
+  - unzip build-tools_r19-linux.zip -d $ANDROID_HOME
+  - mkdir -p $ANDROID_HOME/build-tools/
+  - mv $ANDROID_HOME/android-4.4 $ANDROID_HOME/build-tools/19
+
+
   # Maven 3.1.1
-  - wget http://www.us.apache.org/dist/maven/maven-3/3.1.1/binaries/apache-maven-3.1.1-bin.tar.gz
-  - tar xvf apache-maven-3.1.1-bin.tar.gz > /dev/null
-  - export MVN_HOME=`pwd`/apache-maven-3.1.1
-  - export PATH=${MVN_HOME}/bin/:${PATH}
+  #- wget http://www.us.apache.org/dist/maven/maven-3/3.1.1/binaries/apache-maven-3.1.1-bin.tar.gz
+  #- tar xvf apache-maven-3.1.1-bin.tar.gz > /dev/null
+  #- export MVN_HOME=`pwd`/apache-maven-3.1.1
+  #- export PATH=${MVN_HOME}/bin/:${PATH}
   - mvn --version
   #Updates android sdk
   - echo y | android update sdk --filter platform-tools,android-19,addon-google_apis-google-19,extra-android-support,build-tools --no-ui --force > /dev/null
