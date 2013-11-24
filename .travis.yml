@@ -24,7 +24,7 @@ before_install:
   #Updates android sdk
   - echo y | android update sdk --filter platform-tools,android-19,addon-google_apis-google-19,extra-android-support --no-ui --force > /dev/null
 
-install: sudo mvn clean install -DskipTests=true -X
+install: mvn clean install -DskipTests=true -X
 script: mvn test
  
 
