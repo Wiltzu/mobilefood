@@ -27,8 +27,6 @@ public class MainViewSteps {
 	@BeforeStory
 	public void beforeScenario() {
 		MockitoAnnotations.initMocks(this);
-	    TestGuiceModule module = new TestGuiceModule();
-	    TestGuiceModule.setUp(this, module);
 	}
 	
 	@Given("the main view is open")
