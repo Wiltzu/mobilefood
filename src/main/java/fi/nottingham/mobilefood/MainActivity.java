@@ -1,19 +1,14 @@
 package fi.nottingham.mobilefood;
 
-import roboguice.activity.RoboActivity;
-import roboguice.inject.ContentView;
-import roboguice.inject.InjectView;
+import android.app.Activity;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Menu;
 import android.widget.TextView;
 
-@ContentView(R.layout.activity_main)
-public class HelloAndroidActivity extends RoboActivity {
-	
-	@InjectView(R.id.textfield_hello)
+public class MainActivity extends Activity {
 	TextView text;
-	
+
 	/**
 	 * Called when the activity is first created.
 	 * 
@@ -26,6 +21,8 @@ public class HelloAndroidActivity extends RoboActivity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_main);
+		text = (TextView) findViewById(R.id.textview_date);
 		text.setText("Hello world changed!");
 		text.setBackgroundColor(Color.BLUE);
 	}

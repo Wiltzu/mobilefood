@@ -1,15 +1,13 @@
-Feature: Main View
-
-Background:
-Given the main view is open
+Main View
 
 Scenario: current date's foods are visible in the main view
+Given the main view is open
 Then in the main view the date should be current
 And in the main view we should have foods
 
 Scenario: restaurants can be filtered
 
-Scenario: restaurant can be set as favourites
+Scenario: restaurants can be set as favourites
 
 Scenario: restaurants are ordered by name
 Given in the main view foods are visible
