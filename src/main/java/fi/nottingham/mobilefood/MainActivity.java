@@ -3,6 +3,7 @@ package fi.nottingham.mobilefood;
 import android.app.Activity;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.text.format.Time;
 import android.view.Menu;
 import android.widget.TextView;
 
@@ -23,7 +24,9 @@ public class MainActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		text = (TextView) findViewById(R.id.textview_date);
-		text.setText("Hello world changed!");
+		Time now = new Time();
+		now.setToNow();
+		text.setText(now.format("d.M.yyyy"));
 		text.setBackgroundColor(Color.BLUE);
 	}
 

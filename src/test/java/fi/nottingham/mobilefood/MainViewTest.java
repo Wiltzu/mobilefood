@@ -52,7 +52,7 @@ public class MainViewTest extends JUnitStory {
         ExamplesTableFactory examplesTableFactory = new ExamplesTableFactory(new LocalizedKeywords(),
                 new LoadFromClasspath(embeddableClass), parameterConverters);
         // add custom converters
-        parameterConverters.addConverters(new DateConverter(new SimpleDateFormat("yyyy-MM-dd")),
+        parameterConverters.addConverters(new DateConverter(new SimpleDateFormat("d.M.yyyy")),
                 new ExamplesTableConverter(examplesTableFactory));
  
         return new MostUsefulConfiguration()
@@ -67,8 +67,6 @@ public class MainViewTest extends JUnitStory {
                                 .withViewResources(viewResources).withFormats(CONSOLE, TXT, HTML, XML)
                                 .withFailureTrace(true).withFailureTraceCompression(true).withCrossReference(xref))
                 .useParameterConverters(parameterConverters)
-                // use '%' instead of '$' to identify parameters
-                .useStepPatternParser(new RegexPrefixCapturingPatternParser("%")) 
                 .useStepMonitor(xref.getStepMonitor());
 	}
 	

@@ -3,6 +3,7 @@ package fi.nottingham.mobilefood.steps;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -12,6 +13,7 @@ import org.jbehave.core.annotations.Then;
 import org.jbehave.core.annotations.When;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.Robolectric;
+import org.robolectric.shadows.ShadowSystemClock;
 
 import android.widget.TextView;
 import fi.nottingham.mobilefood.MainActivity;
@@ -34,11 +36,16 @@ public class MainViewSteps {
 		System.out.println("Creating main view...");
 	   mainActivity = Robolectric.buildActivity(MainActivity.class).create().start().resume().get();
 	}
+	
+	@When("system date is set to '$systemDate'")
+	public void systemDateIsSetTo(Date systemDate) throws ParseException {
+			ShadowSystemClock.setCurrentTimeMillis(systemDate.getTime());
+	}
 
-	@Then("in the main view the date should be current")
-	public void in_the_main_view_the_date_should_be_current() throws Throwable {
+	@Then("in the main view the date should be '$date'")
+	public void in_the_main_view_the_date_should_be_current(String date) throws Throwable {
 	    TextView dateView = (TextView) mainActivity.findViewById(R.id.textview_date);
-	    assertEquals("Date in the top of the page should have been current", new SimpleDateFormat("d.M.yyyy").format(new Date()), dateView.getText().toString());
+	    assertEquals("Date in the top of the page should have been current", date, dateView.getText().toString());
 	}
 
 	@Then("in the main view we should have foods")

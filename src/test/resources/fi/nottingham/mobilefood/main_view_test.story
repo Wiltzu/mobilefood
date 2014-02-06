@@ -2,7 +2,8 @@ Main View
 
 Scenario: current date's foods are visible in the main view
 Given the main view is open
-Then in the main view the date should be current
+When system date is set to '6.2.2014'
+Then in the main view the date should be '6.2.2014'
 And in the main view we should have foods
 
 Scenario: restaurants can be filtered
