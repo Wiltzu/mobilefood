@@ -12,14 +12,15 @@ import org.jbehave.core.annotations.Given;
 import org.jbehave.core.annotations.Pending;
 import org.jbehave.core.annotations.Then;
 import org.jbehave.core.annotations.When;
+import org.jbehave.core.model.ExamplesTable;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
 import android.text.format.DateFormat;
 import android.widget.TextView;
-import fi.nottingham.mobilefood.MainActivity;
 import fi.nottingham.mobilefood.R;
+import fi.nottingham.mobilefood.ui.MainActivity;
 
 public class MainViewSteps {
 	MainActivity mainActivity;
@@ -36,10 +37,8 @@ public class MainViewSteps {
 				.start().resume().get();
 	}
 	
-	@Given("the following foods are provided")
-	@Pending
-	public void givenTheFollowingFoodsAreProvided() {
-	  // PENDING
+	@Given("the following foods are provided: $providedFoods")
+	public void givenTheFollowingFoodsAreProvided(ExamplesTable foods) {
 	}
 	
 	@Then("in the main view the week day should be current")
@@ -75,8 +74,8 @@ public class MainViewSteps {
 		return date.getTime();
 	}
 
-	@Then("in the main view we should have foods")
-	public void in_the_main_view_we_should_have_foods() throws Throwable {
+	@Then("in the main view we should have the following foods: $foods")
+	public void in_the_main_view_we_should_have_foods(ExamplesTable foods) throws Throwable {
 		fail("Implement me!");
 	}
 

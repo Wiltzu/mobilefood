@@ -36,7 +36,7 @@ public class MainViewTest extends JUnitStory {
 	
 	public MainViewTest() {
 		configuredEmbedder().embedderControls().doGenerateViewAfterStories(true).doIgnoreFailureInStories(true)
-        .doIgnoreFailureInView(true).useThreads(2).useStoryTimeoutInSecs(60);
+        .doIgnoreFailureInView(true).useStoryTimeoutInSecs(60);
 	}
 	
 	@SuppressWarnings("deprecation")
