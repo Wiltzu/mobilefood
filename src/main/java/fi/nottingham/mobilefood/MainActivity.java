@@ -1,14 +1,17 @@
 package fi.nottingham.mobilefood;
 
+import java.util.Date;
+
 import android.app.Activity;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.text.format.Time;
+import android.text.format.DateFormat;
 import android.view.Menu;
 import android.widget.TextView;
 
 public class MainActivity extends Activity {
-	TextView text;
+	private TextView mDateTV;
+	private TextView mWeekDay;
 
 	/**
 	 * Called when the activity is first created.
@@ -23,11 +26,14 @@ public class MainActivity extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		text = (TextView) findViewById(R.id.textview_date);
-		Time now = new Time();
-		now.setToNow();
-		text.setText(now.format("d.M.yyyy"));
-		text.setBackgroundColor(Color.BLUE);
+		
+		Date now = new Date();
+		mWeekDay = (TextView) findViewById(R.id.textview_week_day);
+		mWeekDay.setText(DateFormat.format("EEEE", now));
+		
+		mDateTV = (TextView) findViewById(R.id.textview_date);
+		mDateTV.setText(DateFormat.getDateFormat(this).format(now));
+		
 	}
 
 	@Override
