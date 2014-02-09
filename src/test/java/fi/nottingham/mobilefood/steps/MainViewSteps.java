@@ -52,10 +52,8 @@ public class MainViewSteps {
 
 	@Given("the main view is open")
 	public void the_main_view_is_open() throws Throwable {
-		TestModule testModule = new TestModule();
-		List<Object> modules = MobilefoodModules.getModules();
-		modules.add(testModule);
-		assertEquals(modules, MobilefoodModules.getModules());
+		//add TestModule to all 
+		MobilefoodModules.getModules().add(new TestModule());
 		
 		mainActivity = Robolectric.buildActivity(MainActivity.class).create()
 				.start().resume().get();
@@ -70,7 +68,7 @@ public class MainViewSteps {
 		Mockito.when(
 				foodService.getFoodsBy(Mockito.anyInt()))
 				.thenReturn(foodList);
-		//TODO: needs improvements
+		//TODO: needs improvements (this is no good)
 		mainViewPresenter.onViewCreation(mainView);
 	}
 
