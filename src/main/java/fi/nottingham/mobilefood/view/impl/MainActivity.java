@@ -1,6 +1,9 @@
-package fi.nottingham.mobilefood.ui;
+package fi.nottingham.mobilefood.view.impl;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Date;
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -14,14 +17,21 @@ import android.view.Menu;
 import android.widget.TextView;
 import fi.nottingham.mobilefood.DaggerBaseActivity;
 import fi.nottingham.mobilefood.R;
+import fi.nottingham.mobilefood.model.Food;
+import fi.nottingham.mobilefood.presenter.IMainViewPresenter;
+import fi.nottingham.mobilefood.util.DateUtils;
+import fi.nottingham.mobilefood.view.IMainView;
 
-public class MainActivity extends DaggerBaseActivity {
+public class MainActivity extends DaggerBaseActivity implements IMainView {
 	private static final String TAG = "MainActivity";
+	
 	private TextView mDateTV;
 	private TextView mWeekDay;
-
+	private TextView mFoodsTV;
+	
 	@Inject
-	protected LocationManager mLocationManager;
+	IMainViewPresenter presenter;
+
 
 	/**
 	 * Called when the activity is first created.
@@ -36,13 +46,13 @@ public class MainActivity extends DaggerBaseActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-
-		Date now = new Date();
+		
 		mWeekDay = (TextView) findViewById(R.id.textview_week_day);
-		mWeekDay.setText(DateFormat.format("EEEE", now));
-
 		mDateTV = (TextView) findViewById(R.id.textview_date);
-		mDateTV.setText(DateFormat.getDateFormat(this).format(now));
+		mFoodsTV = (TextView) findViewById(R.id.textview_foods);
+		
+		presenter.onViewCreation(this);
+
 	}
 
 	@Override
@@ -50,5 +60,18 @@ public class MainActivity extends DaggerBaseActivity {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(fi.nottingham.mobilefood.R.menu.main, menu);
 		return true;
+	}
+
+	public IMainViewPresenter getPresenter() {
+		return presenter;
+	}
+
+	public void setFoods(Date selectedDate, List<Food> foods) {
+		checkNotNull(selectedDate, "selectedDate cannot be null.");
+		checkNotNull(foods, "foods cannot be null");
+		
+		mWeekDay.setText(DateUtils.getWeekDay(selectedDate));
+		mDateTV.setText(DateUtils.getDateInShortFormat(this, selectedDate));
+		mFoodsTV.setText(foods.toString());
 	}
 }

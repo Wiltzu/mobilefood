@@ -3,27 +3,45 @@ package fi.nottingham.mobilefood.steps;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
+import java.util.List;
+import java.util.Map;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import org.jbehave.core.annotations.BeforeStory;
 import org.jbehave.core.annotations.Given;
-import org.jbehave.core.annotations.Pending;
 import org.jbehave.core.annotations.Then;
 import org.jbehave.core.annotations.When;
 import org.jbehave.core.model.ExamplesTable;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
 import android.text.format.DateFormat;
 import android.widget.TextView;
+
+import com.google.common.collect.Lists;
+
+import dagger.Module;
+import dagger.ObjectGraph;
+import dagger.Provides;
+import fi.nottingham.mobilefood.AndroidModule;
+import fi.nottingham.mobilefood.MobilefoodModule;
 import fi.nottingham.mobilefood.R;
-import fi.nottingham.mobilefood.ui.MainActivity;
+import fi.nottingham.mobilefood.model.Food;
+import fi.nottingham.mobilefood.service.IFoodService;
+import fi.nottingham.mobilefood.util.DateUtils;
+import fi.nottingham.mobilefood.view.IMainView;
+import fi.nottingham.mobilefood.view.impl.MainActivity;
 
 public class MainViewSteps {
 	MainActivity mainActivity;
+	IMainView mainView;
+	@Inject
+	IFoodService foodService;
 
 	@BeforeStory
 	public void beforeScenario() {
@@ -32,21 +50,51 @@ public class MainViewSteps {
 
 	@Given("the main view is open")
 	public void the_main_view_is_open() throws Throwable {
-		System.out.println("Creating main view...");
+		ObjectGraph.create(new TestModule()).inject(this);
+		Robolectric.buildActivity(MainActivity.class);
 		mainActivity = Robolectric.buildActivity(MainActivity.class).create()
 				.start().resume().get();
+		mainView = mainActivity;
 	}
-	
+
 	@Given("the following foods are provided: $providedFoods")
-	public void givenTheFollowingFoodsAreProvided(ExamplesTable foods) {
+	public void givenTheFollowingFoodsAreProvided(ExamplesTable foodsTable) {
+		List<Food> foodList = getExampleFoodsAsList(foodsTable);
+		// food service returns foodList
+		Mockito.when(
+				foodService.getFoodsBy(DateUtils.getDayOfTheWeek(new Date())))
+				.thenReturn(foodList);
 	}
-	
+
+	private List<Food> getExampleFoodsAsList(ExamplesTable foods) {
+		List<Food> foodList = Lists.newArrayList();
+		for (Map<String, String> food : foods.getRows()) {
+			String restaurantName = food.get("restaurant");
+			String foodName = food.get("food");
+			String diets = food.get("diets");
+			String price = food.get("price");
+			foodList.add(new Food(foodName, price, diets, restaurantName));
+		}
+		return foodList;
+	}
+
+	@Module(includes = {MobilefoodModule.class, AndroidModule.class}, injects = MainViewSteps.class, overrides = true)
+	static class TestModule {
+		@Provides
+		@Singleton
+		IFoodService provideFoodService() {
+			return Mockito.mock(IFoodService.class);
+		}
+	}
+
 	@Then("in the main view the week day should be current")
 	public void in_the_main_view_the_week_day_should_be_current() {
 		TextView tvWeekDay = (TextView) mainActivity
 				.findViewById(R.id.textview_week_day);
-		
-		assertEquals("Week day in the main view should be current.", getWeekDay(getCurrentDateAtMidnight()), (String) tvWeekDay.getText());
+
+		assertEquals("Week day in the main view should be current.",
+				getWeekDay(DateUtils.getDateAtMidnight(new Date())),
+				(String) tvWeekDay.getText());
 	}
 
 	private String getWeekDay(Date date) {
@@ -55,28 +103,24 @@ public class MainViewSteps {
 
 	@Then("in the main view the date should be current")
 	@Config(qualifiers = "fi_FI")
-	public void in_the_main_view_the_date_should_be_current()
-			throws Throwable {
+	public void in_the_main_view_the_date_should_be_current() throws Throwable {
 		TextView dateView = (TextView) mainActivity
 				.findViewById(R.id.textview_date);
-		assertEquals("Date in the main view should have been current",
-				getCurrentDateAtMidnight(), DateFormat.getDateFormat(mainActivity).parse((String) dateView.getText()));
-	}
-
-	private Date getCurrentDateAtMidnight() {
-		// TODO: change to JODA time    
-		Calendar date = new GregorianCalendar();
-		// reset hour, minutes, seconds and millis
-		date.set(Calendar.HOUR_OF_DAY, 0);
-		date.set(Calendar.MINUTE, 0);
-		date.set(Calendar.SECOND, 0);
-		date.set(Calendar.MILLISECOND, 0);
-		return date.getTime();
+		assertEquals(
+				"Date in the main view should have been current",
+				DateUtils.getDateAtMidnight(new Date()),
+				DateFormat.getDateFormat(mainActivity).parse(
+						(String) dateView.getText()));
 	}
 
 	@Then("in the main view we should have the following foods: $foods")
-	public void in_the_main_view_we_should_have_foods(ExamplesTable foods) throws Throwable {
-		fail("Implement me!");
+	public void in_the_main_view_we_should_have_foods(ExamplesTable foodsTable)
+			throws Throwable {
+		List<Food> foods = getExampleFoodsAsList(foodsTable);
+		TextView mFoodsTV = (TextView) mainActivity
+				.findViewById(R.id.textview_foods);
+		assertEquals("Foods didn't match.", foods.toString(), mFoodsTV
+				.getText().toString());
 	}
 
 	@Given("in the main view foods are visible")

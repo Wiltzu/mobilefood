@@ -39,4 +39,8 @@ public class DaggerApplication extends Application {
   public void inject(Object object) {
     graph.inject(object);
   }
+  
+  public ObjectGraph getApplicationGraph() {
+	    return graph;
+  }
 }

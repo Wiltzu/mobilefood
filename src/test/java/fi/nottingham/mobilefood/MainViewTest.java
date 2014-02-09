@@ -31,45 +31,57 @@ import fi.nottingham.mobilefood.steps.MainViewSteps;
 
 @RunWith(RobolectricTestRunner.class)
 public class MainViewTest extends JUnitStory {
-	
+
 	private final CrossReference xref = new CrossReference();
-	
+
 	public MainViewTest() {
-		configuredEmbedder().embedderControls().doGenerateViewAfterStories(true).doIgnoreFailureInStories(true)
-        .doIgnoreFailureInView(true).useStoryTimeoutInSecs(60);
+		configuredEmbedder().embedderControls()
+				.doGenerateViewAfterStories(true)
+				.doIgnoreFailureInStories(true).doIgnoreFailureInView(true)
+				.useStoryTimeoutInSecs(60);
 	}
-	
+
 	@SuppressWarnings("deprecation")
 	@Override
 	public Configuration configuration() {
 		Class<? extends Embeddable> embeddableClass = this.getClass();
-        Properties viewResources = new Properties();
-        viewResources.put("decorateNonHtml", "true");
-        // Start from default ParameterConverters instance
-        ParameterConverters parameterConverters = new ParameterConverters();
-        // factory to allow parameter conversion and loading from external
-        // resources (used by StoryParser too)
-        ExamplesTableFactory examplesTableFactory = new ExamplesTableFactory(new LocalizedKeywords(),
-                new LoadFromClasspath(embeddableClass), parameterConverters);
-        // add custom converters
-        parameterConverters.addConverters(new DateConverter(new SimpleDateFormat("d.M.yyyy")),
-                new ExamplesTableConverter(examplesTableFactory));
- 
-        return new MostUsefulConfiguration()
-                .useStoryControls(new StoryControls().doDryRun(false).doSkipScenariosAfterFailure(false))
-                .useStoryLoader(new LoadFromClasspath(embeddableClass))
-                .useStoryParser(new RegexStoryParser(examplesTableFactory))
-                .useStoryPathResolver(new UnderscoredCamelCaseResolver())
-                .useStoryReporterBuilder(
-                        new StoryReporterBuilder()
-                                .withCodeLocation(CodeLocations.codeLocationFromClass(embeddableClass))
-                                .withDefaultFormats().withPathResolver(new ResolveToPackagedName())
-                                .withViewResources(viewResources).withFormats(CONSOLE, TXT, HTML, XML)
-                                .withFailureTrace(true).withFailureTraceCompression(true).withCrossReference(xref))
-                .useParameterConverters(parameterConverters)
-                .useStepMonitor(xref.getStepMonitor());
+		Properties viewResources = new Properties();
+		viewResources.put("decorateNonHtml", "true");
+		// Start from default ParameterConverters instance
+		ParameterConverters parameterConverters = new ParameterConverters();
+		// factory to allow parameter conversion and loading from external
+		// resources (used by StoryParser too)
+		ExamplesTableFactory examplesTableFactory = new ExamplesTableFactory(
+				new LocalizedKeywords(),
+				new LoadFromClasspath(embeddableClass), parameterConverters);
+		// add custom converters
+		parameterConverters.addConverters(new DateConverter(
+				new SimpleDateFormat("d.M.yyyy")), new ExamplesTableConverter(
+				examplesTableFactory));
+
+		return new MostUsefulConfiguration()
+				.useStoryControls(
+						new StoryControls().doDryRun(false)
+								.doSkipScenariosAfterFailure(false))
+				.useStoryLoader(new LoadFromClasspath(embeddableClass))
+				.useStoryParser(new RegexStoryParser(examplesTableFactory))
+				.useStoryPathResolver(new UnderscoredCamelCaseResolver())
+				.useStoryReporterBuilder(
+						new StoryReporterBuilder()
+								.withCodeLocation(
+										CodeLocations
+												.codeLocationFromClass(embeddableClass))
+								.withDefaultFormats()
+								.withPathResolver(new ResolveToPackagedName())
+								.withViewResources(viewResources)
+								.withFormats(CONSOLE, TXT, HTML, XML)
+								.withFailureTrace(true)
+								.withFailureTraceCompression(true)
+								.withCrossReference(xref))
+				.useParameterConverters(parameterConverters)
+				.useStepMonitor(xref.getStepMonitor());
 	}
-	
+
 	@Override
 	public InjectableStepsFactory stepsFactory() {
 		return new InstanceStepsFactory(configuration(), new MainViewSteps());
