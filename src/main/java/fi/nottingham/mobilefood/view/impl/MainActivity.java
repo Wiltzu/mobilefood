@@ -52,7 +52,6 @@ public class MainActivity extends DaggerBaseActivity implements IMainView {
 		mFoodsTV = (TextView) findViewById(R.id.textview_foods);
 		
 		presenter.onViewCreation(this);
-
 	}
 
 	@Override

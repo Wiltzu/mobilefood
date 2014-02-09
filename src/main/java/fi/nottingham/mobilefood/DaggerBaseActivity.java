@@ -15,14 +15,24 @@
  */
 package fi.nottingham.mobilefood;
 
+import java.util.Arrays;
+import java.util.List;
+
 import android.app.Activity;
 import android.os.Bundle;
 
 public abstract class DaggerBaseActivity extends Activity {
-  @Override protected void onCreate(Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
 
-    // Perform injection so that when this call returns all dependencies will be available for use.
-    ((DaggerApplication) getApplication()).inject(this);
-  }
+		// Perform injection so that when this call returns all dependencies
+		// will be available for use.
+		((DaggerApplication) getApplication()).getApplicationGraph()
+				.plus(getModules().toArray()).inject(this);
+	}
+
+	List<Object> getModules() {
+		return MobilefoodModules.getModules();
+	}
 }

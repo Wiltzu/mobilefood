@@ -17,8 +17,6 @@ package fi.nottingham.mobilefood;
 
 import android.app.Application;
 import dagger.ObjectGraph;
-import java.util.Arrays;
-import java.util.List;
 
 public class DaggerApplication extends Application {
   private ObjectGraph graph;
@@ -26,21 +24,14 @@ public class DaggerApplication extends Application {
   @Override public void onCreate() {
     super.onCreate();
 
-    graph = ObjectGraph.create(getModules().toArray());
-  }
-
-  protected List<Object> getModules() {
-    return Arrays.asList(
-        new AndroidModule(this),
-        new MobilefoodModule()
-    );
+    graph = ObjectGraph.create(new AndroidModule(this));
   }
 
   public void inject(Object object) {
     graph.inject(object);
   }
   
-  public ObjectGraph getApplicationGraph() {
+  ObjectGraph getApplicationGraph() {
 	    return graph;
   }
 }

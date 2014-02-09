@@ -30,8 +30,10 @@ import dagger.ObjectGraph;
 import dagger.Provides;
 import fi.nottingham.mobilefood.AndroidModule;
 import fi.nottingham.mobilefood.MobilefoodModule;
+import fi.nottingham.mobilefood.MobilefoodModules;
 import fi.nottingham.mobilefood.R;
 import fi.nottingham.mobilefood.model.Food;
+import fi.nottingham.mobilefood.presenter.IMainViewPresenter;
 import fi.nottingham.mobilefood.service.IFoodService;
 import fi.nottingham.mobilefood.util.DateUtils;
 import fi.nottingham.mobilefood.view.IMainView;
@@ -40,8 +42,8 @@ import fi.nottingham.mobilefood.view.impl.MainActivity;
 public class MainViewSteps {
 	MainActivity mainActivity;
 	IMainView mainView;
-	@Inject
 	IFoodService foodService;
+	IMainViewPresenter mainViewPresenter;
 
 	@BeforeStory
 	public void beforeScenario() {
@@ -50,20 +52,26 @@ public class MainViewSteps {
 
 	@Given("the main view is open")
 	public void the_main_view_is_open() throws Throwable {
-		ObjectGraph.create(new TestModule()).inject(this);
-		Robolectric.buildActivity(MainActivity.class);
+		TestModule testModule = new TestModule();
+		List<Object> modules = MobilefoodModules.getModules();
+		modules.add(testModule);
+		assertEquals(modules, MobilefoodModules.getModules());
+		
 		mainActivity = Robolectric.buildActivity(MainActivity.class).create()
 				.start().resume().get();
 		mainView = mainActivity;
+		mainViewPresenter = mainView.getPresenter();
+		foodService = mainViewPresenter.getFoodService();
 	}
 
 	@Given("the following foods are provided: $providedFoods")
 	public void givenTheFollowingFoodsAreProvided(ExamplesTable foodsTable) {
 		List<Food> foodList = getExampleFoodsAsList(foodsTable);
-		// food service returns foodList
 		Mockito.when(
-				foodService.getFoodsBy(DateUtils.getDayOfTheWeek(new Date())))
+				foodService.getFoodsBy(Mockito.anyInt()))
 				.thenReturn(foodList);
+		//TODO: needs improvements
+		mainViewPresenter.onViewCreation(mainView);
 	}
 
 	private List<Food> getExampleFoodsAsList(ExamplesTable foods) {
@@ -78,7 +86,7 @@ public class MainViewSteps {
 		return foodList;
 	}
 
-	@Module(includes = {MobilefoodModule.class, AndroidModule.class}, injects = MainViewSteps.class, overrides = true)
+	@Module(includes = {MobilefoodModule.class}, injects = MainViewSteps.class, overrides = true)
 	static class TestModule {
 		@Provides
 		@Singleton
@@ -116,10 +124,10 @@ public class MainViewSteps {
 	@Then("in the main view we should have the following foods: $foods")
 	public void in_the_main_view_we_should_have_foods(ExamplesTable foodsTable)
 			throws Throwable {
-		List<Food> foods = getExampleFoodsAsList(foodsTable);
+		List<Food> expectedFoods = getExampleFoodsAsList(foodsTable);
 		TextView mFoodsTV = (TextView) mainActivity
 				.findViewById(R.id.textview_foods);
-		assertEquals("Foods didn't match.", foods.toString(), mFoodsTV
+		assertEquals("Foods didn't match.", expectedFoods.toString(), mFoodsTV
 				.getText().toString());
 	}
 

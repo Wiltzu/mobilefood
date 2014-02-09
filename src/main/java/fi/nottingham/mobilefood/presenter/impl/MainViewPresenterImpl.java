@@ -24,4 +24,8 @@ public class MainViewPresenterImpl implements IMainViewPresenter {
 				foodService.getFoodsBy(DateUtils.getDayOfTheWeek(selectedDate)));
 	}
 
+	public IFoodService getFoodService() {
+		return foodService;
+	}
+
 }
