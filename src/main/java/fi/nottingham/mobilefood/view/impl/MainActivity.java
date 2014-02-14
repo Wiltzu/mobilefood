@@ -14,6 +14,8 @@ import android.os.Bundle;
 import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.Menu;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 import fi.nottingham.mobilefood.DaggerBaseActivity;
 import fi.nottingham.mobilefood.R;
@@ -27,7 +29,7 @@ public class MainActivity extends DaggerBaseActivity implements IMainView {
 	
 	private TextView mDateTV;
 	private TextView mWeekDay;
-	private TextView mFoodsTV;
+	private ListView mFoodsTV;
 	
 	@Inject
 	IMainViewPresenter presenter;
@@ -49,7 +51,7 @@ public class MainActivity extends DaggerBaseActivity implements IMainView {
 		
 		mWeekDay = (TextView) findViewById(R.id.textview_week_day);
 		mDateTV = (TextView) findViewById(R.id.textview_date);
-		mFoodsTV = (TextView) findViewById(R.id.textview_foods);
+		mFoodsTV = (ListView) findViewById(R.id.listview_foods);
 		
 		presenter.onViewCreation(this);
 	}
@@ -71,6 +73,6 @@ public class MainActivity extends DaggerBaseActivity implements IMainView {
 		
 		mWeekDay.setText(DateUtils.getWeekDay(selectedDate));
 		mDateTV.setText(DateUtils.getDateInShortFormat(this, selectedDate));
-		mFoodsTV.setText(foods.toString());
+		mFoodsTV.setAdapter(new ArrayAdapter<Food>(this, R.layout.food_item, foods));
 	}
 }

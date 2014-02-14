@@ -6,8 +6,7 @@ Then in the main view the date should be current
 And in the main view the week day should be current
 
 Scenario: Main view should have foods when they are provided
-Given the main view is open
-And the following foods are provided: fi/nottingham/mobilefood/test_foods.table
+Given the main view is opened and the following foods are provided: fi/nottingham/mobilefood/test_foods.table
 Then in the main view we should have the following foods: fi/nottingham/mobilefood/test_foods.table
 
 Scenario: restaurants can be filtered

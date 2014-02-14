@@ -15,12 +15,14 @@ import org.jbehave.core.annotations.Given;
 import org.jbehave.core.annotations.Then;
 import org.jbehave.core.annotations.When;
 import org.jbehave.core.model.ExamplesTable;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
 import android.text.format.DateFormat;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.google.common.collect.Lists;
@@ -42,6 +44,7 @@ import fi.nottingham.mobilefood.view.impl.MainActivity;
 public class MainViewSteps {
 	MainActivity mainActivity;
 	IMainView mainView;
+	@Mock
 	IFoodService foodService;
 	IMainViewPresenter mainViewPresenter;
 
@@ -52,24 +55,22 @@ public class MainViewSteps {
 
 	@Given("the main view is open")
 	public void the_main_view_is_open() throws Throwable {
-		//add TestModule to all 
-		MobilefoodModules.getModules().add(new TestModule());
-		
 		mainActivity = Robolectric.buildActivity(MainActivity.class).create()
 				.start().resume().get();
 		mainView = mainActivity;
-		mainViewPresenter = mainView.getPresenter();
-		foodService = mainViewPresenter.getFoodService();
 	}
 
-	@Given("the following foods are provided: $providedFoods")
+	@Given("the main view is opened and the following foods are provided: $providedFoods")
 	public void givenTheFollowingFoodsAreProvided(ExamplesTable foodsTable) {
+		MockitoAnnotations.initMocks(this);
+		MobilefoodModules.getModules().add(new TestModule());
+		//get provided foods
 		List<Food> foodList = getExampleFoodsAsList(foodsTable);
-		Mockito.when(
-				foodService.getFoodsBy(Mockito.anyInt()))
-				.thenReturn(foodList);
-		//TODO: needs improvements (this is no good)
-		mainViewPresenter.onViewCreation(mainView);
+		//add provided foods to service's mock
+		Mockito.when(foodService.getFoodsBy(Mockito.anyInt())).thenReturn(
+				foodList);
+		//start activity
+		mainActivity = Robolectric.buildActivity(MainActivity.class).create().start().resume().get();
 	}
 
 	private List<Food> getExampleFoodsAsList(ExamplesTable foods) {
@@ -84,12 +85,12 @@ public class MainViewSteps {
 		return foodList;
 	}
 
-	@Module(includes = {MobilefoodModule.class}, injects = MainViewSteps.class, overrides = true)
-	static class TestModule {
+	@Module(includes = { MobilefoodModule.class }, injects = MainViewSteps.class, overrides = true)
+	class TestModule {
 		@Provides
 		@Singleton
 		IFoodService provideFoodService() {
-			return Mockito.mock(IFoodService.class);
+			return foodService;
 		}
 	}
 
@@ -123,10 +124,10 @@ public class MainViewSteps {
 	public void in_the_main_view_we_should_have_foods(ExamplesTable foodsTable)
 			throws Throwable {
 		List<Food> expectedFoods = getExampleFoodsAsList(foodsTable);
-		TextView mFoodsTV = (TextView) mainActivity
-				.findViewById(R.id.textview_foods);
-		assertEquals("Foods didn't match.", expectedFoods.toString(), mFoodsTV
-				.getText().toString());
+		ListView mFoodsTV = (ListView) mainActivity
+				.findViewById(R.id.listview_foods);
+		assertEquals("Foods didn't match.", expectedFoods.get(0).toString(),
+				mFoodsTV.getAdapter().getItem(0).toString());
 	}
 
 	@Given("in the main view foods are visible")
