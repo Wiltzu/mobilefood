@@ -3,6 +3,7 @@ package fi.nottingham.mobilefood.model;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import javax.annotation.Nullable;
+import javax.annotation.concurrent.Immutable;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Objects.ToStringHelper;
@@ -13,6 +14,7 @@ import com.google.common.base.Objects.ToStringHelper;
  * @author Ville Ahti
  *
  */
+@Immutable
 public class Food {
 
 	private final String foodName;
