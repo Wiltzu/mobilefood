@@ -24,7 +24,7 @@
         android:id="@+id/listview_foods"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="1dp"
         android:divider="@null"
         android:dividerHeight="0dp" >
     </ListView>
