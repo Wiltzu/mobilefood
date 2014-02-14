@@ -1,4 +1,4 @@
-package fi.nottingham.mobilefood;
+package fi.nottingham.mobilefood.acceptance;
 
 import java.text.SimpleDateFormat;
 import java.util.Properties;
@@ -27,7 +27,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 
 import static org.jbehave.core.reporters.StoryReporterBuilder.Format.*;
-import fi.nottingham.mobilefood.steps.MainViewSteps;
+import fi.nottingham.mobilefood.acceptance.steps.MainViewSteps;
 
 @RunWith(RobolectricTestRunner.class)
 public class MainViewTest extends JUnitStory {

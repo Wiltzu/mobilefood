@@ -15,7 +15,6 @@
  */
 package fi.nottingham.mobilefood;
 
-import java.util.Arrays;
 import java.util.List;
 
 import android.app.Activity;

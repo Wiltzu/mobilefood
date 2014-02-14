@@ -1,4 +1,4 @@
-package fi.nottingham.mobilefood.steps;
+package fi.nottingham.mobilefood.acceptance.steps;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -7,7 +7,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.jbehave.core.annotations.BeforeStory;
@@ -28,9 +27,7 @@ import android.widget.TextView;
 import com.google.common.collect.Lists;
 
 import dagger.Module;
-import dagger.ObjectGraph;
 import dagger.Provides;
-import fi.nottingham.mobilefood.AndroidModule;
 import fi.nottingham.mobilefood.MobilefoodModule;
 import fi.nottingham.mobilefood.MobilefoodModules;
 import fi.nottingham.mobilefood.R;
