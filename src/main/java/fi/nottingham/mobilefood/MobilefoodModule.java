@@ -1,5 +1,7 @@
 package fi.nottingham.mobilefood;
 
+import java.util.Date;
+
 import javax.inject.Singleton;
 
 import dagger.Module;
@@ -23,7 +25,12 @@ public class MobilefoodModule {
 	
 	@Provides
 	@Singleton
-	IMainViewPresenter provideMainViewPresenter(IFoodService foodService) {
-		return new MainViewPresenterImpl(foodService);
+	IMainViewPresenter provideMainViewPresenter(IFoodService foodService, Date timeNow) {
+		return new MainViewPresenterImpl(foodService, timeNow);
+	}
+	
+	@Provides
+	Date provideDate() {
+		return new Date();
 	}
 }

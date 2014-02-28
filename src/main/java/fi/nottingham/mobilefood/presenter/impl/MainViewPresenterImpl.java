@@ -14,7 +14,7 @@ public class MainViewPresenterImpl implements IMainViewPresenter {
 	private Date selectedDate;
 
 	@Inject
-	public MainViewPresenterImpl(IFoodService foodService) {
+	public MainViewPresenterImpl(IFoodService foodService, Date timeNow) {
 		this.foodService = foodService;
 		selectedDate = DateUtils.getDateAtMidnight(new Date());
 	}
