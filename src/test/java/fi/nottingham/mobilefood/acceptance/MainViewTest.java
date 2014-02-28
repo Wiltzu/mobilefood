@@ -1,11 +1,17 @@
 package fi.nottingham.mobilefood.acceptance;
 
+import static org.jbehave.core.reporters.StoryReporterBuilder.Format.CONSOLE;
+import static org.jbehave.core.reporters.StoryReporterBuilder.Format.HTML;
+import static org.jbehave.core.reporters.StoryReporterBuilder.Format.TXT;
+import static org.jbehave.core.reporters.StoryReporterBuilder.Format.XML;
+
 import java.text.SimpleDateFormat;
 import java.util.Properties;
 
 import org.jbehave.core.Embeddable;
 import org.jbehave.core.configuration.Configuration;
 import org.jbehave.core.configuration.MostUsefulConfiguration;
+import org.jbehave.core.embedder.Embedder;
 import org.jbehave.core.embedder.StoryControls;
 import org.jbehave.core.i18n.LocalizedKeywords;
 import org.jbehave.core.io.CodeLocations;
@@ -13,7 +19,6 @@ import org.jbehave.core.io.LoadFromClasspath;
 import org.jbehave.core.io.UnderscoredCamelCaseResolver;
 import org.jbehave.core.junit.JUnitStory;
 import org.jbehave.core.model.ExamplesTableFactory;
-import org.jbehave.core.parsers.RegexPrefixCapturingPatternParser;
 import org.jbehave.core.parsers.RegexStoryParser;
 import org.jbehave.core.reporters.CrossReference;
 import org.jbehave.core.reporters.FilePrintStreamFactory.ResolveToPackagedName;
@@ -26,7 +31,8 @@ import org.jbehave.core.steps.ParameterConverters.ExamplesTableConverter;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 
-import static org.jbehave.core.reporters.StoryReporterBuilder.Format.*;
+import com.google.common.collect.Lists;
+
 import fi.nottingham.mobilefood.acceptance.steps.MainViewSteps;
 
 @RunWith(RobolectricTestRunner.class)
@@ -35,10 +41,14 @@ public class MainViewTest extends JUnitStory {
 	private final CrossReference xref = new CrossReference();
 
 	public MainViewTest() {
-		configuredEmbedder().embedderControls()
+		Embedder configuredEmbedder = configuredEmbedder();
+		configuredEmbedder.embedderControls()
 				.doGenerateViewAfterStories(true)
 				.doIgnoreFailureInStories(true).doIgnoreFailureInView(true)
 				.useStoryTimeoutInSecs(60);
+		//skip stories with skip annotations
+		configuredEmbedder.useMetaFilters(Lists.newArrayList("-skip"));
+		
 	}
 
 	@SuppressWarnings("deprecation")

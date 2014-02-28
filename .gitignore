@@ -9,3 +9,4 @@
 /.classpath
 /tmp
 *.log
+/.apt_generated

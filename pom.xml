@@ -12,7 +12,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<platform.version>2.2.1</platform.version>
 		<android.plugin.version>3.8.0</android.plugin.version>
-		<java.version>1.7</java.version>
+		<java.version>1.6</java.version>
 	</properties>
 
 
@@ -109,6 +109,10 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.1</version>
+				<configuration>
+					<source>${java.version}</source>
+					<target>${java.version}</target>
+				</configuration>
 			</plugin>
 
 		</plugins>
