@@ -20,7 +20,15 @@
         android:text="6.2.2014"
         android:textSize="14sp" />
 
-  <ListView
+    <ProgressBar
+        android:id="@+id/pbHeaderProgress"
+        style="@android:style/Widget.ProgressBar.Large"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" 
+        android:layout_gravity="center">
+    </ProgressBar>
+
+    <ListView
         android:id="@+id/listview_foods"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"

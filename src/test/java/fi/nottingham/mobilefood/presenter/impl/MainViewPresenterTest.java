@@ -18,7 +18,6 @@ import com.google.common.collect.Lists;
 import fi.nottingham.mobilefood.model.Food;
 import fi.nottingham.mobilefood.presenter.IMainViewPresenter;
 import fi.nottingham.mobilefood.service.IFoodService;
-import fi.nottingham.mobilefood.util.DateUtils;
 import fi.nottingham.mobilefood.view.IMainView;
 
 public class MainViewPresenterTest {
@@ -42,14 +41,32 @@ public class MainViewPresenterTest {
 		assertEquals(foodService, mainViewPresenter.getFoodService());
 	}
 	
-	@Test
+	//@Test
 	public void OnViewCreation_setsViewsFoodsFromFoodService() {		
 		List<Food> foods = Lists.newArrayList();
 		when(foodService.getFoodsBy(Mockito.anyInt())).thenReturn(foods);
 		
 		mainViewPresenter.onViewCreation(mainView);
 		
-		verify(mainView).setFoods(DateUtils.getDateAtMidnight(date), foods);
+		verify(mainView).setFoods(foods);
+	}
+	
+	@Test
+	public void OnViewCreation_foodsAreFetchedFromFoodServiceInBackground() {
+		mainViewPresenter.onViewCreation(mainView);
+		verify(mainView).runInBackgroud(Mockito.any(Runnable.class), Mockito.any(Runnable.class));
+	}
+	
+	@Test
+	public void OnViewCreation_loadingNotificationIsShowed() {
+		mainViewPresenter.onViewCreation(mainView);
+		verify(mainView).showLoadingIcon();
+	}
+	
+	@Test
+	public void OnViewCreation_setsDateForView() {
+		mainViewPresenter.onViewCreation(mainView);
+		verify(mainView).setDate(Mockito.any(Date.class));
 	}
 
 }

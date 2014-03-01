@@ -10,5 +10,11 @@ public interface IMainView {
 	
 	IMainViewPresenter getPresenter();
 
-	void setFoods(Date selectedDate, List<Food> foods);
+	void setFoods(List<Food> foods);
+
+	void runInBackgroud(Runnable backgroundTask, Runnable uiUpdateTask);
+
+	void showLoadingIcon();
+
+	void setDate(Date date);
 }

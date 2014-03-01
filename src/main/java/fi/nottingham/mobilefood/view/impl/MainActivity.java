@@ -7,15 +7,14 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.Menu;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import fi.nottingham.mobilefood.DaggerBaseActivity;
 import fi.nottingham.mobilefood.R;
@@ -26,11 +25,12 @@ import fi.nottingham.mobilefood.view.IMainView;
 
 public class MainActivity extends DaggerBaseActivity implements IMainView {
 	private static final String TAG = "MainActivity";
-	
+
 	private TextView mDateTV;
 	private TextView mWeekDay;
 	private ListView mFoodsTV;
-	
+	private ProgressBar mProgressBar;
+
 	@Inject
 	IMainViewPresenter presenter;
 
@@ -48,12 +48,18 @@ public class MainActivity extends DaggerBaseActivity implements IMainView {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		
+
 		mWeekDay = (TextView) findViewById(R.id.textview_week_day);
 		mDateTV = (TextView) findViewById(R.id.textview_date);
 		mFoodsTV = (ListView) findViewById(R.id.listview_foods);
-		
+		mProgressBar = (ProgressBar) findViewById(R.id.pbHeaderProgress);
+		mProgressBar.setVisibility(View.INVISIBLE);
+	}
+
+	@Override
+	protected void onResume() {
 		presenter.onViewCreation(this);
+		super.onResume();
 	}
 
 	@Override
@@ -67,12 +73,44 @@ public class MainActivity extends DaggerBaseActivity implements IMainView {
 		return presenter;
 	}
 
-	public void setFoods(Date selectedDate, List<Food> foods) {
-		checkNotNull(selectedDate, "selectedDate cannot be null.");
+	public void setFoods(List<Food> foods) {
 		checkNotNull(foods, "foods cannot be null");
-		
+		mFoodsTV.setAdapter(new ArrayAdapter<Food>(this, R.layout.food_item,
+				foods));
+	}
+
+	@Override
+	public void runInBackgroud(final Runnable backgroundTask,
+			final Runnable uiUpdateTask) {
+		new AsyncTask<Void, Void, Void>() {
+			@Override
+			protected Void doInBackground(Void... params) {
+				Log.d(TAG, "Running task in background...");
+				backgroundTask.run();
+				return null;
+			}
+
+			@Override
+			protected void onPostExecute(Void result) {
+				Log.d(TAG, "Running ui update task in main thread...");
+				uiUpdateTask.run();
+				if(mProgressBar.isShown()) {					
+					mProgressBar.setVisibility(View.INVISIBLE);
+				}
+			}
+		}.execute();
+	}
+
+	@Override
+	public void showLoadingIcon() {
+		mProgressBar.setVisibility(View.VISIBLE);
+		mProgressBar.setProgress(30);
+	}
+
+	@Override
+	public void setDate(Date selectedDate) {
+		checkNotNull(selectedDate, "selectedDate cannot be null.");
 		mWeekDay.setText(DateUtils.getWeekDay(selectedDate));
 		mDateTV.setText(DateUtils.getDateInShortFormat(this, selectedDate));
-		mFoodsTV.setAdapter(new ArrayAdapter<Food>(this, R.layout.food_item, foods));
 	}
 }

@@ -10,6 +10,6 @@ import fi.nottingham.mobilefood.service.IFoodService;
 public class FoodServiceImpl implements IFoodService {
 
 	public List<Food> getFoodsBy(int dayOfTheWeek) {
-		return Lists.newArrayList();
+		return Lists.newArrayList(new Food("dasd", "asd", "adsad", "asdasd"));
 	}
 }
