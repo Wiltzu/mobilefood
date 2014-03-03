@@ -52,8 +52,7 @@ public class MainActivity extends DaggerBaseActivity implements IMainView {
 		mWeekDay = (TextView) findViewById(R.id.textview_week_day);
 		mDateTV = (TextView) findViewById(R.id.textview_date);
 		mFoodsTV = (ListView) findViewById(R.id.listview_foods);
-		mProgressBar = (ProgressBar) findViewById(R.id.progressbar_food);
-		mProgressBar.setVisibility(View.INVISIBLE);
+		mProgressBar = (ProgressBar) findViewById(R.id.progressbar_unlimited);
 	}
 
 	@Override
@@ -85,7 +84,7 @@ public class MainActivity extends DaggerBaseActivity implements IMainView {
 		new AsyncTask<Void, Void, Void>() {
 			@Override
 			protected Void doInBackground(Void... params) {
-				Log.d(TAG, "Running task in background...");
+				Log.d(TAG, "Running task in background thread...");
 				backgroundTask.run();
 				return null;
 			}
@@ -94,6 +93,7 @@ public class MainActivity extends DaggerBaseActivity implements IMainView {
 			protected void onPostExecute(Void result) {
 				Log.d(TAG, "Running ui update task in main thread...");
 				uiUpdateTask.run();
+				
 				if(mProgressBar.isShown()) {					
 					mProgressBar.setVisibility(View.INVISIBLE);
 				}
@@ -104,7 +104,6 @@ public class MainActivity extends DaggerBaseActivity implements IMainView {
 	@Override
 	public void showLoadingIcon() {
 		mProgressBar.setVisibility(View.VISIBLE);
-		mProgressBar.setProgress(30);
 	}
 
 	@Override
