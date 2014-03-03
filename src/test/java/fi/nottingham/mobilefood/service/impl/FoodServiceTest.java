@@ -1,5 +1,6 @@
 package fi.nottingham.mobilefood.service.impl;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
 import org.junit.Before;
@@ -8,7 +9,7 @@ import org.junit.Test;
 import fi.nottingham.mobilefood.service.IFoodService;
 
 public class FoodServiceTest {
-	
+
 	private IFoodService foodService;
 
 	@Before
@@ -22,7 +23,13 @@ public class FoodServiceTest {
 		assertNotNull(foodService.getFoodsBy(weekNumber, dayOfTheWeek));
 	}
 	
-	@Test(expected=IllegalArgumentException.class)
+	@Test
+	public void getFoodsBy_returns() {
+		int dayOfTheWeek = 0, weekNumber = 10;
+		assertFalse(foodService.getFoodsBy(weekNumber, dayOfTheWeek).isEmpty());
+	}
+
+	@Test(expected = IllegalArgumentException.class)
 	public void getFoodsBy_weekNumberIsAtLeastOne() {
 		foodService.getFoodsBy(0, 1);
 	}
