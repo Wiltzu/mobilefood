@@ -1,5 +1,6 @@
 package fi.nottingham.mobilefood.acceptance.steps;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -120,9 +121,15 @@ public class MainViewSteps {
 	@Then("in the main view we should have the following foods: $foods")
 	public void in_the_main_view_we_should_have_foods(ExamplesTable foodsTable)
 			throws Throwable {
+		
 		List<Food> expectedFoods = getExampleFoodsAsList(foodsTable);
 		ListView mFoodsTV = (ListView) mainActivity
 				.findViewById(R.id.listview_foods);
+		
+		//be sure that foods have been fetched and added to UI
+		Robolectric.runBackgroundTasks();
+		Robolectric.runUiThreadTasks();
+		
 		assertEquals("Foods didn't match.", expectedFoods.get(0).toString(),
 				mFoodsTV.getAdapter().getItem(0).toString());
 	}
