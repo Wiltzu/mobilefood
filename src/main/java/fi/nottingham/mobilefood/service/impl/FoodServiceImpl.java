@@ -10,7 +10,13 @@ import fi.nottingham.mobilefood.model.Food;
 import fi.nottingham.mobilefood.service.IFoodService;
 
 public class FoodServiceImpl implements IFoodService {
+	
+	private final String serviceLocation;
 
+	public FoodServiceImpl(String serviceLocation) {
+		this.serviceLocation = serviceLocation;
+	}
+	
 	public List<Food> getFoodsBy(int weekNumber, int dayOfTheWeek) {
 		checkArgument(weekNumber >= 1, "week number must be at least one");
 		return Lists.newArrayList(new Food("dasd", "asd", "adsad", "asdasd"));

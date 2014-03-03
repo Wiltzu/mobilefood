@@ -4,6 +4,9 @@ import java.util.Date;
 
 import javax.inject.Singleton;
 
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
+
 import dagger.Module;
 import dagger.Provides;
 import fi.nottingham.mobilefood.presenter.IMainViewPresenter;
@@ -19,8 +22,8 @@ import fi.nottingham.mobilefood.view.impl.MainActivity;
 public class MobilefoodModule {
 	@Provides
 	@Singleton
-	IFoodService provideFoodService() {
-		return new FoodServiceImpl();
+	IFoodService provideFoodService(Config config) {
+		return new FoodServiceImpl(config.getString("mobilefood.foodservice.url"));
 	}
 	
 	@Provides
@@ -32,5 +35,11 @@ public class MobilefoodModule {
 	@Provides
 	Date provideDate() {
 		return new Date();
+	}
+	
+	@Provides
+	@Singleton
+	Config provideConfigurations() {
+		return ConfigFactory.load();
 	}
 }

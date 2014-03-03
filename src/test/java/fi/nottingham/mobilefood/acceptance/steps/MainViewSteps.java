@@ -83,7 +83,7 @@ public class MainViewSteps {
 		return foodList;
 	}
 
-	@Module(includes = { MobilefoodModule.class }, injects = MainViewSteps.class, overrides = true)
+	@Module(includes = { MobilefoodModule.class }, injects = MainViewSteps.class, overrides = true, library=true)
 	class TestModule {
 		@Provides
 		@Singleton
