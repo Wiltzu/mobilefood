@@ -36,8 +36,10 @@ public class MainViewPresenterImpl implements IMainViewPresenter {
 		mainView.runInBackgroud(new Runnable() {
 			@Override
 			public void run() {
-				foods.addAll(foodService.getFoodsBy(DateUtils
-						.getDayOfTheWeek(selectedDate)));
+				int dayOfTheWeek = DateUtils
+						.getDayOfTheWeek(selectedDate);
+				int weekNumber = DateUtils.getWeekOfYear(selectedDate); 
+				foods.addAll(foodService.getFoodsBy(weekNumber, dayOfTheWeek));
 			}
 		}, new Runnable() {	
 			@Override

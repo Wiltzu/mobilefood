@@ -52,7 +52,7 @@ public class MainActivity extends DaggerBaseActivity implements IMainView {
 		mWeekDay = (TextView) findViewById(R.id.textview_week_day);
 		mDateTV = (TextView) findViewById(R.id.textview_date);
 		mFoodsTV = (ListView) findViewById(R.id.listview_foods);
-		mProgressBar = (ProgressBar) findViewById(R.id.progressbar_unlimited);
+		mProgressBar = (ProgressBar) findViewById(R.id.progressbar_indeterminate);
 	}
 
 	@Override

@@ -44,7 +44,7 @@ public class MainViewPresenterTest {
 	//@Test
 	public void OnViewCreation_setsViewsFoodsFromFoodService() {		
 		List<Food> foods = Lists.newArrayList();
-		when(foodService.getFoodsBy(Mockito.anyInt())).thenReturn(foods);
+		when(foodService.getFoodsBy(Mockito.anyInt(), Mockito.anyInt())).thenReturn(foods);
 		
 		mainViewPresenter.onViewCreation(mainView);
 		

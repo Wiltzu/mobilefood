@@ -65,7 +65,7 @@ public class MainViewSteps {
 		//get provided foods
 		List<Food> foodList = getExampleFoodsAsList(foodsTable);
 		//add provided foods to service's mock
-		Mockito.when(foodService.getFoodsBy(Mockito.anyInt())).thenReturn(
+		Mockito.when(foodService.getFoodsBy(Mockito.anyInt(), Mockito.anyInt())).thenReturn(
 				foodList);
 		//start activity
 		mainActivity = Robolectric.buildActivity(MainActivity.class).create().start().resume().get();

@@ -4,13 +4,14 @@
     android:orientation="vertical" >
 
     <ProgressBar
-        android:id="@+id/progressbar_unlimited"
+        android:id="@+id/progressbar_indeterminate"
         style="@android:style/Widget.ProgressBar.Large"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:layout_gravity="center"
-        android:visibility="invisible" />
+        android:visibility="invisible"
+        android:indeterminate="true" />
 
     <TextView
         android:id="@+id/textview_week_day"

@@ -6,5 +6,5 @@ import fi.nottingham.mobilefood.model.Food;
 
 public interface IFoodService {
 
-	List<Food> getFoodsBy(int dayOfTheWeek);
+	List<Food> getFoodsBy(int weekNumber, int dayOfTheWeek);
 }
