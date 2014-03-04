@@ -36,11 +36,11 @@ import com.google.common.collect.Lists;
 import fi.nottingham.mobilefood.acceptance.steps.MainViewSteps;
 
 @RunWith(RobolectricTestRunner.class)
-public class MainViewTest extends JUnitStory {
+public class ITMainView extends JUnitStory {
 
 	private final CrossReference xref = new CrossReference();
 
-	public MainViewTest() {
+	public ITMainView() {
 		Embedder configuredEmbedder = configuredEmbedder();
 		configuredEmbedder.embedderControls()
 				.doGenerateViewAfterStories(true)
