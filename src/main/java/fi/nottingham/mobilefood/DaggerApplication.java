@@ -15,9 +15,10 @@
  */
 package fi.nottingham.mobilefood;
 
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 import android.app.Application;
 import android.util.Log;
@@ -31,7 +32,9 @@ public class DaggerApplication extends Application implements IFileSystemService
 	public void onCreate() {
 		super.onCreate();
 
-		graph = ObjectGraph.create(new AndroidModule(this));
+		AndroidModule androidModule = new AndroidModule();
+		androidModule.setDaggerApplication(this);
+		graph = ObjectGraph.create(androidModule);
 	}
 
 	public void inject(Object object) {
@@ -43,12 +46,12 @@ public class DaggerApplication extends Application implements IFileSystemService
 	}
 	
 	@Override
-	public FileInputStream openInputFile(String filename) throws FileNotFoundException{
+	public InputStream openInputFile(String filename) throws FileNotFoundException{
 		return openFileInput(filename);
 	}
 	
 	@Override
-	public FileOutputStream openOutputFile(String filename) {
+	public OutputStream openOutputFile(String filename) {
 		FileOutputStream fileOutputStream = null;
 		try {
 			openFileOutput(filename, MODE_PRIVATE);

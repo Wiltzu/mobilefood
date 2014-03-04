@@ -3,7 +3,10 @@ package fi.nottingham.mobilefood.service.impl;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -31,30 +34,65 @@ public class FoodServiceImpl implements IFoodService {
 	private final IFileSystemService fileSystemService;
 
 	@Inject
-	public FoodServiceImpl(String serviceLocation, IFileSystemService fileSystemService) {
-		this.serviceLocation = checkNotNull(serviceLocation, "serviceLocation cannot be null");
-		this.fileSystemService = checkNotNull(fileSystemService, "fileSystemService cannot be null");
+	public FoodServiceImpl(String serviceLocation,
+			IFileSystemService fileSystemService) {
+		this.serviceLocation = checkNotNull(serviceLocation,
+				"serviceLocation cannot be null");
+		this.fileSystemService = checkNotNull(fileSystemService,
+				"fileSystemService cannot be null");
 	}
 
 	public List<Food> getFoodsBy(int weekNumber, int dayOfTheWeek) {
+		// TODO: much better error handling
 		final List<Food> foodsOfTheDay = Lists.newArrayList();
 		checkArgument(weekNumber >= 1, "week number must be at least one");
 
+		String foodData = null;
+
+		String chainName = "unica";
+		int year = 2014;
 		try {
-			HttpURLConnection connection = (HttpURLConnection) new URL(
-					getRequestURL(weekNumber)).openConnection();
+			InputStream weekInputFile = fileSystemService
+					.openInputFile(getFileNameFor(year, weekNumber, chainName));
+			String responseFromFile = IOUtils.toString(weekInputFile);
+			weekInputFile.close();
 
-			String response = IOUtils.toString(connection.getInputStream(),
-					"UTF-8");
-			if (response.contains("ERROR")) {
-				logger.log(Level.SEVERE, response);
-				return foodsOfTheDay;
+			foodData = responseFromFile;
+		} catch (FileNotFoundException e1) {
+			// download from service
+			try {
+				HttpURLConnection connection = (HttpURLConnection) new URL(
+						getRequestURL(weekNumber)).openConnection();
+
+				String response = IOUtils.toString(connection.getInputStream(),
+						"UTF-8");
+				if (response.contains("ERROR")) {
+					logger.log(Level.SEVERE, response);
+					return foodsOfTheDay;
+				}
+
+				OutputStream weekOutputFile = fileSystemService
+						.openOutputFile(getFileNameFor(year, weekNumber,
+								chainName));
+				weekOutputFile.write(response.getBytes());
+				weekOutputFile.close();
+
+				foodData = response;
+			} catch (MalformedURLException e) {
+				logger.throwing("FoodService", "getFoodsBy", e);
+			} catch (IOException e) {
+				logger.throwing("FoodService", "getFoodsBy", e);
 			}
+		} catch (IOException e) {
+			logger.throwing("FoodService", "getFoodsBy", e);
+		}
 
-			JSONArray foodsByDay = (JSONArray) new JSONTokener(response)
+		try {
+			JSONArray foodsByDay = (JSONArray) new JSONTokener(foodData)
 					.nextValue();
 
-			JSONObject requestedWeekDay = foodsByDay.getJSONObject(dayOfTheWeek);
+			JSONObject requestedWeekDay = foodsByDay
+					.getJSONObject(dayOfTheWeek);
 
 			JSONArray foodsByRestaurant = requestedWeekDay
 					.getJSONArray("foods_by_restaurant");
@@ -70,14 +108,16 @@ public class FoodServiceImpl implements IFoodService {
 							restaurant.getString("restaurant_name")));
 				}
 			}
-		} catch (MalformedURLException e) {
-			logger.throwing("FoodService", "getFoodsBy", e);
-		} catch (IOException e) {
-			logger.throwing("FoodService", "getFoodsBy", e);
+
 		} catch (JSONException e) {
 			logger.throwing("FoodService", "getFoodsBy", e);
 		}
+
 		return foodsOfTheDay;
+	}
+
+	private String getFileNameFor(int year, int weekNumber, String chainName) {
+		return String.format("%s_w%s_%s.json", year, weekNumber, chainName);
 	}
 
 	private String getRequestURL(int weekNumber) {

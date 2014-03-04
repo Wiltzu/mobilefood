@@ -18,7 +18,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 
 import com.google.common.collect.Lists;
-import com.ximpleware.extended.xpath.VariableExpr;
+import com.typesafe.config.Config;
 
 import dagger.Module;
 import dagger.Provides;
@@ -27,6 +27,7 @@ import fi.nottingham.mobilefood.MobilefoodModule;
 import fi.nottingham.mobilefood.MobilefoodModules;
 import fi.nottingham.mobilefood.acceptance.steps.MainViewSteps;
 import fi.nottingham.mobilefood.presenter.IMainViewPresenter;
+import fi.nottingham.mobilefood.service.IFileSystemService;
 import fi.nottingham.mobilefood.service.IFoodService;
 import fi.nottingham.mobilefood.view.IMainView;
 
@@ -46,7 +47,7 @@ public class MainActivityTest {
 	}
 
 	@Test
-	public void testViewCreationNotifiesPresenter() {
+	public void onViewCreation_notifiesPresenter() {
 		verify(mainViewPresenter).onViewCreation(mainView);
 	}
 
@@ -87,17 +88,17 @@ public class MainActivityTest {
 				testList.isEmpty());
 	}
 
-	@Module(includes = { MobilefoodModule.class}, injects = MainViewSteps.class, overrides = true, library = true)
+	@Module(includes = { MobilefoodModule.class, AndroidModule.class}, injects = MainViewSteps.class, overrides = true, library = true)
 	class TestModule {
 		@Provides
 		@Singleton
-		public IMainViewPresenter provideMainViewPresenter() {
+		IMainViewPresenter provideMainViewPresenter() {
 			return mainViewPresenter;
 		}
 		
 		@Provides
 		@Singleton
-		public IFoodService provideFoodService() {
+		IFoodService provideFoodService(Config conf, IFileSystemService fileSystemService) {
 			return mock(IFoodService.class);
 		}
 	}

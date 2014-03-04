@@ -17,9 +17,9 @@ import static android.content.Context.LOCATION_SERVICE;
  */
 @Module(library = true)
 public class AndroidModule {
-	private final DaggerApplication application;
-
-	public AndroidModule(DaggerApplication application) {
+	private DaggerApplication application;
+	
+	void setDaggerApplication(DaggerApplication application) {
 		this.application = application;
 	}
 
