@@ -54,7 +54,7 @@ public class DaggerApplication extends Application implements IFileSystemService
 	public OutputStream openOutputFile(String filename) {
 		FileOutputStream fileOutputStream = null;
 		try {
-			openFileOutput(filename, MODE_PRIVATE);
+			fileOutputStream = openFileOutput(filename, MODE_PRIVATE);
 		} catch (FileNotFoundException e) {
 			//TODO: improve error handling!!!
 			Log.e("DaggerApplication", "Unexpected error occured while opening FileOutputStream", e);

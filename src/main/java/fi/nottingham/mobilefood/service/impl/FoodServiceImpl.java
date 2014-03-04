@@ -2,6 +2,7 @@ package fi.nottingham.mobilefood.service.impl;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Strings.isNullOrEmpty;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -10,6 +11,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -17,11 +19,13 @@ import java.util.logging.Logger;
 import javax.inject.Inject;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 
 import fi.nottingham.mobilefood.model.Food;
@@ -29,6 +33,9 @@ import fi.nottingham.mobilefood.service.IFileSystemService;
 import fi.nottingham.mobilefood.service.IFoodService;
 
 public class FoodServiceImpl implements IFoodService {
+	private static final String CHAIN_NAME = "unica";
+	private static final int YEAR = 2014;
+	
 	private final String serviceLocation;
 	private final Logger logger = Logger.getLogger("FoodService");
 	private final IFileSystemService fileSystemService;
@@ -48,16 +55,19 @@ public class FoodServiceImpl implements IFoodService {
 		checkArgument(weekNumber >= 1, "week number must be at least one");
 
 		String foodData = null;
-
-		String chainName = "unica";
-		int year = 2014;
+		
 		try {
 			InputStream weekInputFile = fileSystemService
-					.openInputFile(getFileNameFor(year, weekNumber, chainName));
+					.openInputFile(getFileNameFor(YEAR, weekNumber, CHAIN_NAME));
 			String responseFromFile = IOUtils.toString(weekInputFile);
 			weekInputFile.close();
+			
+			if(isNullOrEmpty(responseFromFile)) {
+				downloadDataFromService(weekNumber);
+			} else {	
+				foodData = responseFromFile;
+			}
 
-			foodData = responseFromFile;
 		} catch (FileNotFoundException e1) {
 			// download from service
 			try {
@@ -66,15 +76,16 @@ public class FoodServiceImpl implements IFoodService {
 
 				String response = IOUtils.toString(connection.getInputStream(),
 						"UTF-8");
-				if (response.contains("ERROR")) {
+				if (response == null || response.contains("ERROR")) {
 					logger.log(Level.SEVERE, response);
 					return foodsOfTheDay;
 				}
 
 				OutputStream weekOutputFile = fileSystemService
-						.openOutputFile(getFileNameFor(year, weekNumber,
-								chainName));
+						.openOutputFile(getFileNameFor(YEAR, weekNumber,
+								CHAIN_NAME));
 				weekOutputFile.write(response.getBytes());
+				weekOutputFile.flush();
 				weekOutputFile.close();
 
 				foodData = response;
@@ -114,6 +125,34 @@ public class FoodServiceImpl implements IFoodService {
 		}
 
 		return foodsOfTheDay;
+	}
+	
+	private String downloadDataFromService(int weekNumber) {
+		try {
+			HttpURLConnection connection = (HttpURLConnection) new URL(
+					getRequestURL(weekNumber)).openConnection();
+
+			String response = IOUtils.toString(connection.getInputStream(),
+					"UTF-8");
+			if (response == null || response.contains("ERROR")) {
+				logger.log(Level.SEVERE, response);
+				return null;
+			}
+
+			OutputStream weekOutputFile = fileSystemService
+					.openOutputFile(getFileNameFor(YEAR, weekNumber,
+							CHAIN_NAME));
+			weekOutputFile.write(response.getBytes());
+			weekOutputFile.flush();
+			weekOutputFile.close();
+
+			return response;
+		} catch (MalformedURLException e) {
+			logger.throwing("FoodService", "getFoodsBy", e);
+		} catch (IOException e) {
+			logger.throwing("FoodService", "getFoodsBy", e);
+		}
+		return null;
 	}
 
 	private String getFileNameFor(int year, int weekNumber, String chainName) {

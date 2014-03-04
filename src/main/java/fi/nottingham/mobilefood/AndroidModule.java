@@ -1,15 +1,14 @@
 package fi.nottingham.mobilefood;
 
+import static android.content.Context.LOCATION_SERVICE;
+
+import javax.inject.Singleton;
+
 import android.content.Context;
 import android.location.LocationManager;
 import dagger.Module;
 import dagger.Provides;
 import fi.nottingham.mobilefood.service.IFileSystemService;
-import fi.nottingham.mobilefood.service.IFoodService;
-
-import javax.inject.Singleton;
-
-import static android.content.Context.LOCATION_SERVICE;
 
 /**
  * A module for Android-specific dependencies which require a {@link Context} or

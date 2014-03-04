@@ -88,7 +88,7 @@ public class MainActivityTest {
 				testList.isEmpty());
 	}
 
-	@Module(includes = { MobilefoodModule.class, AndroidModule.class}, injects = MainViewSteps.class, overrides = true, library = true)
+	@Module(includes = { MobilefoodModule.class, AndroidModule.class}, injects = MainViewSteps.class, overrides = true)
 	class TestModule {
 		@Provides
 		@Singleton
