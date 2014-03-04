@@ -1,6 +1,5 @@
 package fi.nottingham.mobilefood.acceptance.steps;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -19,13 +18,13 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.Robolectric;
-import org.robolectric.annotation.Config;
 
 import android.text.format.DateFormat;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.google.common.collect.Lists;
+import com.typesafe.config.Config;
 
 import dagger.Module;
 import dagger.Provides;
@@ -83,11 +82,11 @@ public class MainViewSteps {
 		return foodList;
 	}
 
-	@Module(includes = { MobilefoodModule.class }, injects = MainViewSteps.class, overrides = true, library=true)
+	@Module(includes = { MobilefoodModule.class }, injects = MainViewSteps.class, overrides = true)
 	class TestModule {
 		@Provides
 		@Singleton
-		IFoodService provideFoodService() {
+		IFoodService provideFoodService(Config conf) {
 			return foodService;
 		}
 	}
@@ -107,7 +106,7 @@ public class MainViewSteps {
 	}
 
 	@Then("in the main view the date should be current")
-	@Config(qualifiers = "fi_FI")
+	@org.robolectric.annotation.Config(qualifiers = "fi_FI")
 	public void in_the_main_view_the_date_should_be_current() throws Throwable {
 		TextView dateView = (TextView) mainActivity
 				.findViewById(R.id.textview_date);
