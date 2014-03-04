@@ -15,23 +15,47 @@
  */
 package fi.nottingham.mobilefood;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+
 import android.app.Application;
+import android.util.Log;
 import dagger.ObjectGraph;
+import fi.nottingham.mobilefood.service.IFileSystemService;
 
-public class DaggerApplication extends Application {
-  private ObjectGraph graph;
+public class DaggerApplication extends Application implements IFileSystemService {
+	private ObjectGraph graph;
 
-  @Override public void onCreate() {
-    super.onCreate();
+	@Override
+	public void onCreate() {
+		super.onCreate();
 
-    graph = ObjectGraph.create(new AndroidModule(this));
-  }
+		graph = ObjectGraph.create(new AndroidModule(this));
+	}
 
-  public void inject(Object object) {
-    graph.inject(object);
-  }
-  
-  ObjectGraph getApplicationGraph() {
-	    return graph;
-  }
+	public void inject(Object object) {
+		graph.inject(object);
+	}
+
+	ObjectGraph getApplicationGraph() {
+		return graph;
+	}
+	
+	@Override
+	public FileInputStream openInputFile(String filename) throws FileNotFoundException{
+		return openFileInput(filename);
+	}
+	
+	@Override
+	public FileOutputStream openOutputFile(String filename) {
+		FileOutputStream fileOutputStream = null;
+		try {
+			openFileOutput(filename, MODE_PRIVATE);
+		} catch (FileNotFoundException e) {
+			//TODO: improve error handling!!!
+			Log.e("DaggerApplication", "Unexpected error occured while opening FileOutputStream", e);
+		}
+		return fileOutputStream;
+	}
 }

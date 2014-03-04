@@ -2,10 +2,12 @@ package fi.nottingham.mobilefood.service.impl;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.mock;
 
 import org.junit.Before;
 import org.junit.Test;
 
+import fi.nottingham.mobilefood.service.IFileSystemService;
 import fi.nottingham.mobilefood.service.IFoodService;
 
 public class FoodServiceTest {
@@ -14,7 +16,7 @@ public class FoodServiceTest {
 
 	@Before
 	public void setUp() {
-		foodService = new FoodServiceImpl("http://localhost:4730/mobilerest/");
+		foodService = new FoodServiceImpl("http://localhost:4730/mobilerest/", mock(IFileSystemService.class));
 	}
 
 	@Test

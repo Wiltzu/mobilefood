@@ -1,6 +1,7 @@
 package fi.nottingham.mobilefood.service.impl;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -9,6 +10,8 @@ import java.net.URL;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.inject.Inject;
 
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
@@ -19,16 +22,18 @@ import org.json.JSONTokener;
 import com.google.common.collect.Lists;
 
 import fi.nottingham.mobilefood.model.Food;
+import fi.nottingham.mobilefood.service.IFileSystemService;
 import fi.nottingham.mobilefood.service.IFoodService;
 
 public class FoodServiceImpl implements IFoodService {
-
-	private static final int DAYS_IN_WEEK = 7;
 	private final String serviceLocation;
 	private final Logger logger = Logger.getLogger("FoodService");
+	private final IFileSystemService fileSystemService;
 
-	public FoodServiceImpl(String serviceLocation) {
-		this.serviceLocation = serviceLocation;
+	@Inject
+	public FoodServiceImpl(String serviceLocation, IFileSystemService fileSystemService) {
+		this.serviceLocation = checkNotNull(serviceLocation, "serviceLocation cannot be null");
+		this.fileSystemService = checkNotNull(fileSystemService, "fileSystemService cannot be null");
 	}
 
 	public List<Food> getFoodsBy(int weekNumber, int dayOfTheWeek) {
