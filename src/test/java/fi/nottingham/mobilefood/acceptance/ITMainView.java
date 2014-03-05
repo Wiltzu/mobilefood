@@ -44,7 +44,7 @@ public class ITMainView extends JUnitStory {
 		Embedder configuredEmbedder = configuredEmbedder();
 		configuredEmbedder.embedderControls()
 				.doGenerateViewAfterStories(true)
-				.doIgnoreFailureInStories(true).doIgnoreFailureInView(true)
+				.doIgnoreFailureInStories(true).doIgnoreFailureInView(false)
 				.useStoryTimeoutInSecs(60);
 		//skip stories with skip annotations
 		configuredEmbedder.useMetaFilters(Lists.newArrayList("-skip"));

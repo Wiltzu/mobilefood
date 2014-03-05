@@ -32,4 +32,4 @@ before_script:
 - npm start &
 - cd ..
 
-script: mvn test -B -Denvironment.is.travis  
+script: mvn verify -B -Denvironment.is.travis  
