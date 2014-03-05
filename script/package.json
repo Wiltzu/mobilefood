@@ -1,0 +1,22 @@
+{
+  "name": "test_server",
+  "version": "0.0.6",
+  "contributors": [
+    {
+      "name": "Anssi Kinnunen",
+      "email": "<aatkin@utu.fi>"
+    }, 
+    {
+      "name": "Ville Ahti",
+      "email": "<vianah@utu.fi>"
+    }
+  ],
+  "description": "Mobilefood-project test REST-service",
+  "scripts": {
+    "start": "node ./test_server.js"
+  },
+  "dependencies": {
+    "express": "3.x"
+  },
+  "license": "MIT"
+}

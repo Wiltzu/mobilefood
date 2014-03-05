@@ -24,9 +24,8 @@ before_install:
   #Updates android sdk
   - echo y | android update sdk --filter platform-tools,android-19,addon-google_apis-google-19,extra-android-support --no-ui --force > /dev/null
 
-script: mvn clean test -B -Djava.net.preferIPv4Stack=true
-
-
-
- 
-
+before_script:
+cd script
+npm install
+npm start &
+cd ..
