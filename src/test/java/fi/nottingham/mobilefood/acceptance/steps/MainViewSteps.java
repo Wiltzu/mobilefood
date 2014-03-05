@@ -3,6 +3,7 @@ package fi.nottingham.mobilefood.acceptance.steps;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +25,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.typesafe.config.Config;
 
 import dagger.Module;
@@ -32,6 +34,7 @@ import fi.nottingham.mobilefood.MobilefoodModule;
 import fi.nottingham.mobilefood.MobilefoodModules;
 import fi.nottingham.mobilefood.R;
 import fi.nottingham.mobilefood.model.Food;
+import fi.nottingham.mobilefood.model.RestaurantDay;
 import fi.nottingham.mobilefood.presenter.IMainViewPresenter;
 import fi.nottingham.mobilefood.service.IFoodService;
 import fi.nottingham.mobilefood.util.DateUtils;
@@ -62,7 +65,7 @@ public class MainViewSteps {
 		MockitoAnnotations.initMocks(this);
 		MobilefoodModules.getModules().add(new TestModule());
 		//get provided foods
-		List<Food> foodList = getExampleFoodsAsList(foodsTable);
+		List<RestaurantDay> foodList = getExampleFoodsAsList(foodsTable);
 		//add provided foods to service's mock
 		Mockito.when(foodService.getFoodsBy(Mockito.anyInt(), Mockito.anyInt())).thenReturn(
 				foodList);
@@ -70,14 +73,23 @@ public class MainViewSteps {
 		mainActivity = Robolectric.buildActivity(MainActivity.class).create().start().resume().get();
 	}
 
-	private List<Food> getExampleFoodsAsList(ExamplesTable foods) {
-		List<Food> foodList = Lists.newArrayList();
+	private List<RestaurantDay> getExampleFoodsAsList(ExamplesTable foods) {
+		List<RestaurantDay> foodList = Lists.newArrayList();
+		
+		Map<String, List<Food>> restaurantNameToLunches = Maps.newHashMap();
 		for (Map<String, String> food : foods.getRows()) {
 			String restaurantName = food.get("restaurant");
 			String foodName = food.get("food");
 			String diets = food.get("diets");
-			String price = food.get("price");
-			foodList.add(new Food(foodName, price, diets, restaurantName));
+			String prices = food.get("price");
+			
+			if(!restaurantNameToLunches.containsKey(restaurantName)) {
+				restaurantNameToLunches.put(restaurantName, new ArrayList<Food>());
+			}
+			restaurantNameToLunches.get(restaurantName).add(new Food(foodName, prices, diets));
+		}
+		for(String restaurantName :restaurantNameToLunches.keySet()) {			
+			foodList.add(new RestaurantDay(restaurantName, restaurantNameToLunches.get(restaurantName)));
 		}
 		return foodList;
 	}
@@ -121,7 +133,7 @@ public class MainViewSteps {
 	public void in_the_main_view_we_should_have_foods(ExamplesTable foodsTable)
 			throws Throwable {
 		
-		List<Food> expectedFoods = getExampleFoodsAsList(foodsTable);
+		List<RestaurantDay> expectedFoods = getExampleFoodsAsList(foodsTable);
 		ListView mFoodsTV = (ListView) mainActivity
 				.findViewById(R.id.listview_foods);
 		

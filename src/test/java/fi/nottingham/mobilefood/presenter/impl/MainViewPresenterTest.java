@@ -16,6 +16,7 @@ import org.mockito.MockitoAnnotations;
 import com.google.common.collect.Lists;
 
 import fi.nottingham.mobilefood.model.Food;
+import fi.nottingham.mobilefood.model.RestaurantDay;
 import fi.nottingham.mobilefood.presenter.IMainViewPresenter;
 import fi.nottingham.mobilefood.service.IFoodService;
 import fi.nottingham.mobilefood.view.IMainView;
@@ -43,7 +44,7 @@ public class MainViewPresenterTest {
 	
 	//@Test
 	public void OnViewCreation_setsViewsFoodsFromFoodService() {		
-		List<Food> foods = Lists.newArrayList();
+		List<RestaurantDay> foods = Lists.newArrayList();
 		when(foodService.getFoodsBy(Mockito.anyInt(), Mockito.anyInt())).thenReturn(foods);
 		
 		mainViewPresenter.onViewCreation(mainView);

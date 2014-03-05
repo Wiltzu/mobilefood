@@ -2,9 +2,9 @@ package fi.nottingham.mobilefood.service;
 
 import java.util.List;
 
-import fi.nottingham.mobilefood.model.Food;
+import fi.nottingham.mobilefood.model.RestaurantDay;
 
 public interface IFoodService {
 
-	List<Food> getFoodsBy(int weekNumber, int dayOfTheWeek);
+	List<RestaurantDay> getFoodsBy(int weekNumber, int dayOfTheWeek);
 }

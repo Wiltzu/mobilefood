@@ -19,6 +19,7 @@ import android.widget.TextView;
 import fi.nottingham.mobilefood.DaggerBaseActivity;
 import fi.nottingham.mobilefood.R;
 import fi.nottingham.mobilefood.model.Food;
+import fi.nottingham.mobilefood.model.RestaurantDay;
 import fi.nottingham.mobilefood.presenter.IMainViewPresenter;
 import fi.nottingham.mobilefood.util.DateUtils;
 import fi.nottingham.mobilefood.view.IMainView;
@@ -72,10 +73,10 @@ public class MainActivity extends DaggerBaseActivity implements IMainView {
 		return presenter;
 	}
 
-	public void setFoods(List<Food> foods) {
-		checkNotNull(foods, "foods cannot be null");
-		mFoodsTV.setAdapter(new ArrayAdapter<Food>(this, R.layout.food_item,
-				foods));
+	public void setFoods(List<RestaurantDay> foodsByRestaurant) {
+		checkNotNull(foodsByRestaurant, "foodsByRestaurant cannot be null");
+		mFoodsTV.setAdapter(new ArrayAdapter<RestaurantDay>(this, R.layout.food_item,
+				foodsByRestaurant));
 	}
 
 	@Override

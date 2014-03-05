@@ -6,7 +6,6 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 import com.google.common.base.Objects;
-import com.google.common.base.Objects.ToStringHelper;
 
 /**
  * Represents foods in the application.
@@ -20,14 +19,11 @@ public class Food {
 	private final String foodName;
 	private final String prices;
 	private final String diet;
-	private final String restaurantName;
 
-	public Food(String foodName, String prices, @Nullable String diet,
-			String restaurantName) {
+	public Food(String foodName, String prices, @Nullable String diet) {
 		this.foodName = checkNotNull(foodName, "foodName cannot be null");
 		this.prices = checkNotNull(prices, "price cannot be null");
 		this.diet = diet;
-		this.restaurantName = restaurantName;
 	}
 
 	public String getFoodName() {
@@ -45,15 +41,10 @@ public class Food {
 		return diet;
 	}
 
-	public String getRestaurantName() {
-		return restaurantName;
-	}
-
 	@Override
 	public String toString() {
 		return Objects.toStringHelper((Object) this).add("foodName", foodName)
-				.add("price", prices).add("diet", diet)
-				.add("restaurantName", restaurantName).toString();
+				.add("price", prices).add("diet", diet).toString();
 	}
 
 }

@@ -11,7 +11,6 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -19,23 +18,22 @@ import java.util.logging.Logger;
 import javax.inject.Inject;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 
 import fi.nottingham.mobilefood.model.Food;
+import fi.nottingham.mobilefood.model.RestaurantDay;
 import fi.nottingham.mobilefood.service.IFileSystemService;
 import fi.nottingham.mobilefood.service.IFoodService;
 
 public class FoodServiceImpl implements IFoodService {
 	private static final String CHAIN_NAME = "unica";
 	private static final int YEAR = 2014;
-	
+
 	private final String serviceLocation;
 	private final Logger logger = Logger.getLogger("FoodService");
 	private final IFileSystemService fileSystemService;
@@ -49,84 +47,74 @@ public class FoodServiceImpl implements IFoodService {
 				"fileSystemService cannot be null");
 	}
 
-	public List<Food> getFoodsBy(int weekNumber, int dayOfTheWeek) {
+	public List<RestaurantDay> getFoodsBy(int weekNumber, int dayOfTheWeek) {
 		// TODO: much better error handling
-		final List<Food> foodsOfTheDay = Lists.newArrayList();
+		final List<RestaurantDay> foodsOfTheDay = Lists.newArrayList();
 		checkArgument(weekNumber >= 1, "week number must be at least one");
 
 		String foodData = null;
-		
+
 		try {
-			InputStream weekInputFile = fileSystemService
-					.openInputFile(getFileNameFor(YEAR, weekNumber, CHAIN_NAME));
-			String responseFromFile = IOUtils.toString(weekInputFile);
-			weekInputFile.close();
-			
-			if(isNullOrEmpty(responseFromFile)) {
-				downloadDataFromService(weekNumber);
-			} else {	
+			String responseFromFile = getDataFromInternalStorage(weekNumber);
+
+			if (isNullOrEmpty(responseFromFile)) {
+				foodData = downloadDataFromService(weekNumber);
+			} else {
 				foodData = responseFromFile;
 			}
 
-		} catch (FileNotFoundException e1) {
-			// download from service
-			try {
-				HttpURLConnection connection = (HttpURLConnection) new URL(
-						getRequestURL(weekNumber)).openConnection();
-
-				String response = IOUtils.toString(connection.getInputStream(),
-						"UTF-8");
-				if (response == null || response.contains("ERROR")) {
-					logger.log(Level.SEVERE, response);
-					return foodsOfTheDay;
-				}
-
-				OutputStream weekOutputFile = fileSystemService
-						.openOutputFile(getFileNameFor(YEAR, weekNumber,
-								CHAIN_NAME));
-				weekOutputFile.write(response.getBytes());
-				weekOutputFile.flush();
-				weekOutputFile.close();
-
-				foodData = response;
-			} catch (MalformedURLException e) {
-				logger.throwing("FoodService", "getFoodsBy", e);
-			} catch (IOException e) {
-				logger.throwing("FoodService", "getFoodsBy", e);
-			}
+		} catch (FileNotFoundException e) {
+			logger.throwing("FoodService", "getFoodsBy", e);
+			foodData = downloadDataFromService(weekNumber);
 		} catch (IOException e) {
 			logger.throwing("FoodService", "getFoodsBy", e);
+			foodData = downloadDataFromService(weekNumber);
 		}
 
-		try {
-			JSONArray foodsByDay = (JSONArray) new JSONTokener(foodData)
-					.nextValue();
+		if (foodData != null) {
+			try {
+				JSONArray foodsByDay = (JSONArray) new JSONTokener(foodData)
+						.nextValue();
 
-			JSONObject requestedWeekDay = foodsByDay
-					.getJSONObject(dayOfTheWeek);
+				JSONObject requestedWeekDay = foodsByDay
+						.getJSONObject(dayOfTheWeek);
 
-			JSONArray foodsByRestaurant = requestedWeekDay
-					.getJSONArray("foods_by_restaurant");
+				JSONArray foodsByRestaurant = requestedWeekDay
+						.getJSONArray("foods_by_restaurant");
 
-			for (int j = 0; j < foodsByRestaurant.length(); j++) {
-				JSONObject restaurant = foodsByRestaurant.getJSONObject(j);
-				JSONArray itsFoods = restaurant.getJSONArray("foods");
-				for (int foodIndex = 0; foodIndex < itsFoods.length(); foodIndex++) {
-					JSONObject food = itsFoods.getJSONObject(foodIndex);
-
-					foodsOfTheDay.add(new Food(food.getString("name"), food
-							.getJSONArray("prices").toString(), null,
-							restaurant.getString("restaurant_name")));
+				for (int j = 0; j < foodsByRestaurant.length(); j++) {
+					JSONObject restaurant = foodsByRestaurant.getJSONObject(j);
+					JSONArray itsFoods = restaurant.getJSONArray("foods");
+					
+					List<Food>  foodsOfTheRestaurant = Lists.newArrayList();
+					for (int foodIndex = 0; foodIndex < itsFoods.length(); foodIndex++) {
+						JSONObject food = itsFoods.getJSONObject(foodIndex);
+						
+						 foodsOfTheRestaurant.add(new Food(food.getString("name"), food
+								.getJSONArray("prices").toString(), null));
+					}
+					String restaurantName = restaurant.getString("restaurantName");
+					foodsOfTheDay.add(new RestaurantDay(restaurantName, foodsOfTheRestaurant));
 				}
-			}
 
-		} catch (JSONException e) {
-			logger.throwing("FoodService", "getFoodsBy", e);
+			} catch (JSONException e) {
+				logger.throwing("FoodService", "getFoodsBy", e);
+			}
 		}
 
 		return foodsOfTheDay;
 	}
-	
+
+	private String getDataFromInternalStorage(int weekNumber)
+			throws IOException {
+		InputStream weekInputFile = fileSystemService
+				.openInputFile(getFileNameFor(YEAR, weekNumber, CHAIN_NAME));
+		String responseFromFile = IOUtils.toString(weekInputFile);
+		weekInputFile.close();
+
+		return responseFromFile;
+	}
+
 	private String downloadDataFromService(int weekNumber) {
 		try {
 			HttpURLConnection connection = (HttpURLConnection) new URL(
@@ -134,14 +122,14 @@ public class FoodServiceImpl implements IFoodService {
 
 			String response = IOUtils.toString(connection.getInputStream(),
 					"UTF-8");
+			
 			if (response == null || response.contains("ERROR")) {
 				logger.log(Level.SEVERE, response);
 				return null;
 			}
 
 			OutputStream weekOutputFile = fileSystemService
-					.openOutputFile(getFileNameFor(YEAR, weekNumber,
-							CHAIN_NAME));
+					.openOutputFile(getFileNameFor(YEAR, weekNumber, CHAIN_NAME));
 			weekOutputFile.write(response.getBytes());
 			weekOutputFile.flush();
 			weekOutputFile.close();
@@ -152,6 +140,7 @@ public class FoodServiceImpl implements IFoodService {
 		} catch (IOException e) {
 			logger.throwing("FoodService", "getFoodsBy", e);
 		}
+		
 		return null;
 	}
 

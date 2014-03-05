@@ -10,6 +10,7 @@ import javax.inject.Inject;
 import com.google.common.collect.Lists;
 
 import fi.nottingham.mobilefood.model.Food;
+import fi.nottingham.mobilefood.model.RestaurantDay;
 import fi.nottingham.mobilefood.presenter.IMainViewPresenter;
 import fi.nottingham.mobilefood.service.IFoodService;
 import fi.nottingham.mobilefood.util.DateUtils;
@@ -32,7 +33,7 @@ public class MainViewPresenterImpl implements IMainViewPresenter {
 		mainView.showLoadingIcon();
 		
 		//TODO: figure out a better solution
-		final List<Food> foods = Lists.newArrayList();
+		final List<RestaurantDay> foods = Lists.newArrayList();
 		mainView.runInBackgroud(new Runnable() {
 			@Override
 			public void run() {
