@@ -1,14 +1,18 @@
 package fi.nottingham.mobilefood.presenter.impl;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -22,18 +26,20 @@ import fi.nottingham.mobilefood.service.IFoodService;
 import fi.nottingham.mobilefood.view.IMainView;
 
 public class MainViewPresenterTest {
-	
+	@InjectMocks
 	IMainViewPresenter mainViewPresenter;
 	@Mock
+	List<RestaurantDay> currentFoods;
+	
 	IMainView mainView;
-	@Mock
 	IFoodService foodService;
 	
 	Date date = new Date();
 
 	@Before
 	public void setUp() throws Exception {
-		MockitoAnnotations.initMocks(this);
+		mainView = mock(IMainView.class);
+		foodService = mock(IFoodService.class);
 		mainViewPresenter = new MainViewPresenterImpl(foodService, date);
 	}
 
@@ -41,6 +47,7 @@ public class MainViewPresenterTest {
 	public void getFoodService_ReturnsFoodService() {
 		assertEquals(foodService, mainViewPresenter.getFoodService());
 	}
+	
 	
 	//@Test
 	public void OnViewCreation_setsViewsFoodsFromFoodService() {		
@@ -62,6 +69,14 @@ public class MainViewPresenterTest {
 	public void OnViewCreation_loadingNotificationIsShowed() {
 		mainViewPresenter.onViewCreation(mainView);
 		verify(mainView).showLoadingIcon();
+	}
+	
+	@Test
+	public void onViewCreation_ifFoodsHaveBeenLoadedEarlier_thoseAreSetRightAway() {
+		currentFoods = Lists.newArrayList(new RestaurantDay("restName", new ArrayList<Food>()));
+		MockitoAnnotations.initMocks(this);
+		mainViewPresenter.onViewCreation(mainView);
+		verify(mainView).setFoods(currentFoods);
 	}
 	
 	@Test

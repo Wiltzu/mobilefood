@@ -9,7 +9,6 @@ import javax.inject.Inject;
 
 import com.google.common.collect.Lists;
 
-import fi.nottingham.mobilefood.model.Food;
 import fi.nottingham.mobilefood.model.RestaurantDay;
 import fi.nottingham.mobilefood.presenter.IMainViewPresenter;
 import fi.nottingham.mobilefood.service.IFoodService;
@@ -19,35 +18,41 @@ import fi.nottingham.mobilefood.view.IMainView;
 public class MainViewPresenterImpl implements IMainViewPresenter {
 	private final IFoodService foodService;
 	private Date selectedDate;
+	private List<RestaurantDay> currentFoods;
 
 	@Inject
 	public MainViewPresenterImpl(IFoodService foodService, Date timeNow) {
 		this.foodService = foodService;
 		selectedDate = DateUtils.getDateAtMidnight(new Date());
+		currentFoods = Lists.newArrayList();
 	}
 
 	public void onViewCreation(final IMainView mainView) {
 		checkNotNull("mainView cannot be null",mainView);
 		
 		mainView.setDate(selectedDate);
-		mainView.showLoadingIcon();
 		
-		//TODO: figure out a better solution
-		final List<RestaurantDay> foods = Lists.newArrayList();
-		mainView.runInBackgroud(new Runnable() {
-			@Override
-			public void run() {
-				int dayOfTheWeek = DateUtils
-						.getDayOfTheWeek(selectedDate);
-				int weekNumber = DateUtils.getWeekOfYear(selectedDate); 
-				foods.addAll(foodService.getFoodsBy(weekNumber, dayOfTheWeek));
-			}
-		}, new Runnable() {	
-			@Override
-			public void run() {
-				mainView.setFoods(foods);
-			}
-		});
+		if(currentFoods.isEmpty()) {			
+			mainView.showLoadingIcon();
+			
+			mainView.runInBackgroud(new Runnable() {
+				@Override
+				public void run() {
+					int dayOfTheWeek = DateUtils
+							.getDayOfTheWeek(selectedDate);
+					int weekNumber = DateUtils.getWeekOfYear(selectedDate); 
+					currentFoods.addAll(foodService.getFoodsBy(weekNumber, dayOfTheWeek));
+				}
+			}, new Runnable() {	
+				@Override
+				public void run() {
+					mainView.setFoods(currentFoods);
+				}
+			});
+		}
+		else {
+			mainView.setFoods(currentFoods);
+		}
 	}
 
 	public IFoodService getFoodService() {
