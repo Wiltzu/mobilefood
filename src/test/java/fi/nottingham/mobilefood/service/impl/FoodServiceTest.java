@@ -24,6 +24,8 @@ import org.mockserver.model.Header;
 import org.mockserver.model.HttpRequest;
 import org.mockserver.model.HttpResponse;
 
+import com.typesafe.config.ConfigFactory;
+
 import fi.nottingham.mobilefood.service.IFileSystemService;
 import fi.nottingham.mobilefood.service.IFoodService;
 
@@ -33,37 +35,48 @@ public class FoodServiceTest {
 	private IFileSystemService fileSystemService;
 	private static int port = 4730;
 	private static String host = "localhost";
-	
+
 	private static MockServer mockServer;
 	private static MockServerClient mockServerClient;
-	
+	private static boolean environmentIsTravis;
+
 	@BeforeClass
 	public static void beforeClass() {
-		mockServer = new MockServer();
-		mockServer.start(port, 90);
+		environmentIsTravis = ConfigFactory.load().getBoolean("environment.is.travis");
+		if (!environmentIsTravis) {
+			mockServer = new MockServer();
+			mockServer.start(port, 90);
+		}
 	}
-	
+
 	@AfterClass
 	public static void afterClass() {
-		mockServer.stop();
+		if (mockServer != null) {			
+			mockServer.stop();
+		}
 	}
 
 	@Before
-	public void setUp() throws FileNotFoundException, IOException, URISyntaxException {
+	public void setUp() throws FileNotFoundException, IOException,
+			URISyntaxException {
 		fileSystemService = mock(IFileSystemService.class);
 		foodService = new FoodServiceImpl(String.format(
 				"http://%s:%s/mobilerest/", host, port), fileSystemService);
 		
-		mockServerClient = new MockServerClient(host, port);
-		mockServerClient.when(new HttpRequest().withPath("/mobilerest/").withMethod(
-				"GET"))
-		.respond(
-				new HttpResponse()
-						.withBody(
-								IOUtils.toString(getTestFileAsInputStream()))
-						.withHeader(
-								new Header("Content-Type",
-										"application/json; charset=utf-8")));
+		if (!environmentIsTravis) {
+			mockServerClient = new MockServerClient(host, port);
+			mockServerClient
+					.when(new HttpRequest().withPath("/mobilerest/")
+							.withMethod("GET"))
+					.respond(
+							new HttpResponse()
+									.withBody(
+											IOUtils.toString(getTestFileAsInputStream()))
+									.withHeader(
+											new Header("Content-Type",
+													"application/json; charset=utf-8")));
+
+		}
 	}
 
 	@SuppressWarnings("unchecked")
@@ -122,20 +135,23 @@ public class FoodServiceTest {
 	public void getFoodsBy_weekNumberUnderOne_resultsInAException() {
 		foodService.getFoodsBy(0, 1);
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	@Test
 	public void getFoodsBy_timeouts() throws IOException {
-		//TODO: make this error handling test!!
+		// TODO: make this error handling test!!
 		int dayOfTheWeek = 0, weekNumber = 1;
 		OutputStream fileOutputStreamMock = mock(OutputStream.class);
-		
+
 		when(fileSystemService.openInputFile(Mockito.anyString())).thenThrow(
 				FileNotFoundException.class);
 		when(fileSystemService.openOutputFile(Mockito.anyString())).thenReturn(
 				fileOutputStreamMock);
-		mockServerClient.stop();
 		
+		if(mockServerClient != null) {			
+			mockServerClient.stop();
+		}
+
 		foodService.getFoodsBy(weekNumber, dayOfTheWeek);
 	}
 }

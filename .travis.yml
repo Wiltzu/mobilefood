@@ -31,3 +31,5 @@ before_script:
 - npm install
 - npm start &
 - cd ..
+
+sript: mvn test -B -Denvironment.is.travis  
