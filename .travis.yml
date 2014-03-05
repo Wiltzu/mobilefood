@@ -25,7 +25,7 @@ before_install:
   - echo y | android update sdk --filter platform-tools,android-19,addon-google_apis-google-19,extra-android-support --no-ui --force > /dev/null
 
 before_script:
-cd script
-npm install
-npm start &
-cd ..
+- cd script
+- npm install
+- npm start &
+- cd ..
