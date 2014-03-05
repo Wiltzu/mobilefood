@@ -93,12 +93,12 @@ public class FoodServiceImpl implements IFoodService {
 						 foodsOfTheRestaurant.add(new Food(food.getString("name"), food
 								.getJSONArray("prices").toString(), null));
 					}
-					String restaurantName = restaurant.getString("restaurantName");
+					String restaurantName = restaurant.getString("restaurant_name");
 					foodsOfTheDay.add(new RestaurantDay(restaurantName, foodsOfTheRestaurant));
 				}
 
 			} catch (JSONException e) {
-				logger.throwing("FoodService", "getFoodsBy", e);
+				logger.throwing("FoodService", "getFoodsBy: JSONParsing failed!", e);
 			}
 		}
 

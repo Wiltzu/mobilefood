@@ -10,17 +10,19 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLStreamHandler;
-import java.net.URLStreamHandlerFactory;
 
+import org.apache.commons.io.IOUtils;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.mockserver.client.server.MockServerClient;
+import org.mockserver.mockserver.MockServer;
+import org.mockserver.model.Header;
+import org.mockserver.model.HttpRequest;
+import org.mockserver.model.HttpResponse;
 
 import fi.nottingham.mobilefood.service.IFileSystemService;
 import fi.nottingham.mobilefood.service.IFoodService;
@@ -29,17 +31,39 @@ public class FoodServiceTest {
 
 	private IFoodService foodService;
 	private IFileSystemService fileSystemService;
+	private static int port = 4730;
+	private static String host = "localhost";
+	
+	private static MockServer mockServer;
+	private static MockServerClient mockServerClient;
 	
 	@BeforeClass
 	public static void beforeClass() {
-		URL.setURLStreamHandlerFactory(new MockURLStreamHandler());
+		mockServer = new MockServer();
+		mockServer.start(port, 90);
+	}
+	
+	@AfterClass
+	public static void afterClass() {
+		mockServer.stop();
 	}
 
 	@Before
-	public void setUp() {
+	public void setUp() throws FileNotFoundException, IOException, URISyntaxException {
 		fileSystemService = mock(IFileSystemService.class);
-		foodService = new FoodServiceImpl("http://localhost:4730/mobilerest/",
-				fileSystemService);
+		foodService = new FoodServiceImpl(String.format(
+				"http://%s:%s/mobilerest/", host, port), fileSystemService);
+		
+		mockServerClient = new MockServerClient(host, port);
+		mockServerClient.when(new HttpRequest().withPath("/mobilerest/").withMethod(
+				"GET"))
+		.respond(
+				new HttpResponse()
+						.withBody(
+								IOUtils.toString(getTestFileAsInputStream()))
+						.withHeader(
+								new Header("Content-Type",
+										"application/json; charset=utf-8")));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -56,7 +80,7 @@ public class FoodServiceTest {
 	}
 
 	@Test
-	public void getFoodsBy_withFileForCurrentWeek_returnsUnemptyList()
+	public void getFoodsBy_withCachedFileForCurrentWeek_returnsUnemptyList()
 			throws FileNotFoundException, URISyntaxException {
 		int dayOfTheWeek = 0, weekNumber = 10;
 
@@ -71,13 +95,14 @@ public class FoodServiceTest {
 	private static InputStream getTestFileAsInputStream()
 			throws FileNotFoundException, URISyntaxException {
 		int weekNumber = 10;
-		
-		return FoodServiceTest.class.getResourceAsStream(String.format("2014_w%s_unica.json", weekNumber));
+
+		return FoodServiceTest.class.getResourceAsStream(String.format(
+				"2014_w%s_unica.json", weekNumber));
 	}
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void getFoodsBy_createsFileIfFoodsAreLoadedFromService()
+	public void getFoodsBy_FoodsForWeekAreNotCached_callsServiceAndCreatesFile()
 			throws IOException {
 		int dayOfTheWeek = 0, weekNumber = 1;
 		OutputStream fileOutputStreamMock = mock(OutputStream.class);
@@ -97,63 +122,20 @@ public class FoodServiceTest {
 	public void getFoodsBy_weekNumberUnderOne_resultsInAException() {
 		foodService.getFoodsBy(0, 1);
 	}
-
-	public static class MockURLStreamHandler extends URLStreamHandler implements
-			URLStreamHandlerFactory {
-		private MockHttpURLConnection mConnection;
-
-		public MockHttpURLConnection getConnection() {
-			return mConnection;
-		}
-
-		// *** URLStreamHandler
-
-		@Override
-		protected URLConnection openConnection(URL u) throws IOException {
-			mConnection = new MockHttpURLConnection(u);
-			return mConnection;
-		}
-
-		// *** URLStreamHandlerFactory
-
-		@Override
-		public URLStreamHandler createURLStreamHandler(String protocol) {
-			return this;
-		}
-
+	
+	@SuppressWarnings("unchecked")
+	@Test
+	public void getFoodsBy_timeouts() throws IOException {
+		//TODO: make this error handling test!!
+		int dayOfTheWeek = 0, weekNumber = 1;
+		OutputStream fileOutputStreamMock = mock(OutputStream.class);
+		
+		when(fileSystemService.openInputFile(Mockito.anyString())).thenThrow(
+				FileNotFoundException.class);
+		when(fileSystemService.openOutputFile(Mockito.anyString())).thenReturn(
+				fileOutputStreamMock);
+		mockServerClient.stop();
+		
+		foodService.getFoodsBy(weekNumber, dayOfTheWeek);
 	}
-
-	public static class MockHttpURLConnection extends HttpURLConnection {
-
-		protected MockHttpURLConnection(URL url) {
-			super(url);
-		}
-
-		// *** HttpURLConnection
-
-		@Override
-		public InputStream getInputStream() throws IOException {
-			try {
-				return getTestFileAsInputStream();
-			} catch (URISyntaxException e) {
-			}
-
-			return null;
-		}
-
-		@Override
-		public void connect() throws IOException {
-		}
-
-		@Override
-		public void disconnect() {
-		}
-
-		@Override
-		public boolean usingProxy() {
-			return false;
-		}
-
-	}
-
 }

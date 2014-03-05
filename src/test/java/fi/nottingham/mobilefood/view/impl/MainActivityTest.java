@@ -21,10 +21,10 @@ import com.google.common.collect.Lists;
 
 import dagger.Module;
 import dagger.Provides;
-import fi.nottingham.mobilefood.AndroidModule;
 import fi.nottingham.mobilefood.MobilefoodModule;
 import fi.nottingham.mobilefood.MobilefoodModules;
 import fi.nottingham.mobilefood.presenter.IMainViewPresenter;
+import fi.nottingham.mobilefood.service.IFileSystemService;
 import fi.nottingham.mobilefood.view.IMainView;
 
 @RunWith(RobolectricTestRunner.class)
@@ -38,10 +38,8 @@ public class MainActivityTest {
 	public void setUp() {
 		MockitoAnnotations.initMocks(this);
 		MobilefoodModules.getModules().add(new TestModule());
-		System.out.println("ok here");
 		mainView = Robolectric.buildActivity(MainActivity.class).create()
 				.start().resume().get();
-		System.out.println("ok here");
 	}
 
 	@Test
@@ -86,12 +84,18 @@ public class MainActivityTest {
 				testList.isEmpty());
 	}
 
-	@Module(includes = { MobilefoodModule.class, AndroidModule.class}, overrides = true, library = true)
+	@Module(includes = { MobilefoodModule.class}, overrides = true, library = true)
 	class TestModule {
 		@Provides
 		@Singleton
-		IMainViewPresenter provideMainViewPresenter() {
+		public IMainViewPresenter provideMainViewPresenter() {
 			return mainViewPresenter;
+		}
+		
+		@Provides
+		@Singleton
+		public IFileSystemService provideFileSystemService() {
+			return mock(IFileSystemService.class);
 		}
 	}
 }
