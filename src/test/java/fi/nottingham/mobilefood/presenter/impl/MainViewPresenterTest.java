@@ -2,7 +2,6 @@ package fi.nottingham.mobilefood.presenter.impl;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -30,10 +29,10 @@ public class MainViewPresenterTest {
 	IMainViewPresenter mainViewPresenter;
 	@Mock
 	List<RestaurantDay> currentFoods;
-	
+
 	IMainView mainView;
 	IFoodService foodService;
-	
+
 	Date date = new Date();
 
 	@Before
@@ -47,42 +46,61 @@ public class MainViewPresenterTest {
 	public void getFoodService_ReturnsFoodService() {
 		assertEquals(foodService, mainViewPresenter.getFoodService());
 	}
-	
-	
-	//@Test
-	public void OnViewCreation_setsViewsFoodsFromFoodService() {		
+
+	// @Test
+	public void OnViewCreation_setsViewsFoodsFromFoodService() {
 		List<RestaurantDay> foods = Lists.newArrayList();
-		when(foodService.getFoodsBy(Mockito.anyInt(), Mockito.anyInt())).thenReturn(foods);
-		
+		when(foodService.getFoodsBy(Mockito.anyInt(), Mockito.anyInt()))
+				.thenReturn(foods);
+
 		mainViewPresenter.onViewCreation(mainView);
-		
+
 		verify(mainView).setFoods(foods);
 	}
-	
+
 	@Test
 	public void OnViewCreation_foodsAreFetchedFromFoodServiceInBackground() {
 		mainViewPresenter.onViewCreation(mainView);
-		verify(mainView).runInBackgroud(Mockito.any(Runnable.class), Mockito.any(Runnable.class));
+		verify(mainView).runInBackgroud(Mockito.any(Runnable.class),
+				Mockito.any(Runnable.class));
 	}
-	
+
 	@Test
 	public void OnViewCreation_loadingNotificationIsShowed() {
 		mainViewPresenter.onViewCreation(mainView);
 		verify(mainView).showLoadingIcon();
 	}
-	
+
 	@Test
 	public void onViewCreation_ifFoodsHaveBeenLoadedEarlier_thoseAreSetRightAway() {
-		currentFoods = Lists.newArrayList(new RestaurantDay("restName", new ArrayList<Food>()));
-		MockitoAnnotations.initMocks(this);
+		currentFoods = Lists.newArrayList(new RestaurantDay("restName",
+				new ArrayList<Food>()));
+		MockitoAnnotations.initMocks(this); // inits currentFoods
+		
 		mainViewPresenter.onViewCreation(mainView);
+	
 		verify(mainView).setFoods(currentFoods);
 	}
-	
+
 	@Test
 	public void OnViewCreation_setsDateForView() {
 		mainViewPresenter.onViewCreation(mainView);
 		verify(mainView).setDate(Mockito.any(Date.class));
+	}
+
+	@Test
+	public void updateFoodsFromService_clearsFoodListAndAddsNewValuesFromService() {
+		MockitoAnnotations.initMocks(this); // inits currentFoods
+
+		@SuppressWarnings("unchecked")
+		List<RestaurantDay> mockFoodsFromService = mock(List.class);
+		when(foodService.getFoodsBy(Mockito.anyInt(), Mockito.anyInt()))
+				.thenReturn(mockFoodsFromService);
+
+		((MainViewPresenterImpl) mainViewPresenter).updateFoodsFromService();
+
+		verify(currentFoods).clear();
+		verify(currentFoods).addAll(mockFoodsFromService);
 	}
 
 }

@@ -27,34 +27,42 @@ public class MainViewPresenterImpl implements IMainViewPresenter {
 		currentFoods = Lists.newArrayList();
 	}
 
+	@Override
 	public void onViewCreation(final IMainView mainView) {
-		checkNotNull("mainView cannot be null",mainView);
-		
+		checkNotNull("mainView cannot be null", mainView);
+
 		mainView.setDate(selectedDate);
-		
-		if(currentFoods.isEmpty()) {			
+
+		if (currentFoods.isEmpty()) {
 			mainView.showLoadingIcon();
-			
+
 			mainView.runInBackgroud(new Runnable() {
 				@Override
 				public void run() {
-					int dayOfTheWeek = DateUtils
-							.getDayOfTheWeek(selectedDate);
-					int weekNumber = DateUtils.getWeekOfYear(selectedDate); 
-					currentFoods.addAll(foodService.getFoodsBy(weekNumber, dayOfTheWeek));
+					updateFoodsFromService();
 				}
-			}, new Runnable() {	
+			}, new Runnable() {
 				@Override
 				public void run() {
 					mainView.setFoods(currentFoods);
 				}
 			});
-		}
-		else {
+		} else {
 			mainView.setFoods(currentFoods);
 		}
 	}
 
+	/**
+	 * Synchronized manner gets new foods from service
+	 */
+	protected synchronized void updateFoodsFromService() {
+		int dayOfTheWeek = DateUtils.getDayOfTheWeek(selectedDate);
+		int weekNumber = DateUtils.getWeekOfYear(selectedDate);
+		currentFoods.clear();
+		currentFoods.addAll(foodService.getFoodsBy(weekNumber, dayOfTheWeek));
+	}
+
+	@Override
 	public IFoodService getFoodService() {
 		return foodService;
 	}
