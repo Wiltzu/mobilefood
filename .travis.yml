@@ -24,6 +24,8 @@ before_install:
   #Updates android sdk
   - echo y | android update sdk --filter platform-tools,android-19,addon-google_apis-google-19,extra-android-support --no-ui --force > /dev/null
 
+install: mvn install -Dskip.unit.tests=true -Dskip.integration.tests=true -B -V
+
 before_script:
 - cd script
 - npm install
