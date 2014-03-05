@@ -44,6 +44,7 @@ public class FoodServiceTest {
 	public static void beforeClass() {
 		environmentIsTravis = ConfigFactory.load().getBoolean("environment.is.travis");
 		if (!environmentIsTravis) {
+			System.out.println("Starting server...");
 			mockServer = new MockServer();
 			mockServer.start(port, 90);
 		}
@@ -51,7 +52,12 @@ public class FoodServiceTest {
 
 	@AfterClass
 	public static void afterClass() {
-		if (mockServer != null) {			
+		if(mockServerClient != null) {
+			System.out.println("Stopping server's listener client...");
+			mockServerClient.stop();
+		}
+		if (mockServer != null) {
+			System.out.println("Stopping server...");
 			mockServer.stop();
 		}
 	}
@@ -60,10 +66,12 @@ public class FoodServiceTest {
 	public void setUp() throws FileNotFoundException, IOException,
 			URISyntaxException {
 		fileSystemService = mock(IFileSystemService.class);
-		foodService = new FoodServiceImpl(String.format(
-				"http://%s:%s/mobilerest/", host, port), fileSystemService);
+		String serviceLocation = String.format(
+				"http://%s:%s/mobilerest/", host, port);
+		foodService = new FoodServiceImpl(serviceLocation, fileSystemService);
 		
 		if (!environmentIsTravis) {
+			System.out.println("Start listening: " + serviceLocation);
 			mockServerClient = new MockServerClient(host, port);
 			mockServerClient
 					.when(new HttpRequest().withPath("/mobilerest/")
@@ -133,7 +141,8 @@ public class FoodServiceTest {
 
 	@Test(expected = IllegalArgumentException.class)
 	public void getFoodsBy_weekNumberUnderOne_resultsInAException() {
-		foodService.getFoodsBy(0, 1);
+		int weekNumberUnderOne = 0;
+		foodService.getFoodsBy(weekNumberUnderOne, 1);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -148,8 +157,9 @@ public class FoodServiceTest {
 		when(fileSystemService.openOutputFile(Mockito.anyString())).thenReturn(
 				fileOutputStreamMock);
 		
-		if(mockServerClient != null) {			
-			mockServerClient.stop();
+		if(mockServerClient != null) {
+			System.out.println("Reseting server's listener client...");
+			mockServerClient.reset();
 		}
 
 		foodService.getFoodsBy(weekNumber, dayOfTheWeek);

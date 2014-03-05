@@ -10,3 +10,4 @@
 /tmp
 *.log
 /.apt_generated
+/script/node_modules
