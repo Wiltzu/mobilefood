@@ -7,12 +7,17 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -75,8 +80,7 @@ public class MainActivity extends DaggerBaseActivity implements IMainView {
 
 	public void setFoods(List<RestaurantDay> foodsByRestaurant) {
 		checkNotNull(foodsByRestaurant, "foodsByRestaurant cannot be null");
-		mFoodsTV.setAdapter(new ArrayAdapter<RestaurantDay>(this, R.layout.food_item,
-				foodsByRestaurant));
+		mFoodsTV.setAdapter(new RestaurantDayViewAdapter(this, foodsByRestaurant));
 	}
 
 	@Override
@@ -112,5 +116,39 @@ public class MainActivity extends DaggerBaseActivity implements IMainView {
 		checkNotNull(selectedDate, "selectedDate cannot be null.");
 		mWeekDay.setText(DateUtils.getWeekDay(selectedDate));
 		mDateTV.setText(DateUtils.getDateInShortFormat(this, selectedDate));
+	}
+	
+	class RestaurantDayViewAdapter extends ArrayAdapter<RestaurantDay> {
+   
+		private static final int FOOD_ITEM_LAYOUT = R.layout.restaurant_item;
+
+		public RestaurantDayViewAdapter(Context context, List<RestaurantDay> items) {
+			super(context, FOOD_ITEM_LAYOUT, items);
+		}
+		
+		@Override
+		public View getView(int position, View convertView, ViewGroup parent) {
+			LayoutInflater inflater = getLayoutInflater();
+			View restaurantDayView = inflater.inflate(FOOD_ITEM_LAYOUT, parent, false);
+			
+			ImageView chainLogo = (ImageView) restaurantDayView.findViewById(R.id.restaurant_item_chain_logo);
+			TextView textView = (TextView) restaurantDayView.findViewById(R.id.restaurant_item_restaurant_name);
+			LinearLayout  lunchLayout = (LinearLayout) restaurantDayView.findViewById(R.id.restaurant_item_food_layout);
+			
+			RestaurantDay restaurantDay = getItem(position);
+			
+			chainLogo.setImageResource(R.drawable.unica_logo);
+			textView.setText(restaurantDay.getRestaurantName());
+			
+			for(Food lunch : restaurantDay.getLunches()) {
+				TextView lunchTextView = new TextView(getContext());
+				lunchTextView.setText(lunch.toString());
+				lunchLayout.addView(lunchTextView);
+			}
+			
+			return restaurantDayView;
+			
+		}
+		
 	}
 }
