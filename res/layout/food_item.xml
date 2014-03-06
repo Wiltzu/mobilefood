@@ -27,12 +27,12 @@
         android:textSize="12sp" />
 
     <TextView
-        android:id="@+id/food_item_diets"
+        android:id="@+id/food_item_prices"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="right"
         android:layout_weight="1"
-        android:gravity="center_horizontal"
+        android:gravity="right"
         android:padding="1dp"
         android:text="2,60 / 4,60 / 7,50"
         android:textSize="12sp" />

@@ -40,7 +40,6 @@ public class MainActivity extends DaggerBaseActivity implements IMainView {
 	@Inject
 	IMainViewPresenter presenter;
 
-
 	/**
 	 * Called when the activity is first created.
 	 * 
@@ -80,7 +79,8 @@ public class MainActivity extends DaggerBaseActivity implements IMainView {
 
 	public void setFoods(List<RestaurantDay> foodsByRestaurant) {
 		checkNotNull(foodsByRestaurant, "foodsByRestaurant cannot be null");
-		mFoodsTV.setAdapter(new RestaurantDayViewAdapter(this, foodsByRestaurant));
+		mFoodsTV.setAdapter(new RestaurantDayViewAdapter(this,
+				foodsByRestaurant));
 	}
 
 	@Override
@@ -98,8 +98,8 @@ public class MainActivity extends DaggerBaseActivity implements IMainView {
 			protected void onPostExecute(Void result) {
 				Log.d(TAG, "Running ui update task in main thread...");
 				uiUpdateTask.run();
-				
-				if(mProgressBar.isShown()) {					
+
+				if (mProgressBar.isShown()) {
 					mProgressBar.setVisibility(View.INVISIBLE);
 				}
 			}
@@ -117,38 +117,48 @@ public class MainActivity extends DaggerBaseActivity implements IMainView {
 		mWeekDay.setText(DateUtils.getWeekDay(selectedDate));
 		mDateTV.setText(DateUtils.getDateInShortFormat(this, selectedDate));
 	}
-	
+
 	class RestaurantDayViewAdapter extends ArrayAdapter<RestaurantDay> {
-   
+
 		private static final int FOOD_ITEM_LAYOUT = R.layout.restaurant_item;
 
-		public RestaurantDayViewAdapter(Context context, List<RestaurantDay> items) {
+		public RestaurantDayViewAdapter(Context context,
+				List<RestaurantDay> items) {
 			super(context, FOOD_ITEM_LAYOUT, items);
 		}
-		
+
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
 			LayoutInflater inflater = getLayoutInflater();
-			View restaurantDayView = inflater.inflate(FOOD_ITEM_LAYOUT, parent, false);
-			
-			ImageView chainLogo = (ImageView) restaurantDayView.findViewById(R.id.restaurant_item_chain_logo);
-			TextView textView = (TextView) restaurantDayView.findViewById(R.id.restaurant_item_restaurant_name);
-			LinearLayout  lunchLayout = (LinearLayout) restaurantDayView.findViewById(R.id.restaurant_item_food_layout);
-			
+			View restaurantDayView = inflater.inflate(FOOD_ITEM_LAYOUT, parent,
+					false);
+
+			ImageView chainLogo = (ImageView) restaurantDayView
+					.findViewById(R.id.restaurant_item_chain_logo);
+			TextView textView = (TextView) restaurantDayView
+					.findViewById(R.id.restaurant_item_restaurant_name);
+			LinearLayout lunchLayout = (LinearLayout) restaurantDayView
+					.findViewById(R.id.restaurant_item_food_layout);
+
 			RestaurantDay restaurantDay = getItem(position);
-			
+
 			chainLogo.setImageResource(R.drawable.unica_logo);
 			textView.setText(restaurantDay.getRestaurantName());
-			
-			for(Food lunch : restaurantDay.getLunches()) {
-				TextView lunchTextView = new TextView(getContext());
-				lunchTextView.setText(lunch.toString());
-				lunchLayout.addView(lunchTextView);
+
+			for (Food lunch : restaurantDay.getLunches()) {
+				View lunchlayoutItem = inflater.inflate(R.layout.food_item, null, false);
+				((TextView) lunchlayoutItem.findViewById(R.id.food_item_name))
+						.setText(lunch.getFoodName());
+				((TextView) lunchlayoutItem.findViewById(R.id.food_item_diets))
+						.setText(lunch.getDiets());
+				((TextView) lunchlayoutItem.findViewById(R.id.food_item_prices))
+						.setText(lunch.getPrices());
+				lunchLayout.addView(lunchlayoutItem);
 			}
-			
+
 			return restaurantDayView;
-			
+
 		}
-		
+
 	}
 }
