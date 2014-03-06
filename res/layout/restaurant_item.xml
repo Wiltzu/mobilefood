@@ -20,19 +20,23 @@
 
             <ImageView
                 android:id="@+id/restaurant_item_chain_logo"
+                android:src="@drawable/unica_logo" 
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:adjustViewBounds="true"
-                android:contentDescription="chain logo"
                 android:maxHeight="25sp"
-                android:src="@drawable/unica_logo" />
+                android:layout_marginLeft="5dp"
+                android:layout_margin="5dp"
+                android:contentDescription="chain logo"
+                />
 
             <TextView
                 android:id="@+id/restaurant_item_restaurant_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="7dp"
-                android:padding="1dp"
+                android:layout_margin="5dp"
+                android:paddingTop="1dp"
                 android:text="Assarin Ullakko"
                 android:textSize="18sp" />
         </LinearLayout>
@@ -41,7 +45,10 @@
             android:id="@+id/restaurant_item_food_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical" />
+            android:orientation="vertical" 
+            android:layout_marginLeft="5dp"
+            android:minHeight="50dp"/>
+        
     </LinearLayout>
 
 </LinearLayout>
