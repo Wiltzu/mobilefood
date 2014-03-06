@@ -91,7 +91,7 @@ public class FoodServiceImpl implements IFoodService {
 						JSONObject food = itsFoods.getJSONObject(foodIndex);
 						
 						 foodsOfTheRestaurant.add(new Food(food.getString("name"), food
-								.getJSONArray("prices").toString(), null));
+								.getJSONArray("prices").toString(), food.getString("diets")));
 					}
 					String restaurantName = restaurant.getString("restaurant_name");
 					foodsOfTheDay.add(new RestaurantDay(restaurantName, foodsOfTheRestaurant));

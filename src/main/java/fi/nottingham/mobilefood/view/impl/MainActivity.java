@@ -121,10 +121,12 @@ public class MainActivity extends DaggerBaseActivity implements IMainView {
 	class RestaurantDayViewAdapter extends ArrayAdapter<RestaurantDay> {
 
 		private static final int FOOD_ITEM_LAYOUT = R.layout.restaurant_item;
+		private static final String TAG = "RestaurantDayViewAdapter";
 
 		public RestaurantDayViewAdapter(Context context,
 				List<RestaurantDay> items) {
 			super(context, FOOD_ITEM_LAYOUT, items);
+			Log.d(TAG, "Added Following RestaurantDays" + items);
 		}
 
 		@Override
@@ -156,6 +158,7 @@ public class MainActivity extends DaggerBaseActivity implements IMainView {
 				lunchLayout.addView(lunchlayoutItem);
 			}
 
+			Log.d(TAG, "Restaurant added to ui:"  + restaurantDay);
 			return restaurantDayView;
 
 		}
