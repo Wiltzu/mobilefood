@@ -33,7 +33,7 @@ public class FoodServiceTest {
 
 	private IFoodService foodService;
 	private IFileSystemService fileSystemService;
-	private static int port = 4730;
+	private static int port = 4731;
 	private static String host = "localhost";
 
 	private static MockServer mockServer;
