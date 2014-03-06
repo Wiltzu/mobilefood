@@ -23,7 +23,7 @@ app.get('/mobilerest/', function (req, res) {
 	console.log('Answered to request #' + (++counter));
 });
 
-port = process.env.PORT || 4730;
+port = process.env.PORT || 4731;
 
 console.log("Listening on port " + port);
 
