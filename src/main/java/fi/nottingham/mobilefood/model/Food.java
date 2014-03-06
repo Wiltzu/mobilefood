@@ -2,6 +2,8 @@ package fi.nottingham.mobilefood.model;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.List;
+
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -17,10 +19,10 @@ import com.google.common.base.Objects;
 public class Food {
 
 	private final String foodName;
-	private final String prices;
+	private final List<String> prices;
 	private final String diet;
 
-	public Food(String foodName, String prices, @Nullable String diet) {
+	public Food(String foodName, List<String> prices, @Nullable String diet) {
 		this.foodName = checkNotNull(foodName, "foodName cannot be null");
 		this.prices = checkNotNull(prices, "price cannot be null");
 		this.diet = diet;
@@ -30,7 +32,7 @@ public class Food {
 		return foodName;
 	}
 
-	public String getPrices() {
+	public List<String> getPrices() {
 		return prices;
 	}
 

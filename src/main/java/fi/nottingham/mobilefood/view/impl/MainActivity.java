@@ -7,6 +7,8 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import com.google.common.base.Joiner;
+
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -154,7 +156,7 @@ public class MainActivity extends DaggerBaseActivity implements IMainView {
 				((TextView) lunchlayoutItem.findViewById(R.id.food_item_diets))
 						.setText(lunch.getDiets());
 				((TextView) lunchlayoutItem.findViewById(R.id.food_item_prices))
-						.setText(lunch.getPrices());
+						.setText(Joiner.on(" / ").join(lunch.getPrices()));
 				lunchLayout.addView(lunchlayoutItem);
 			}
 

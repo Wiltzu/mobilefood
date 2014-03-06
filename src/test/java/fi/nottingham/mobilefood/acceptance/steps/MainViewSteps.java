@@ -81,7 +81,7 @@ public class MainViewSteps {
 			String restaurantName = food.get("restaurant");
 			String foodName = food.get("food");
 			String diets = food.get("diets");
-			String prices = food.get("price");
+			List<String> prices = Lists.newArrayList(food.get("price"));
 			
 			if(!restaurantNameToLunches.containsKey(restaurantName)) {
 				restaurantNameToLunches.put(restaurantName, new ArrayList<Food>());

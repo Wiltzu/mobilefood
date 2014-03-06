@@ -82,16 +82,22 @@ public class FoodServiceImpl implements IFoodService {
 				JSONArray foodsByRestaurant = requestedWeekDay
 						.getJSONArray("foods_by_restaurant");
 
-				for (int j = 0; j < foodsByRestaurant.length(); j++) {
-					JSONObject restaurant = foodsByRestaurant.getJSONObject(j);
+				for (int i = 0; i < foodsByRestaurant.length(); i++) {
+					JSONObject restaurant = foodsByRestaurant.getJSONObject(i);
 					JSONArray itsFoods = restaurant.getJSONArray("foods");
 					
 					List<Food>  foodsOfTheRestaurant = Lists.newArrayList();
 					for (int foodIndex = 0; foodIndex < itsFoods.length(); foodIndex++) {
 						JSONObject food = itsFoods.getJSONObject(foodIndex);
 						
-						 foodsOfTheRestaurant.add(new Food(food.getString("name"), food
-								.getJSONArray("prices").toString(), food.getString("diets")));
+						JSONArray foodPrices = food.getJSONArray("prices");
+						List<String> prices = Lists.newArrayList();
+						
+						for(int j = 0; j < foodPrices.length(); j++) {
+							prices.add(foodPrices.getString(j));
+						}
+						
+						 foodsOfTheRestaurant.add(new Food(food.getString("name"), prices, food.optString("diets")));
 					}
 					String restaurantName = restaurant.getString("restaurant_name");
 					foodsOfTheDay.add(new RestaurantDay(restaurantName, foodsOfTheRestaurant));
@@ -122,7 +128,7 @@ public class FoodServiceImpl implements IFoodService {
 
 			String response = IOUtils.toString(connection.getInputStream(),
 					"UTF-8");
-			
+
 			if (response == null || response.contains("ERROR")) {
 				logger.log(Level.SEVERE, response);
 				return null;
@@ -140,7 +146,7 @@ public class FoodServiceImpl implements IFoodService {
 		} catch (IOException e) {
 			logger.throwing("FoodService", "getFoodsBy", e);
 		}
-		
+
 		return null;
 	}
 
