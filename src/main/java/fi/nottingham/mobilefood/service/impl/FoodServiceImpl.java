@@ -54,25 +54,17 @@ public class FoodServiceImpl implements IFoodService {
 
 		String foodData = null;
 
-		try {
-			String responseFromFile = getDataFromInternalStorage(weekNumber);
+		String responseFromFile = getDataFromInternalStorage(weekNumber);
 
-			if (isNullOrEmpty(responseFromFile)) {
-				foodData = downloadDataFromService(weekNumber);
-			} else {
-				foodData = responseFromFile;
-			}
-
-		} catch (FileNotFoundException e) {
-			logger.throwing("FoodService", "getFoodsBy", e);
+		if (isNullOrEmpty(responseFromFile)) {
 			foodData = downloadDataFromService(weekNumber);
-		} catch (IOException e) {
-			logger.throwing("FoodService", "getFoodsBy", e);
-			foodData = downloadDataFromService(weekNumber);
+		} else {
+			foodData = responseFromFile;
 		}
-
+		
 		if (foodData != null) {
 			try {
+				//TODO: JSON versioning so that version compatibility is easily detected
 				JSONArray foodsByDay = (JSONArray) new JSONTokener(foodData)
 						.nextValue();
 
@@ -85,38 +77,55 @@ public class FoodServiceImpl implements IFoodService {
 				for (int i = 0; i < foodsByRestaurant.length(); i++) {
 					JSONObject restaurant = foodsByRestaurant.getJSONObject(i);
 					JSONArray itsFoods = restaurant.getJSONArray("foods");
-					
-					List<Food>  foodsOfTheRestaurant = Lists.newArrayList();
+
+					List<Food> foodsOfTheRestaurant = Lists.newArrayList();
 					for (int foodIndex = 0; foodIndex < itsFoods.length(); foodIndex++) {
 						JSONObject food = itsFoods.getJSONObject(foodIndex);
-						
+
 						JSONArray foodPrices = food.getJSONArray("prices");
 						List<String> prices = Lists.newArrayList();
-						
-						for(int j = 0; j < foodPrices.length(); j++) {
+
+						for (int j = 0; j < foodPrices.length(); j++) {
 							prices.add(foodPrices.getString(j));
 						}
-						
-						 foodsOfTheRestaurant.add(new Food(food.getString("name"), prices, food.optString("diets")));
+
+						foodsOfTheRestaurant.add(new Food(food
+								.getString("name"), prices, food
+								.optString("diets")));
 					}
-					String restaurantName = restaurant.getString("restaurant_name");
-					foodsOfTheDay.add(new RestaurantDay(restaurantName, foodsOfTheRestaurant));
+					String restaurantName = restaurant
+							.getString("restaurant_name");
+					foodsOfTheDay.add(new RestaurantDay(restaurantName,
+							foodsOfTheRestaurant));
 				}
 
 			} catch (JSONException e) {
-				logger.throwing("FoodService", "getFoodsBy: JSONParsing failed!", e);
+				logger.throwing("FoodService",
+						"getFoodsBy: JSONParsing failed!", e);
 			}
 		}
 
 		return foodsOfTheDay;
 	}
 
-	private String getDataFromInternalStorage(int weekNumber)
-			throws IOException {
-		InputStream weekInputFile = fileSystemService
-				.openInputFile(getFileNameFor(YEAR, weekNumber, CHAIN_NAME));
-		String responseFromFile = IOUtils.toString(weekInputFile);
-		weekInputFile.close();
+	/**
+	 * @param weekNumber
+	 * @return foods from file or null if not found
+	 */
+	private String getDataFromInternalStorage(int weekNumber) {
+		String fileName = getFileNameFor(YEAR, weekNumber, CHAIN_NAME);
+		String responseFromFile = null;
+
+		try {
+			InputStream weekInputFile = fileSystemService
+					.openInputFile(fileName);
+
+			responseFromFile = IOUtils.toString(weekInputFile);
+			weekInputFile.close();
+
+		} catch (IOException e) {
+			return null;
+		}
 
 		return responseFromFile;
 	}
