@@ -20,13 +20,23 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import javax.inject.Inject;
+
 import android.app.Application;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.util.Log;
+import dagger.Lazy;
 import dagger.ObjectGraph;
 import fi.nottingham.mobilefood.service.IFileSystemService;
+import fi.nottingham.mobilefood.service.INetworkStatusService;
 
-public class DaggerApplication extends Application implements IFileSystemService {
+public class DaggerApplication extends Application implements IFileSystemService, INetworkStatusService {
 	private ObjectGraph graph;
+	
+	@Inject
+	@ForApplication
+	protected Lazy<ConnectivityManager> connectivityManager;
 
 	@Override
 	public void onCreate() {
@@ -35,6 +45,7 @@ public class DaggerApplication extends Application implements IFileSystemService
 		AndroidModule androidModule = new AndroidModule();
 		androidModule.setDaggerApplication(this);
 		graph = ObjectGraph.create(androidModule);
+		graph.inject(this);
 	}
 
 	public void inject(Object object) {
@@ -60,5 +71,11 @@ public class DaggerApplication extends Application implements IFileSystemService
 			Log.e("DaggerApplication", "Unexpected error occured while opening FileOutputStream", e);
 		}
 		return fileOutputStream;
+	}
+
+	@Override
+	public boolean isConnectedToInternet() {
+		NetworkInfo activeNetworkInfo = connectivityManager.get().getActiveNetworkInfo();
+		return activeNetworkInfo != null && activeNetworkInfo.isConnectedOrConnecting();
 	}
 }

@@ -6,6 +6,7 @@ import javax.inject.Singleton;
 
 import android.content.Context;
 import android.location.LocationManager;
+import android.net.ConnectivityManager;
 import dagger.Module;
 import dagger.Provides;
 import fi.nottingham.mobilefood.service.IFileSystemService;
@@ -14,7 +15,7 @@ import fi.nottingham.mobilefood.service.IFileSystemService;
  * A module for Android-specific dependencies which require a {@link Context} or
  * {@link android.app.Application} to create.
  */
-@Module(library = true)
+@Module(library = true, injects = DaggerApplication.class)
 public class AndroidModule {
 	private DaggerApplication application;
 	
@@ -38,6 +39,13 @@ public class AndroidModule {
 	@Singleton
 	LocationManager provideLocationManager() {
 		return (LocationManager) application.getSystemService(LOCATION_SERVICE);
+	}
+	
+	@Provides
+	@Singleton
+	@ForApplication
+	ConnectivityManager provideConnectivityManager() {
+		return (ConnectivityManager) application.getSystemService(Context.CONNECTIVITY_SERVICE);
 	}
 
 	@Provides
