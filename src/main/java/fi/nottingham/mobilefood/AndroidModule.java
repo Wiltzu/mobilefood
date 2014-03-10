@@ -10,6 +10,7 @@ import android.net.ConnectivityManager;
 import dagger.Module;
 import dagger.Provides;
 import fi.nottingham.mobilefood.service.IFileSystemService;
+import fi.nottingham.mobilefood.service.INetworkStatusService;
 
 /**
  * A module for Android-specific dependencies which require a {@link Context} or
@@ -51,6 +52,12 @@ public class AndroidModule {
 	@Provides
 	@Singleton
 	IFileSystemService provideFileSystemService() {
+		return application;
+	}
+	
+	@Provides
+	@Singleton
+	INetworkStatusService provideNetworkStatusService() {
 		return application;
 	}
 }

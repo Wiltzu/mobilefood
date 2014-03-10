@@ -25,6 +25,7 @@ import fi.nottingham.mobilefood.MobilefoodModule;
 import fi.nottingham.mobilefood.MobilefoodModules;
 import fi.nottingham.mobilefood.presenter.IMainViewPresenter;
 import fi.nottingham.mobilefood.service.IFileSystemService;
+import fi.nottingham.mobilefood.service.INetworkStatusService;
 import fi.nottingham.mobilefood.view.IMainView;
 
 @RunWith(RobolectricTestRunner.class)
@@ -96,6 +97,12 @@ public class MainActivityTest {
 		@Singleton
 		public IFileSystemService provideFileSystemService() {
 			return mock(IFileSystemService.class);
+		}
+		
+		@Provides
+		@Singleton
+		public INetworkStatusService provideNetworkStatusService() {
+			return mock(INetworkStatusService.class);
 		}
 	}
 }

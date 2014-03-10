@@ -29,6 +29,8 @@ import fi.nottingham.mobilefood.model.Food;
 import fi.nottingham.mobilefood.model.RestaurantDay;
 import fi.nottingham.mobilefood.service.IFileSystemService;
 import fi.nottingham.mobilefood.service.IFoodService;
+import fi.nottingham.mobilefood.service.INetworkStatusService;
+import fi.nottingham.mobilefood.service.exceptions.NoInternetConnectionException;
 
 public class FoodServiceImpl implements IFoodService {
 	private static final String CHAIN_NAME = "unica";
@@ -37,17 +39,19 @@ public class FoodServiceImpl implements IFoodService {
 	private final String serviceLocation;
 	private final Logger logger = Logger.getLogger("FoodService");
 	private final IFileSystemService fileSystemService;
+	private final INetworkStatusService networkStatusService;
 
 	@Inject
 	public FoodServiceImpl(String serviceLocation,
-			IFileSystemService fileSystemService) {
+			IFileSystemService fileSystemService, INetworkStatusService networkStatusService) {
 		this.serviceLocation = checkNotNull(serviceLocation,
 				"serviceLocation cannot be null");
 		this.fileSystemService = checkNotNull(fileSystemService,
 				"fileSystemService cannot be null");
+		this.networkStatusService = checkNotNull(networkStatusService, "networkStatusService cannot be null");
 	}
 
-	public List<RestaurantDay> getFoodsBy(int weekNumber, int dayOfTheWeek) {
+	public List<RestaurantDay> getFoodsBy(int weekNumber, int dayOfTheWeek) throws NoInternetConnectionException {
 		// TODO: much better error handling
 		final List<RestaurantDay> foodsOfTheDay = Lists.newArrayList();
 		checkArgument(weekNumber >= 1, "week number must be at least one");
@@ -130,7 +134,16 @@ public class FoodServiceImpl implements IFoodService {
 		return responseFromFile;
 	}
 
-	private String downloadDataFromService(int weekNumber) {
+	/**
+	 * @param weekNumber
+	 * @return foods downloaded from service
+	 * @throws NoInternetConnectionException if there is no Internet connection
+	 */
+	private String downloadDataFromService(int weekNumber) throws NoInternetConnectionException {
+		if(!networkStatusService.isConnectedToInternet()) {
+			throw new NoInternetConnectionException();
+		}
+		
 		try {
 			HttpURLConnection connection = (HttpURLConnection) new URL(
 					getRequestURL(weekNumber)).openConnection();

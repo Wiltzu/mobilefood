@@ -22,6 +22,7 @@ import fi.nottingham.mobilefood.model.Food;
 import fi.nottingham.mobilefood.model.RestaurantDay;
 import fi.nottingham.mobilefood.presenter.IMainViewPresenter;
 import fi.nottingham.mobilefood.service.IFoodService;
+import fi.nottingham.mobilefood.service.exceptions.NoInternetConnectionException;
 import fi.nottingham.mobilefood.view.IMainView;
 
 public class MainViewPresenterTest {
@@ -48,7 +49,7 @@ public class MainViewPresenterTest {
 	}
 
 	// @Test
-	public void OnViewCreation_setsViewsFoodsFromFoodService() {
+	public void OnViewCreation_setsViewsFoodsFromFoodService() throws NoInternetConnectionException {
 		List<RestaurantDay> foods = Lists.newArrayList();
 		when(foodService.getFoodsBy(Mockito.anyInt(), Mockito.anyInt()))
 				.thenReturn(foods);
@@ -89,7 +90,7 @@ public class MainViewPresenterTest {
 	}
 
 	@Test
-	public void updateFoodsFromService_clearsFoodListAndAddsNewValuesFromService() {
+	public void updateFoodsFromService_clearsFoodListAndAddsNewValuesFromService() throws NoInternetConnectionException {
 		MockitoAnnotations.initMocks(this); // inits currentFoods
 
 		@SuppressWarnings("unchecked")

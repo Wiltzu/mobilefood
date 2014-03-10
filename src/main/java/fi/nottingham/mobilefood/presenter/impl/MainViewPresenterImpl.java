@@ -12,6 +12,7 @@ import com.google.common.collect.Lists;
 import fi.nottingham.mobilefood.model.RestaurantDay;
 import fi.nottingham.mobilefood.presenter.IMainViewPresenter;
 import fi.nottingham.mobilefood.service.IFoodService;
+import fi.nottingham.mobilefood.service.exceptions.NoInternetConnectionException;
 import fi.nottingham.mobilefood.util.DateUtils;
 import fi.nottingham.mobilefood.view.IMainView;
 
@@ -59,7 +60,11 @@ public class MainViewPresenterImpl implements IMainViewPresenter {
 		int dayOfTheWeek = DateUtils.getDayOfTheWeek(selectedDate);
 		int weekNumber = DateUtils.getWeekOfYear(selectedDate);
 		currentFoods.clear();
-		currentFoods.addAll(foodService.getFoodsBy(weekNumber, dayOfTheWeek));
+		try {
+			currentFoods.addAll(foodService.getFoodsBy(weekNumber, dayOfTheWeek));
+		} catch (NoInternetConnectionException e) {
+			// TODO temporary solution!!! NOT IMPLEMENTED YET
+		}
 	}
 
 	@Override
