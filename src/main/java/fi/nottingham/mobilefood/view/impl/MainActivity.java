@@ -18,11 +18,13 @@ import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 import fi.nottingham.mobilefood.DaggerBaseActivity;
 import fi.nottingham.mobilefood.R;
 import fi.nottingham.mobilefood.model.Food;
@@ -38,9 +40,11 @@ public class MainActivity extends DaggerBaseActivity implements IMainView {
 	private TextView mWeekDay;
 	private ListView mFoodsTV;
 	private ProgressBar mProgressBar;
+	private Button mRefreshButton;
 
 	@Inject
 	IMainViewPresenter presenter;
+
 
 	/**
 	 * Called when the activity is first created.
@@ -60,6 +64,7 @@ public class MainActivity extends DaggerBaseActivity implements IMainView {
 		mDateTV = (TextView) findViewById(R.id.textview_date);
 		mFoodsTV = (ListView) findViewById(R.id.listview_foods);
 		mProgressBar = (ProgressBar) findViewById(R.id.progressbar_indeterminate);
+		mRefreshButton = (Button) findViewById(R.id.main_refresh_button);
 	}
 
 	@Override
@@ -165,5 +170,15 @@ public class MainActivity extends DaggerBaseActivity implements IMainView {
 
 		}
 
+	}
+
+	@Override
+	public void notifyThatDeviceHasNoInternetConnection() {
+		Toast.makeText(this, getText(R.string.no_internet), Toast.LENGTH_LONG).show();
+	}
+
+	@Override
+	public void showRefreshButton() {
+		mRefreshButton.setVisibility(View.VISIBLE);
 	}
 }

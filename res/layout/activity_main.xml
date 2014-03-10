@@ -12,6 +12,15 @@
         android:layout_gravity="center"
         android:visibility="invisible"
         android:indeterminate="true" />
+    
+    <Button
+        android:id="@+id/main_refresh_button"
+        android:text="@string/refresh_foods"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:layout_gravity="center"
+        android:visibility="invisible" />
 
     <TextView
         android:id="@+id/textview_week_day"

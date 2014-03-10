@@ -20,6 +20,8 @@ public class MainViewPresenterImpl implements IMainViewPresenter {
 	private final IFoodService foodService;
 	private Date selectedDate;
 	private List<RestaurantDay> currentFoods;
+	
+	private boolean hasInternetConnection;
 
 	@Inject
 	public MainViewPresenterImpl(IFoodService foodService, Date timeNow) {
@@ -40,12 +42,12 @@ public class MainViewPresenterImpl implements IMainViewPresenter {
 			mainView.runInBackgroud(new Runnable() {
 				@Override
 				public void run() {
-					updateFoodsFromService();
+					fetchFoodsFromService();
 				}
 			}, new Runnable() {
 				@Override
 				public void run() {
-					mainView.setFoods(currentFoods);
+					updateUI(mainView);
 				}
 			});
 		} else {
@@ -54,17 +56,38 @@ public class MainViewPresenterImpl implements IMainViewPresenter {
 	}
 
 	/**
-	 * Synchronized manner gets new foods from service
+	 * gets foods from service in synchronized way
 	 */
-	protected synchronized void updateFoodsFromService() {
+	protected synchronized void fetchFoodsFromService() {
+		//expect to have a internet connection
+		setHasInternetConnection(true);
+		
 		int dayOfTheWeek = DateUtils.getDayOfTheWeek(selectedDate);
 		int weekNumber = DateUtils.getWeekOfYear(selectedDate);
 		currentFoods.clear();
 		try {
-			currentFoods.addAll(foodService.getFoodsBy(weekNumber, dayOfTheWeek));
+			currentFoods.addAll(foodService.getFoodsBy(weekNumber, dayOfTheWeek));			
 		} catch (NoInternetConnectionException e) {
-			// TODO temporary solution!!! NOT IMPLEMENTED YET
+			//TODO: log exception
+			setHasInternetConnection(false);
 		}
+	}
+	
+	protected void updateUI(final IMainView mainView) {
+		mainView.setFoods(currentFoods);
+		
+		if(!hasInternetConnection()) {
+			mainView.notifyThatDeviceHasNoInternetConnection();
+			mainView.showRefreshButton();
+		}
+	}
+	
+	protected boolean hasInternetConnection() {
+		return hasInternetConnection;
+	}
+	
+	protected void setHasInternetConnection(boolean hasConnection) {
+		hasInternetConnection = hasConnection;
 	}
 
 	@Override

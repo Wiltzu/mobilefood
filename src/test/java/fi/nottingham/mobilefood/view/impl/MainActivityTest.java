@@ -1,6 +1,7 @@
 package fi.nottingham.mobilefood.view.impl;
 
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -9,6 +10,7 @@ import java.util.List;
 
 import javax.inject.Singleton;
 
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,6 +18,14 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowHandler;
+import org.robolectric.shadows.ShadowToast;
+
+import android.app.Activity;
+import android.view.View;
+import android.widget.Button;
+import android.widget.ListView;
 
 import com.google.common.collect.Lists;
 
@@ -23,6 +33,7 @@ import dagger.Module;
 import dagger.Provides;
 import fi.nottingham.mobilefood.MobilefoodModule;
 import fi.nottingham.mobilefood.MobilefoodModules;
+import fi.nottingham.mobilefood.R;
 import fi.nottingham.mobilefood.presenter.IMainViewPresenter;
 import fi.nottingham.mobilefood.service.IFileSystemService;
 import fi.nottingham.mobilefood.service.INetworkStatusService;
@@ -83,6 +94,26 @@ public class MainActivityTest {
 		Robolectric.runUiThreadTasks();
 		assertFalse("list should no longer be empty, because ui thread tasks were run.",
 				testList.isEmpty());
+	}
+	
+	@Test
+	@Config(qualifiers = "fi")
+	public void notifyThatDeviceHasNoInternetConnection_createsToastWithCorrectText() {
+		mainView.notifyThatDeviceHasNoInternetConnection();
+		
+		CharSequence expectedToastText = ((Activity) mainView).getText(R.string.no_internet);
+		ShadowHandler.idleMainLooper();
+	    assertThat(ShadowToast.getTextOfLatestToast(), Matchers.equalTo(expectedToastText));
+	}
+	
+	@Test
+	public void showRefreshButton_showsRefreshButtonAndHidesFoods() {
+		mainView.showRefreshButton();
+		
+		Button refreshButton = (Button) ((Activity) mainView).findViewById(R.id.main_refresh_button);
+		
+		ShadowHandler.idleMainLooper();
+		assertThat(refreshButton.getVisibility(), Matchers.equalTo(View.VISIBLE));
 	}
 
 	@Module(includes = { MobilefoodModule.class}, overrides = true, library = true)

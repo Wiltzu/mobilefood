@@ -17,4 +17,8 @@ public interface IMainView {
 	void showLoadingIcon();
 
 	void setDate(Date date);
+
+	void notifyThatDeviceHasNoInternetConnection();
+
+	void showRefreshButton();
 }

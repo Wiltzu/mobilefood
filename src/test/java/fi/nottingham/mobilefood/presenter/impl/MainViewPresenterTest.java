@@ -1,6 +1,7 @@
 package fi.nottingham.mobilefood.presenter.impl;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -49,7 +50,8 @@ public class MainViewPresenterTest {
 	}
 
 	// @Test
-	public void OnViewCreation_setsViewsFoodsFromFoodService() throws NoInternetConnectionException {
+	public void OnViewCreation_setsViewsFoodsFromFoodService()
+			throws NoInternetConnectionException {
 		List<RestaurantDay> foods = Lists.newArrayList();
 		when(foodService.getFoodsBy(Mockito.anyInt(), Mockito.anyInt()))
 				.thenReturn(foods);
@@ -77,9 +79,9 @@ public class MainViewPresenterTest {
 		currentFoods = Lists.newArrayList(new RestaurantDay("restName",
 				new ArrayList<Food>()));
 		MockitoAnnotations.initMocks(this); // inits currentFoods
-		
+
 		mainViewPresenter.onViewCreation(mainView);
-	
+
 		verify(mainView).setFoods(currentFoods);
 	}
 
@@ -90,7 +92,8 @@ public class MainViewPresenterTest {
 	}
 
 	@Test
-	public void updateFoodsFromService_clearsFoodListAndAddsNewValuesFromService() throws NoInternetConnectionException {
+	public void fetchFoodsFromService_clearsFoodListAndAddsNewValuesFromService()
+			throws NoInternetConnectionException {
 		MockitoAnnotations.initMocks(this); // inits currentFoods
 
 		@SuppressWarnings("unchecked")
@@ -98,10 +101,47 @@ public class MainViewPresenterTest {
 		when(foodService.getFoodsBy(Mockito.anyInt(), Mockito.anyInt()))
 				.thenReturn(mockFoodsFromService);
 
-		((MainViewPresenterImpl) mainViewPresenter).updateFoodsFromService();
+		((MainViewPresenterImpl) mainViewPresenter).fetchFoodsFromService();
 
 		verify(currentFoods).clear();
 		verify(currentFoods).addAll(mockFoodsFromService);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void fetchFoodsFromService_withNoInternetConnection_()
+			throws NoInternetConnectionException {
+		MockitoAnnotations.initMocks(this); // inits currentFoods
+
+		when(foodService.getFoodsBy(Mockito.anyInt(), Mockito.anyInt()))
+				.thenThrow(NoInternetConnectionException.class);
+
+		((MainViewPresenterImpl) mainViewPresenter).fetchFoodsFromService();
+
+		verify(currentFoods).clear();
+		verify(currentFoods, Mockito.times(0)).addAll(Mockito.anyCollection());
+		assertFalse("Device should have no internet connection",
+				((MainViewPresenterImpl) mainViewPresenter)
+						.hasInternetConnection());
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Test
+	public void updateUI_setsFoods() {
+		
+		((MainViewPresenterImpl) mainViewPresenter).updateUI(mainView);
+		
+		verify(mainView).setFoods(Mockito.anyList());
+	}
+	
+	@Test
+	public void updateUI_ifHasNoInternetConnection_notifiesUserAndCreatesRefreshButton() {
+		((MainViewPresenterImpl) mainViewPresenter).setHasInternetConnection(false);
+		
+		((MainViewPresenterImpl) mainViewPresenter).updateUI(mainView);
+		
+		verify(mainView).notifyThatDeviceHasNoInternetConnection();
+		verify(mainView).showRefreshButton();
 	}
 
 }

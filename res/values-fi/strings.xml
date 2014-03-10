@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Mobilefood</string>
+    <string name="action_settings">Asetukset</string>
+    <string name="no_internet">Ruokien haku epäonnistui. Varmista, että sinulla on käytössäsi toimiva Internet yhteys.</string>
+    <string name="refresh_foods">Yritä ruokien hakua uudelleen</string>
+
+</resources>

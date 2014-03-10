@@ -4,7 +4,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.isNullOrEmpty;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -69,6 +68,7 @@ public class FoodServiceImpl implements IFoodService {
 		if (foodData != null) {
 			try {
 				//TODO: JSON versioning so that version compatibility is easily detected
+				//TODO: move parsing to own class
 				JSONArray foodsByDay = (JSONArray) new JSONTokener(foodData)
 						.nextValue();
 
