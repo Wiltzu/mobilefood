@@ -1,7 +1,6 @@
 package fi.nottingham.mobilefood.presenter.impl;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -23,6 +22,7 @@ import fi.nottingham.mobilefood.model.Food;
 import fi.nottingham.mobilefood.model.RestaurantDay;
 import fi.nottingham.mobilefood.presenter.IMainViewPresenter;
 import fi.nottingham.mobilefood.service.IFoodService;
+import fi.nottingham.mobilefood.service.INetworkStatusService;
 import fi.nottingham.mobilefood.service.exceptions.FoodServiceException;
 import fi.nottingham.mobilefood.service.exceptions.NoInternetConnectionException;
 import fi.nottingham.mobilefood.view.IMainView;
@@ -35,6 +35,7 @@ public class MainViewPresenterTest {
 
 	IMainView mainView;
 	IFoodService foodService;
+	INetworkStatusService networkStatusService;
 
 	Date date = new Date();
 
@@ -42,7 +43,9 @@ public class MainViewPresenterTest {
 	public void setUp() throws Exception {
 		mainView = mock(IMainView.class);
 		foodService = mock(IFoodService.class);
-		mainViewPresenter = new MainViewPresenterImpl(foodService, date);
+		networkStatusService = mock(INetworkStatusService.class);
+		mainViewPresenter = new MainViewPresenterImpl(foodService, date,
+				networkStatusService);
 	}
 
 	@Test
@@ -80,7 +83,7 @@ public class MainViewPresenterTest {
 		currentFoods = Lists.newArrayList(new RestaurantDay("restName",
 				new ArrayList<Food>()));
 		MockitoAnnotations.initMocks(this); // inits currentFoods
-		
+
 		mainViewPresenter.onViewCreation(mainView);
 
 		verify(mainView).setFoods(currentFoods);
@@ -92,54 +95,68 @@ public class MainViewPresenterTest {
 		verify(mainView).setDate(Mockito.any(Date.class));
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void fetchFoodsFromService_clearsFoodListAndAddsNewValuesFromService()
-			throws NoInternetConnectionException, FoodServiceException {
+			throws FoodServiceException {
 		MockitoAnnotations.initMocks(this); // inits currentFoods
 
-		@SuppressWarnings("unchecked")
 		List<RestaurantDay> mockFoodsFromService = mock(List.class);
 		when(foodService.getFoodsBy(Mockito.anyInt(), Mockito.anyInt()))
 				.thenReturn(mockFoodsFromService);
 
 		((MainViewPresenterImpl) mainViewPresenter).fetchFoodsFromService();
-
-		verify(currentFoods).clear();
-		verify(currentFoods).addAll(mockFoodsFromService);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
-	public void fetchFoodsFromService_withNoInternetConnection_()
-			throws NoInternetConnectionException, FoodServiceException {
-		MockitoAnnotations.initMocks(this); // inits currentFoods
+	public void fetchFoodsFromService_withNoInternetConnection_triesTogetFoodsFromInternalStorage()
+			throws FoodServiceException {
 
-		when(foodService.getFoodsBy(Mockito.anyInt(), Mockito.anyInt()))
-				.thenThrow(NoInternetConnectionException.class);
+		when(networkStatusService.isConnectedToInternet()).thenReturn(false);
 
 		((MainViewPresenterImpl) mainViewPresenter).fetchFoodsFromService();
 
-		verify(currentFoods).clear();
-		verify(currentFoods, Mockito.times(0)).addAll(Mockito.anyCollection());
-		assertFalse("Device should have no internet connection",
-				((MainViewPresenterImpl) mainViewPresenter)
-						.hasInternetConnection());
+		verify(foodService).getFoodsFromInternalStorageBy(Mockito.anyInt(),
+				Mockito.anyInt());
+		verify(foodService, Mockito.never()).getFoodsBy(Mockito.anyInt(),Mockito.anyInt());
 	}
-	
-	@SuppressWarnings("unchecked")
+
 	@Test
-	public void updateUI_setsFoods() {		
-		((MainViewPresenterImpl) mainViewPresenter).updateUI(mainView);
-		
-		verify(mainView).setFoods(Mockito.anyList());
+	public void fetchFoodsFromService_withInternetButServiceHasNoFoodsForWeek_exceptionIsCacthed()
+			throws FoodServiceException {
+		MockitoAnnotations.initMocks(this); // inits currentFoods
+
+		when(networkStatusService.isConnectedToInternet()).thenReturn(true);
+		when(foodService.getFoodsFromInternalStorageBy(Mockito.anyInt(), Mockito.anyInt())).thenReturn(null);
+		when(foodService.getFoodsBy(Mockito.anyInt(), Mockito.anyInt()))
+				.thenThrow(
+						new FoodServiceException(
+								FoodServiceException.SERVICE_DOWN));
+
+		((MainViewPresenterImpl) mainViewPresenter).fetchFoodsFromService();
+
+		verify(foodService).getFoodsBy(Mockito.anyInt(), Mockito.anyInt());
+		//TODO: improve
 	}
-	
+
+	@Test
+	public void updateUI_setsFoodsCurrentFoodsIfHasThem() {
+		currentFoods = Lists.newArrayList(new RestaurantDay("restName",
+				new ArrayList<Food>()));
+		MockitoAnnotations.initMocks(this); // inits currentFoods
+		
+		((MainViewPresenterImpl) mainViewPresenter).updateUI(mainView);
+
+		verify(mainView).setFoods(currentFoods);
+	}
+
 	@Test
 	public void updateUI_ifHasNoInternetConnection_notifiesUserAndCreatesRefreshButton() {
-		((MainViewPresenterImpl) mainViewPresenter).setHasInternetConnection(false);
-		
+		((MainViewPresenterImpl) mainViewPresenter)
+				.setHasInternetConnection(false);
+
 		((MainViewPresenterImpl) mainViewPresenter).updateUI(mainView);
-		
+
 		verify(mainView).notifyThatDeviceHasNoInternetConnection();
 		verify(mainView).showRefreshButton();
 	}

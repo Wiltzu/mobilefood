@@ -2,6 +2,7 @@ package fi.nottingham.mobilefood.acceptance.steps;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -37,6 +38,7 @@ import fi.nottingham.mobilefood.model.Food;
 import fi.nottingham.mobilefood.model.RestaurantDay;
 import fi.nottingham.mobilefood.presenter.IMainViewPresenter;
 import fi.nottingham.mobilefood.service.IFoodService;
+import fi.nottingham.mobilefood.service.INetworkStatusService;
 import fi.nottingham.mobilefood.service.exceptions.FoodServiceException;
 import fi.nottingham.mobilefood.service.exceptions.NoInternetConnectionException;
 import fi.nottingham.mobilefood.util.DateUtils;
@@ -102,6 +104,12 @@ public class MainViewSteps {
 		@Singleton
 		IFoodService provideFoodService(Config conf) {
 			return foodService;
+		}
+		
+		@Provides
+		@Singleton
+		INetworkStatusService provideNetworkStatus() {
+			return mock(INetworkStatusService.class);
 		}
 	}
 

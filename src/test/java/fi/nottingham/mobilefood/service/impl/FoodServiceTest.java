@@ -1,7 +1,7 @@
 package fi.nottingham.mobilefood.service.impl;
 
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -39,7 +39,6 @@ public class FoodServiceTest {
 
 	private IFoodService foodService;
 	private IFileSystemService fileSystemService;
-	private INetworkStatusService networkStatusService;
 
 	private static int port = 4731;
 	private static String host = "localhost";
@@ -76,14 +75,9 @@ public class FoodServiceTest {
 			URISyntaxException {
 		fileSystemService = mock(IFileSystemService.class);
 
-		// by default device has Internet connection
-		networkStatusService = mock(INetworkStatusService.class);
-		when(networkStatusService.isConnectedToInternet()).thenReturn(true);
-
 		String serviceLocation = getServiceLocation();
 
-		foodService = new FoodServiceImpl(serviceLocation, fileSystemService,
-				networkStatusService);
+		foodService = new FoodServiceImpl(serviceLocation, fileSystemService);
 
 		if (!environmentIsTravis) {
 			System.out.println("Start listening: " + serviceLocation);
@@ -133,7 +127,7 @@ public class FoodServiceTest {
 	}
 
 	@Test
-	public void getFoodsBy_withCachedFileForCurrentWeek_returnsUnemptyList()
+	public void getFoodsFromInternalStorageBy_withCachedFileForCurrentWeek_returnsUnemptyList()
 			throws FileNotFoundException, URISyntaxException,
 			NoInternetConnectionException, FoodServiceException {
 		int dayOfTheWeek = 0, weekNumber = 10;
@@ -143,7 +137,22 @@ public class FoodServiceTest {
 		when(fileSystemService.openInputFile(Mockito.anyString())).thenReturn(
 				jsonFoodFile);
 
-		assertFalse(foodService.getFoodsBy(weekNumber, dayOfTheWeek).isEmpty());
+		assertNotNull(foodService.getFoodsFromInternalStorageBy(weekNumber,
+				dayOfTheWeek));
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void getFoodsFromInternalStorageBy_withoutCachedFileForWeek_returnsUnemptyList()
+			throws FileNotFoundException, URISyntaxException,
+			FoodServiceException {
+		int dayOfTheWeek = 0, weekNumber = 10;
+
+		when(fileSystemService.openInputFile(Mockito.anyString())).thenThrow(
+				FileNotFoundException.class);
+
+		assertNull(foodService.getFoodsFromInternalStorageBy(weekNumber,
+				dayOfTheWeek));
 	}
 
 	private static InputStream getTestFileAsInputStream()
@@ -157,8 +166,7 @@ public class FoodServiceTest {
 	@SuppressWarnings("unchecked")
 	@Test
 	public void getFoodsBy_FoodsForWeekAreNotCached_callsServiceAndCreatesFile()
-			throws IOException, NoInternetConnectionException,
-			FoodServiceException {
+			throws IOException, FoodServiceException {
 		int dayOfTheWeek = 0, weekNumber = 1;
 		OutputStream fileOutputStreamMock = mock(OutputStream.class);
 
@@ -175,7 +183,7 @@ public class FoodServiceTest {
 
 	@Test(expected = IllegalArgumentException.class)
 	public void getFoodsBy_weekNumberUnderOne_resultsInAException()
-			throws NoInternetConnectionException, FoodServiceException {
+			throws FoodServiceException {
 		int weekNumberUnderOne = 0;
 		foodService.getFoodsBy(weekNumberUnderOne, 1);
 	}
@@ -191,7 +199,8 @@ public class FoodServiceTest {
 		when(fileSystemService.openInputFile(Mockito.anyString())).thenThrow(
 				FileNotFoundException.class);
 
-		foodService = new FoodServiceImpl(getServiceLocation() + "serviceNotOn", fileSystemService, networkStatusService);
+		foodService = new FoodServiceImpl(
+				getServiceLocation() + "serviceNotOn", fileSystemService);
 
 		try {
 			foodService.getFoodsBy(weekNumber, dayOfTheWeek);
@@ -207,7 +216,7 @@ public class FoodServiceTest {
 	public void getFoodsBy_withServiceOnButNoFileForWeek_throwsException()
 			throws FileNotFoundException, NoInternetConnectionException,
 			FoodServiceException {
-		//"ERROR" String is returned for week 2
+		// "ERROR" String is returned for week 2
 		int dayOfTheWeek = 0, weekNumber = 2;
 
 		when(fileSystemService.openInputFile(Mockito.anyString())).thenThrow(
@@ -220,19 +229,5 @@ public class FoodServiceTest {
 					Matchers.equalTo(FoodServiceException.NO_FOOD_FOR_WEEK));
 			throw e;
 		}
-	}
-
-	@SuppressWarnings("unchecked")
-	@Test(expected = NoInternetConnectionException.class)
-	public void getFoodsBy_withoutInternetConnectionAndAlreadyDownloadedFoods_throwsException()
-			throws FileNotFoundException, NoInternetConnectionException,
-			FoodServiceException {
-		int dayOfTheWeek = 0, weekNumber = 1;
-
-		when(fileSystemService.openInputFile(Mockito.anyString())).thenThrow(
-				FileNotFoundException.class);
-		when(networkStatusService.isConnectedToInternet()).thenReturn(false);
-
-		foodService.getFoodsBy(weekNumber, dayOfTheWeek);
 	}
 }

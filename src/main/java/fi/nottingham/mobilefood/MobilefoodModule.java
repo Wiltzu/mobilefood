@@ -24,14 +24,14 @@ import fi.nottingham.mobilefood.view.impl.MainActivity;
 public class MobilefoodModule {
 	@Provides
 	@Singleton
-	IFoodService provideFoodService(Config config, IFileSystemService fileSystemService, INetworkStatusService networkStatusService) {
-		return new FoodServiceImpl(config.getString("mobilefood.foodservice.url"), fileSystemService, networkStatusService);
+	IFoodService provideFoodService(Config config, IFileSystemService fileSystemService) {
+		return new FoodServiceImpl(config.getString("mobilefood.foodservice.url"), fileSystemService);
 	}
 	
 	@Provides
 	@Singleton
-	IMainViewPresenter provideMainViewPresenter(IFoodService foodService, Date timeNow) {
-		return new MainViewPresenterImpl(foodService, timeNow);
+	IMainViewPresenter provideMainViewPresenter(IFoodService foodService, Date timeNow, INetworkStatusService networkStatusService) {
+		return new MainViewPresenterImpl(foodService, timeNow, networkStatusService);
 	}
 	
 	@Provides

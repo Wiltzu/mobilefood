@@ -28,7 +28,6 @@ import fi.nottingham.mobilefood.model.Food;
 import fi.nottingham.mobilefood.model.RestaurantDay;
 import fi.nottingham.mobilefood.service.IFileSystemService;
 import fi.nottingham.mobilefood.service.IFoodService;
-import fi.nottingham.mobilefood.service.INetworkStatusService;
 import fi.nottingham.mobilefood.service.exceptions.FoodServiceException;
 import fi.nottingham.mobilefood.service.exceptions.NoInternetConnectionException;
 
@@ -39,85 +38,19 @@ public class FoodServiceImpl implements IFoodService {
 	private final String serviceLocation;
 	private final Logger logger = Logger.getLogger("FoodService");
 	private final IFileSystemService fileSystemService;
-	private final INetworkStatusService networkStatusService;
 
 	@Inject
 	public FoodServiceImpl(String serviceLocation,
-			IFileSystemService fileSystemService, INetworkStatusService networkStatusService) {
+			IFileSystemService fileSystemService) {
 		this.serviceLocation = checkNotNull(serviceLocation,
 				"serviceLocation cannot be null");
 		this.fileSystemService = checkNotNull(fileSystemService,
 				"fileSystemService cannot be null");
-		this.networkStatusService = checkNotNull(networkStatusService, "networkStatusService cannot be null");
 	}
-
-	public List<RestaurantDay> getFoodsBy(int weekNumber, int dayOfTheWeek) throws NoInternetConnectionException, FoodServiceException {
-		// TODO: much better error handling
-		final List<RestaurantDay> foodsOfTheDay = Lists.newArrayList();
-		checkArgument(weekNumber >= 1, "week number must be at least one");
-
-		String foodData = null;
-
-		String responseFromFile = getDataFromInternalStorage(weekNumber);
-
-		if (isNullOrEmpty(responseFromFile)) {
-			foodData = downloadDataFromService(weekNumber);
-		} else {
-			foodData = responseFromFile;
-		}
-		
-		if (foodData != null) {
-			try {
-				//TODO: JSON versioning so that version compatibility is easily detected
-				//TODO: move parsing to its own class
-				JSONArray foodsByDay = (JSONArray) new JSONTokener(foodData)
-						.nextValue();
-
-				JSONObject requestedWeekDay = foodsByDay
-						.getJSONObject(dayOfTheWeek);
-
-				JSONArray foodsByRestaurant = requestedWeekDay
-						.getJSONArray("foods_by_restaurant");
-
-				for (int i = 0; i < foodsByRestaurant.length(); i++) {
-					JSONObject restaurant = foodsByRestaurant.getJSONObject(i);
-					JSONArray itsFoods = restaurant.getJSONArray("foods");
-
-					List<Food> foodsOfTheRestaurant = Lists.newArrayList();
-					for (int foodIndex = 0; foodIndex < itsFoods.length(); foodIndex++) {
-						JSONObject food = itsFoods.getJSONObject(foodIndex);
-
-						JSONArray foodPrices = food.getJSONArray("prices");
-						List<String> prices = Lists.newArrayList();
-
-						for (int j = 0; j < foodPrices.length(); j++) {
-							prices.add(foodPrices.getString(j));
-						}
-
-						foodsOfTheRestaurant.add(new Food(food
-								.getString("name"), prices, food
-								.optString("diets")));
-					}
-					String restaurantName = restaurant
-							.getString("restaurant_name");
-					foodsOfTheDay.add(new RestaurantDay(restaurantName,
-							foodsOfTheRestaurant));
-				}
-
-			} catch (JSONException e) {
-				logger.throwing("FoodService",
-						"getFoodsBy: JSONParsing failed!", e);
-			}
-		}
-
-		return foodsOfTheDay;
-	}
-
-	/**
-	 * @param weekNumber
-	 * @return foods from file or null if not found
-	 */
-	private String getDataFromInternalStorage(int weekNumber) {
+	
+	@Override
+	public List<RestaurantDay> getFoodsFromInternalStorageBy(int weekNumber,
+			int dayOfTheWeek) {
 		String fileName = getFileNameFor(YEAR, weekNumber, CHAIN_NAME);
 		String responseFromFile = null;
 
@@ -127,12 +60,76 @@ public class FoodServiceImpl implements IFoodService {
 
 			responseFromFile = IOUtils.toString(weekInputFile);
 			weekInputFile.close();
-
 		} catch (IOException e) {
+			//TODO: logging here
 			return null;
 		}
+		
+		if(!isNullOrEmpty(responseFromFile)) {			
+			return parseFoods(dayOfTheWeek, responseFromFile);
+		} else {			
+			return null;
+		}
+	}
 
-		return responseFromFile;
+	public List<RestaurantDay> getFoodsBy(int weekNumber, int dayOfTheWeek) throws FoodServiceException {
+		// TODO: much better error handling
+		final List<RestaurantDay> foodsOfTheDay = Lists.newArrayList();
+		checkArgument(weekNumber >= 1, "week number must be at least one");
+
+		String foodJSON = downloadDataFromService(weekNumber);
+		
+		if (foodJSON != null) {
+			foodsOfTheDay.addAll(parseFoods(dayOfTheWeek, foodJSON));
+		}
+
+		return foodsOfTheDay;
+	}
+
+	private List<RestaurantDay> parseFoods(int dayOfTheWeek, String foodJSON) {
+		final List<RestaurantDay> foodsOfTheDay = Lists.newArrayList();
+		try {
+			//TODO: JSON versioning so that version compatibility is easily detected
+			//TODO: move parsing to its own class
+			JSONArray foodsByDay = (JSONArray) new JSONTokener(foodJSON)
+					.nextValue();
+
+			JSONObject requestedWeekDay = foodsByDay
+					.getJSONObject(dayOfTheWeek);
+
+			JSONArray foodsByRestaurant = requestedWeekDay
+					.getJSONArray("foods_by_restaurant");
+
+			for (int i = 0; i < foodsByRestaurant.length(); i++) {
+				JSONObject restaurant = foodsByRestaurant.getJSONObject(i);
+				JSONArray itsFoods = restaurant.getJSONArray("foods");
+
+				List<Food> foodsOfTheRestaurant = Lists.newArrayList();
+				for (int foodIndex = 0; foodIndex < itsFoods.length(); foodIndex++) {
+					JSONObject food = itsFoods.getJSONObject(foodIndex);
+
+					JSONArray foodPrices = food.getJSONArray("prices");
+					List<String> prices = Lists.newArrayList();
+
+					for (int j = 0; j < foodPrices.length(); j++) {
+						prices.add(foodPrices.getString(j));
+					}
+
+					foodsOfTheRestaurant.add(new Food(food
+							.getString("name"), prices, food
+							.optString("diets")));
+				}
+				String restaurantName = restaurant
+						.getString("restaurant_name");
+				foodsOfTheDay.add(new RestaurantDay(restaurantName,
+						foodsOfTheRestaurant));
+			}
+
+		} catch (JSONException e) {
+			logger.throwing("FoodService",
+					"getFoodsBy: JSONParsing failed!", e);
+		}
+		return foodsOfTheDay;
 	}
 
 	/**
@@ -141,11 +138,7 @@ public class FoodServiceImpl implements IFoodService {
 	 * @throws NoInternetConnectionException if there is no Internet connection
 	 * @throws FoodServiceException if no foods are available requested week or service is down
 	 */
-	private String downloadDataFromService(int weekNumber) throws NoInternetConnectionException, FoodServiceException {
-		if(!networkStatusService.isConnectedToInternet()) {
-			throw new NoInternetConnectionException();
-		}
-		
+	private String downloadDataFromService(int weekNumber) throws FoodServiceException {
 		try {
 			HttpURLConnection connection = (HttpURLConnection) new URL(
 					getRequestURL(weekNumber)).openConnection();
