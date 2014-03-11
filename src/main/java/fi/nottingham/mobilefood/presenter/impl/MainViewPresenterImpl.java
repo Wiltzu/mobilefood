@@ -12,6 +12,7 @@ import com.google.common.collect.Lists;
 import fi.nottingham.mobilefood.model.RestaurantDay;
 import fi.nottingham.mobilefood.presenter.IMainViewPresenter;
 import fi.nottingham.mobilefood.service.IFoodService;
+import fi.nottingham.mobilefood.service.exceptions.FoodServiceException;
 import fi.nottingham.mobilefood.service.exceptions.NoInternetConnectionException;
 import fi.nottingham.mobilefood.util.DateUtils;
 import fi.nottingham.mobilefood.view.IMainView;
@@ -70,6 +71,8 @@ public class MainViewPresenterImpl implements IMainViewPresenter {
 		} catch (NoInternetConnectionException e) {
 			//TODO: log exception
 			setHasInternetConnection(false);
+		} catch(FoodServiceException e) {
+			//TODO: implement
 		}
 	}
 	

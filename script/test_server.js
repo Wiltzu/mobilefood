@@ -10,18 +10,33 @@ app.get('/mobilerest/', function (req, res) {
 
 	fs.readFile(filepath, 'utf8', function (err, data) {
 		if(err) {
-			console.log(err);
-			res.type('text/plain');
-			res.send('ERROR 404: file not found');
+			doInError(err, res);
 			return;
 		}
-		res.type('text/json');
-		res.send(data);
+		
+		if (req.query.week === '2') {
+			doInError(err, res);
+			return;
+		} else {
+			res.type('text/json');
+			res.send(data);			
+		}
+		
 	});
 
 	console.log('Client queried for: ' + JSON.stringify(req.query));
 	console.log('Answered to request #' + (++counter));
 });
+
+doInError = function (err, res) {
+	if(err) {		
+		console.log(err);
+	}
+	
+	res.type('text/plain');
+	res.send('ERROR 404: file not found');
+	return;
+};
 
 port = process.env.PORT || 4731;
 

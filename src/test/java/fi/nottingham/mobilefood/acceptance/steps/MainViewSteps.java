@@ -37,6 +37,7 @@ import fi.nottingham.mobilefood.model.Food;
 import fi.nottingham.mobilefood.model.RestaurantDay;
 import fi.nottingham.mobilefood.presenter.IMainViewPresenter;
 import fi.nottingham.mobilefood.service.IFoodService;
+import fi.nottingham.mobilefood.service.exceptions.FoodServiceException;
 import fi.nottingham.mobilefood.service.exceptions.NoInternetConnectionException;
 import fi.nottingham.mobilefood.util.DateUtils;
 import fi.nottingham.mobilefood.view.IMainView;
@@ -62,7 +63,7 @@ public class MainViewSteps {
 	}
 
 	@Given("the main view is opened and the following foods are provided: $providedFoods")
-	public void givenTheFollowingFoodsAreProvided(ExamplesTable foodsTable) throws NoInternetConnectionException {
+	public void givenTheFollowingFoodsAreProvided(ExamplesTable foodsTable) throws NoInternetConnectionException, FoodServiceException {
 		MockitoAnnotations.initMocks(this);
 		MobilefoodModules.getModules().add(new TestModule());
 		//get provided foods

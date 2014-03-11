@@ -29,6 +29,7 @@ import fi.nottingham.mobilefood.model.RestaurantDay;
 import fi.nottingham.mobilefood.service.IFileSystemService;
 import fi.nottingham.mobilefood.service.IFoodService;
 import fi.nottingham.mobilefood.service.INetworkStatusService;
+import fi.nottingham.mobilefood.service.exceptions.FoodServiceException;
 import fi.nottingham.mobilefood.service.exceptions.NoInternetConnectionException;
 
 public class FoodServiceImpl implements IFoodService {
@@ -50,7 +51,7 @@ public class FoodServiceImpl implements IFoodService {
 		this.networkStatusService = checkNotNull(networkStatusService, "networkStatusService cannot be null");
 	}
 
-	public List<RestaurantDay> getFoodsBy(int weekNumber, int dayOfTheWeek) throws NoInternetConnectionException {
+	public List<RestaurantDay> getFoodsBy(int weekNumber, int dayOfTheWeek) throws NoInternetConnectionException, FoodServiceException {
 		// TODO: much better error handling
 		final List<RestaurantDay> foodsOfTheDay = Lists.newArrayList();
 		checkArgument(weekNumber >= 1, "week number must be at least one");
@@ -68,7 +69,7 @@ public class FoodServiceImpl implements IFoodService {
 		if (foodData != null) {
 			try {
 				//TODO: JSON versioning so that version compatibility is easily detected
-				//TODO: move parsing to own class
+				//TODO: move parsing to its own class
 				JSONArray foodsByDay = (JSONArray) new JSONTokener(foodData)
 						.nextValue();
 
@@ -138,8 +139,9 @@ public class FoodServiceImpl implements IFoodService {
 	 * @param weekNumber
 	 * @return foods downloaded from service
 	 * @throws NoInternetConnectionException if there is no Internet connection
+	 * @throws FoodServiceException if no foods are available requested week or service is down
 	 */
-	private String downloadDataFromService(int weekNumber) throws NoInternetConnectionException {
+	private String downloadDataFromService(int weekNumber) throws NoInternetConnectionException, FoodServiceException {
 		if(!networkStatusService.isConnectedToInternet()) {
 			throw new NoInternetConnectionException();
 		}
@@ -147,13 +149,14 @@ public class FoodServiceImpl implements IFoodService {
 		try {
 			HttpURLConnection connection = (HttpURLConnection) new URL(
 					getRequestURL(weekNumber)).openConnection();
+			//TODO: set timeouts for connecting and receiving data from service
 
 			String response = IOUtils.toString(connection.getInputStream(),
 					"UTF-8");
 
-			if (response == null || response.contains("ERROR")) {
+			if (isNullOrEmpty(response) || response.contains("ERROR")) {
 				logger.log(Level.SEVERE, response);
-				return null;
+				throw new FoodServiceException(FoodServiceException.NO_FOOD_FOR_WEEK);
 			}
 
 			OutputStream weekOutputFile = fileSystemService
@@ -164,12 +167,13 @@ public class FoodServiceImpl implements IFoodService {
 
 			return response;
 		} catch (MalformedURLException e) {
+			//TODO: recommend to check URL
 			logger.throwing("FoodService", "getFoodsBy", e);
+			throw new FoodServiceException(FoodServiceException.SERVICE_DOWN);
 		} catch (IOException e) {
 			logger.throwing("FoodService", "getFoodsBy", e);
+			throw new FoodServiceException(FoodServiceException.SERVICE_DOWN);
 		}
-
-		return null;
 	}
 
 	private String getFileNameFor(int year, int weekNumber, String chainName) {
