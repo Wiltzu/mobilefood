@@ -29,6 +29,7 @@ import com.typesafe.config.ConfigFactory;
 import fi.nottingham.mobilefood.service.IFileSystemService;
 import fi.nottingham.mobilefood.service.IFoodService;
 import fi.nottingham.mobilefood.service.INetworkStatusService;
+import fi.nottingham.mobilefood.service.exceptions.FoodServiceException;
 import fi.nottingham.mobilefood.service.exceptions.NoInternetConnectionException;
 
 public class FoodServiceTest {
@@ -156,8 +157,8 @@ public class FoodServiceTest {
 	}
 
 	@SuppressWarnings("unchecked")
-	@Test
-	public void getFoodsBy_timeouts() throws IOException, NoInternetConnectionException {
+	@Test(expected = FoodServiceException.class)
+	public void getFoodsBy_withoutServiceOn_throwsException() throws IOException, NoInternetConnectionException {
 		// TODO: make this error handling test!!
 		int dayOfTheWeek = 0, weekNumber = 1;
 		OutputStream fileOutputStreamMock = mock(OutputStream.class);
