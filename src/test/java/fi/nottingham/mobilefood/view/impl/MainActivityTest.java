@@ -15,6 +15,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
@@ -25,7 +26,6 @@ import org.robolectric.shadows.ShadowToast;
 import android.app.Activity;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ListView;
 
 import com.google.common.collect.Lists;
 
@@ -114,6 +114,15 @@ public class MainActivityTest {
 		
 		ShadowHandler.idleMainLooper();
 		assertThat(refreshButton.getVisibility(), Matchers.equalTo(View.VISIBLE));
+	}
+	
+	@Test
+	public void clickingRefreshButton_triesToReloadFoods() {
+		Button refreshButton = (Button) ((Activity) mainView).findViewById(R.id.main_refresh_button);
+		
+		refreshButton.performClick();
+		
+		verify(mainViewPresenter, Mockito.times(2)).onViewCreation(mainView);
 	}
 
 	@Module(includes = { MobilefoodModule.class}, overrides = true, library = true)

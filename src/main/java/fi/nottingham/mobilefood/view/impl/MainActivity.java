@@ -16,6 +16,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -65,12 +66,17 @@ public class MainActivity extends DaggerBaseActivity implements IMainView {
 		mFoodsTV = (ListView) findViewById(R.id.listview_foods);
 		mProgressBar = (ProgressBar) findViewById(R.id.progressbar_indeterminate);
 		mRefreshButton = (Button) findViewById(R.id.main_refresh_button);
-	}
-
-	@Override
-	protected void onResume() {
+		
+		mRefreshButton.setOnClickListener(new OnClickListener() {	
+			@Override
+			public void onClick(View v) {
+				Log.i(TAG, "Refresh button clicked.");
+				mRefreshButton.setVisibility(View.INVISIBLE);
+				presenter.onViewCreation(MainActivity.this);
+			}
+		});
+		
 		presenter.onViewCreation(this);
-		super.onResume();
 	}
 
 	@Override
@@ -100,7 +106,6 @@ public class MainActivity extends DaggerBaseActivity implements IMainView {
 				backgroundTask.run();
 				return null;
 			}
-
 			@Override
 			protected void onPostExecute(Void result) {
 				Log.d(TAG, "Running ui update task in main thread...");
@@ -123,6 +128,17 @@ public class MainActivity extends DaggerBaseActivity implements IMainView {
 		checkNotNull(selectedDate, "selectedDate cannot be null.");
 		mWeekDay.setText(DateUtils.getWeekDay(selectedDate));
 		mDateTV.setText(DateUtils.getDateInShortFormat(this, selectedDate));
+	}
+
+	@Override
+	public void notifyThatDeviceHasNoInternetConnection() {
+		Toast.makeText(this, getText(R.string.no_internet), Toast.LENGTH_LONG).show();
+	}
+
+	@Override
+	public void showRefreshButton() {
+		mRefreshButton.setVisibility(View.VISIBLE);
+		mRefreshButton.bringToFront();
 	}
 
 	class RestaurantDayViewAdapter extends ArrayAdapter<RestaurantDay> {
@@ -170,15 +186,5 @@ public class MainActivity extends DaggerBaseActivity implements IMainView {
 
 		}
 
-	}
-
-	@Override
-	public void notifyThatDeviceHasNoInternetConnection() {
-		Toast.makeText(this, getText(R.string.no_internet), Toast.LENGTH_LONG).show();
-	}
-
-	@Override
-	public void showRefreshButton() {
-		mRefreshButton.setVisibility(View.VISIBLE);
 	}
 }

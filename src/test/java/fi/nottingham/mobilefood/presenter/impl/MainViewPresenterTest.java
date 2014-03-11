@@ -79,7 +79,7 @@ public class MainViewPresenterTest {
 		currentFoods = Lists.newArrayList(new RestaurantDay("restName",
 				new ArrayList<Food>()));
 		MockitoAnnotations.initMocks(this); // inits currentFoods
-
+		
 		mainViewPresenter.onViewCreation(mainView);
 
 		verify(mainView).setFoods(currentFoods);
@@ -127,8 +127,7 @@ public class MainViewPresenterTest {
 	
 	@SuppressWarnings("unchecked")
 	@Test
-	public void updateUI_setsFoods() {
-		
+	public void updateUI_setsFoods() {		
 		((MainViewPresenterImpl) mainViewPresenter).updateUI(mainView);
 		
 		verify(mainView).setFoods(Mockito.anyList());

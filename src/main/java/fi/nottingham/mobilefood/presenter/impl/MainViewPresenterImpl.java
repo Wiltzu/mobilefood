@@ -21,7 +21,7 @@ public class MainViewPresenterImpl implements IMainViewPresenter {
 	private Date selectedDate;
 	private List<RestaurantDay> currentFoods;
 	
-	private boolean hasInternetConnection;
+	private boolean hasInternetConnection = true;
 
 	@Inject
 	public MainViewPresenterImpl(IFoodService foodService, Date timeNow) {
@@ -36,7 +36,7 @@ public class MainViewPresenterImpl implements IMainViewPresenter {
 
 		mainView.setDate(selectedDate);
 
-		if (currentFoods.isEmpty()) {
+		if (currentFoods.isEmpty() || !hasInternetConnection) {
 			mainView.showLoadingIcon();
 
 			mainView.runInBackgroud(new Runnable() {
