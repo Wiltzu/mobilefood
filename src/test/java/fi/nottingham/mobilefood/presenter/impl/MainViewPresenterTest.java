@@ -1,6 +1,7 @@
 package fi.nottingham.mobilefood.presenter.impl;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -124,8 +125,6 @@ public class MainViewPresenterTest {
 	@Test
 	public void fetchFoodsFromService_withInternetButServiceHasNoFoodsForWeek_exceptionIsCacthed()
 			throws FoodServiceException {
-		MockitoAnnotations.initMocks(this); // inits currentFoods
-
 		when(networkStatusService.isConnectedToInternet()).thenReturn(true);
 		when(foodService.getFoodsFromInternalStorageBy(Mockito.anyInt(), Mockito.anyInt())).thenReturn(null);
 		when(foodService.getFoodsBy(Mockito.anyInt(), Mockito.anyInt()))
@@ -136,7 +135,27 @@ public class MainViewPresenterTest {
 		((MainViewPresenterImpl) mainViewPresenter).fetchFoodsFromService();
 
 		verify(foodService).getFoodsBy(Mockito.anyInt(), Mockito.anyInt());
-		//TODO: improve
+		
+		assertTrue(((MainViewPresenterImpl) mainViewPresenter).foodServiceCallResultedInException());
+	}
+	
+	@Test
+	public void updateUI_withInternetButServiceHasNoFoodsForWeek_userIsNotifyThatThereAreNoFoodsAndRefreshButtonIsShown()
+			throws FoodServiceException {
+		when(networkStatusService.isConnectedToInternet()).thenReturn(true);
+		when(foodService.getFoodsFromInternalStorageBy(Mockito.anyInt(), Mockito.anyInt())).thenReturn(null);
+		when(foodService.getFoodsBy(Mockito.anyInt(), Mockito.anyInt()))
+				.thenThrow(
+						new FoodServiceException(
+								FoodServiceException.SERVICE_DOWN));
+
+		((MainViewPresenterImpl) mainViewPresenter).fetchFoodsFromService();
+		((MainViewPresenterImpl) mainViewPresenter).updateUI(mainView);
+
+		verify(foodService).getFoodsBy(Mockito.anyInt(), Mockito.anyInt());
+		
+		verify(mainView).notifyThatFoodsAreCurrentlyUnavailable();
+		verify(mainView).showRefreshButton();
 	}
 
 	@Test

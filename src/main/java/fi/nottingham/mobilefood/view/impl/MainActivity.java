@@ -97,28 +97,6 @@ public class MainActivity extends DaggerBaseActivity implements IMainView {
 	}
 
 	@Override
-	public void runInBackgroud(final Runnable backgroundTask,
-			final Runnable uiUpdateTask) {
-		new AsyncTask<Void, Void, Void>() {
-			@Override
-			protected Void doInBackground(Void... params) {
-				Log.d(TAG, "Running task in background thread...");
-				backgroundTask.run();
-				return null;
-			}
-			@Override
-			protected void onPostExecute(Void result) {
-				Log.d(TAG, "Running ui update task in main thread...");
-				uiUpdateTask.run();
-
-				if (mProgressBar.isShown()) {
-					mProgressBar.setVisibility(View.INVISIBLE);
-				}
-			}
-		}.execute();
-	}
-
-	@Override
 	public void showLoadingIcon() {
 		mProgressBar.setVisibility(View.VISIBLE);
 	}
@@ -136,9 +114,36 @@ public class MainActivity extends DaggerBaseActivity implements IMainView {
 	}
 
 	@Override
+	public void notifyThatFoodsAreCurrentlyUnavailable() {
+		Toast.makeText(this, getText(R.string.no_foods_available), Toast.LENGTH_LONG).show();
+	}
+
+	@Override
 	public void showRefreshButton() {
 		mRefreshButton.setVisibility(View.VISIBLE);
 		mRefreshButton.bringToFront();
+	}
+
+	@Override
+	public void runInBackgroud(final Runnable backgroundTask,
+			final Runnable uiUpdateTask) {
+		new AsyncTask<Void, Void, Void>() {
+			@Override
+			protected Void doInBackground(Void... params) {
+				Log.d(TAG, "Running task in background thread...");
+				backgroundTask.run();
+				return null;
+			}
+			@Override
+			protected void onPostExecute(Void result) {
+				Log.d(TAG, "Running ui update task in main thread...");
+				uiUpdateTask.run();
+	
+				if (mProgressBar.isShown()) {
+					mProgressBar.setVisibility(View.INVISIBLE);
+				}
+			}
+		}.execute();
 	}
 
 	class RestaurantDayViewAdapter extends ArrayAdapter<RestaurantDay> {

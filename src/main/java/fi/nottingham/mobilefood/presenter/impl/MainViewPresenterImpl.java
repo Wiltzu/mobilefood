@@ -23,6 +23,7 @@ public class MainViewPresenterImpl implements IMainViewPresenter {
 	private List<RestaurantDay> currentFoods;
 	
 	private boolean hasInternetConnection = true;
+	private FoodServiceException foodServiceException = null;
 
 	@Inject
 	public MainViewPresenterImpl(IFoodService foodService, Date timeNow, INetworkStatusService networkStatusService) {
@@ -60,6 +61,7 @@ public class MainViewPresenterImpl implements IMainViewPresenter {
 	 * gets foods from service in synchronized way
 	 */
 	protected synchronized void fetchFoodsFromService() {		
+		foodServiceException = null;
 		int dayOfTheWeek = DateUtils.getDayOfTheWeek(selectedDate);
 		int weekNumber = DateUtils.getWeekOfYear(selectedDate);
 			
@@ -67,9 +69,9 @@ public class MainViewPresenterImpl implements IMainViewPresenter {
 		
 		if(currentFoods == null && (hasInternetConnection = networkStatusService.isConnectedToInternet())) {
 			try {
-				currentFoods = foodService.getFoodsBy(weekNumber, dayOfTheWeek);			
+				currentFoods = foodService.getFoodsBy(weekNumber, dayOfTheWeek);
 			} catch(FoodServiceException e) {
-				//TODO: implement
+				foodServiceException = e;
 			}	
 		}
 		
@@ -83,6 +85,10 @@ public class MainViewPresenterImpl implements IMainViewPresenter {
 			
 			if(!hasInternetConnection()) {
 				mainView.notifyThatDeviceHasNoInternetConnection();
+				mainView.showRefreshButton();
+			
+			} else if (foodServiceCallResultedInException()) {
+				mainView.notifyThatFoodsAreCurrentlyUnavailable();
 				mainView.showRefreshButton();
 			}
 		}
@@ -100,6 +106,10 @@ public class MainViewPresenterImpl implements IMainViewPresenter {
 	@Override
 	public IFoodService getFoodService() {
 		return foodService;
+	}
+
+	public boolean foodServiceCallResultedInException() {
+		return foodServiceException != null;
 	}
 
 }

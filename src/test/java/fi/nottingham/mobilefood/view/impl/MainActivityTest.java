@@ -124,6 +124,15 @@ public class MainActivityTest {
 		
 		verify(mainViewPresenter, Mockito.times(2)).onViewCreation(mainView);
 	}
+	
+	@Test
+	public void notifyThatFoodsAreCurrentlyUnavailable_createsToastWithCorrectText() {
+		mainView.notifyThatFoodsAreCurrentlyUnavailable();
+		
+		CharSequence expectedToastText = ((Activity) mainView).getText(R.string.no_foods_available);
+		ShadowHandler.idleMainLooper();
+	    assertThat(ShadowToast.getTextOfLatestToast(), Matchers.equalTo(expectedToastText));
+	}
 
 	@Module(includes = { MobilefoodModule.class}, overrides = true, library = true)
 	class TestModule {

@@ -20,5 +20,8 @@ public interface IMainView {
 
 	void notifyThatDeviceHasNoInternetConnection();
 
+	void notifyThatFoodsAreCurrentlyUnavailable();
+	
 	void showRefreshButton();
+
 }
