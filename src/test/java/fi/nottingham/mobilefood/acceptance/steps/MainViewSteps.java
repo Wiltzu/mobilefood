@@ -2,7 +2,7 @@ package fi.nottingham.mobilefood.acceptance.steps;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -50,6 +50,8 @@ public class MainViewSteps {
 	IMainView mainView;
 	@Mock
 	IFoodService foodService;
+	@Mock
+	INetworkStatusService networkStatusService;
 	IMainViewPresenter mainViewPresenter;
 
 	@BeforeStory
@@ -68,10 +70,13 @@ public class MainViewSteps {
 	public void givenTheFollowingFoodsAreProvided(ExamplesTable foodsTable) throws NoInternetConnectionException, FoodServiceException {
 		MockitoAnnotations.initMocks(this);
 		MobilefoodModules.getModules().add(new TestModule());
-		//get provided foods
-		List<RestaurantDay> foodList = getExampleFoodsAsList(foodsTable);
+		
+		when(networkStatusService.isConnectedToInternet()).thenReturn(true);
+		//no foods from internal storage
+		when(foodService.getFoodsFromInternalStorageBy(Mockito.anyInt(), Mockito.anyInt())).thenReturn(null);
 		//add provided foods to service's mock
-		Mockito.when(foodService.getFoodsBy(Mockito.anyInt(), Mockito.anyInt())).thenReturn(
+		List<RestaurantDay> foodList = getExampleFoodsAsList(foodsTable);
+		when(foodService.getFoodsBy(Mockito.anyInt(), Mockito.anyInt())).thenReturn(
 				foodList);
 		//start activity
 		mainActivity = Robolectric.buildActivity(MainActivity.class).create().start().resume().get();
@@ -109,7 +114,7 @@ public class MainViewSteps {
 		@Provides
 		@Singleton
 		INetworkStatusService provideNetworkStatus() {
-			return mock(INetworkStatusService.class);
+			return networkStatusService;
 		}
 	}
 
