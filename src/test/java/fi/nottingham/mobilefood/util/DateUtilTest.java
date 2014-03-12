@@ -1,6 +1,7 @@
 package fi.nottingham.mobilefood.util;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -45,5 +46,21 @@ public class DateUtilTest {
 		
 		final int MONDAY = 0;
 		assertEquals("March 3rd 2014 should be Monday.", MONDAY, DateUtils.getDayOfTheWeek(testDate));		
+	}
+	
+	@Test
+	public void getDateAtMidnight_returnDateThatTimeIsMidnight() {
+		int year = 2014, month = 11, day = 3;
+		Date dateFromUtil = DateUtils.getDateAtMidnight(year, month, day);
+		
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(dateFromUtil);
+		
+		assertEquals(cal.get(Calendar.YEAR), 2014);
+		assertEquals(cal.get(Calendar.MONTH), Calendar.DECEMBER);
+		assertEquals(cal.get(Calendar.DAY_OF_MONTH), 3);
+		assertEquals(cal.get(Calendar.HOUR_OF_DAY), 0);
+		assertEquals(cal.get(Calendar.MINUTE), 0);
+		assertEquals(cal.get(Calendar.MILLISECOND), 0);
 	}
 }

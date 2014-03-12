@@ -75,4 +75,17 @@ public class DateUtils {
 		calendar.setTime(date);
 		return calendar.get(Calendar.WEEK_OF_YEAR);
 	}
+
+	/**
+	 * @param year
+	 * @param month is zero based and between 0-11
+	 * @param day
+	 * @return date to corresponding date
+	 */
+	public static Date getDateAtMidnight(int year, int month, int day) {
+		Calendar calendar = new GregorianCalendar();
+		calendar.clear();
+		calendar.set(year, month, day);
+		return calendar.getTime();
+	}
 }
