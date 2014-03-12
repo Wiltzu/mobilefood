@@ -8,6 +8,8 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import org.apache.log4j.Logger;
+
 import fi.nottingham.mobilefood.model.RestaurantDay;
 import fi.nottingham.mobilefood.presenter.IMainViewPresenter;
 import fi.nottingham.mobilefood.service.IFoodService;
@@ -24,6 +26,8 @@ public class MainViewPresenterImpl implements IMainViewPresenter {
 	
 	private boolean hasInternetConnection = true;
 	private FoodServiceException foodServiceException = null;
+	
+	private final Logger logger = Logger.getLogger(this.getClass());
 
 	@Inject
 	public MainViewPresenterImpl(IFoodService foodService, Date timeNow, INetworkStatusService networkStatusService) {
@@ -40,7 +44,7 @@ public class MainViewPresenterImpl implements IMainViewPresenter {
 
 		if (currentFoods == null) {
 			mainView.showLoadingIcon();
-
+			
 			mainView.runInBackgroud(new Runnable() {
 				@Override
 				public void run() {
@@ -64,11 +68,13 @@ public class MainViewPresenterImpl implements IMainViewPresenter {
 		foodServiceException = null;
 		int dayOfTheWeek = DateUtils.getDayOfTheWeek(selectedDate);
 		int weekNumber = DateUtils.getWeekOfYear(selectedDate);
-			
+		
+		logger.debug("Fething foods from internal storage.");
 		currentFoods = foodService.getFoodsFromInternalStorageBy(weekNumber, dayOfTheWeek);
 		
 		if(currentFoods == null && (hasInternetConnection = networkStatusService.isConnectedToInternet())) {
 			try {
+				logger.debug("Fething foods from service.");
 				currentFoods = foodService.getFoodsBy(weekNumber, dayOfTheWeek);
 			} catch(FoodServiceException e) {
 				foodServiceException = e;
@@ -84,10 +90,12 @@ public class MainViewPresenterImpl implements IMainViewPresenter {
 			mainView.setFoods(new ArrayList<RestaurantDay>());
 			
 			if(!hasInternetConnection()) {
+				logger.debug("Device doesn't got Internet connection.");
 				mainView.notifyThatDeviceHasNoInternetConnection();
 				mainView.showRefreshButton();
 			
 			} else if (foodServiceCallResultedInException()) {
+				logger.debug("Food service is down or foods are unavailable.");
 				mainView.notifyThatFoodsAreCurrentlyUnavailable();
 				mainView.showRefreshButton();
 			}

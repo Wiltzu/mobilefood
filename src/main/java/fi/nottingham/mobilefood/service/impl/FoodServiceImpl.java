@@ -11,12 +11,11 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.inject.Inject;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -36,7 +35,7 @@ public class FoodServiceImpl implements IFoodService {
 	private static final int YEAR = 2014;
 
 	private final String serviceLocation;
-	private final Logger logger = Logger.getLogger("FoodService");
+	private final Logger logger = Logger.getLogger(this.getClass());
 	private final IFileSystemService fileSystemService;
 
 	@Inject
@@ -61,7 +60,7 @@ public class FoodServiceImpl implements IFoodService {
 			responseFromFile = IOUtils.toString(weekInputFile);
 			weekInputFile.close();
 		} catch (IOException e) {
-			//TODO: logging here
+			logger.debug("No food file in internal storage", e);
 			return null;
 		}
 		
@@ -72,8 +71,8 @@ public class FoodServiceImpl implements IFoodService {
 		}
 	}
 
+	@Override
 	public List<RestaurantDay> getFoodsBy(int weekNumber, int dayOfTheWeek) throws FoodServiceException {
-		// TODO: much better error handling
 		final List<RestaurantDay> foodsOfTheDay = Lists.newArrayList();
 		checkArgument(weekNumber >= 1, "week number must be at least one");
 
@@ -126,8 +125,7 @@ public class FoodServiceImpl implements IFoodService {
 			}
 
 		} catch (JSONException e) {
-			logger.throwing("FoodService",
-					"getFoodsBy: JSONParsing failed!", e);
+			logger.fatal("Failed to parse foods from JSON", e);
 		}
 		return foodsOfTheDay;
 	}
@@ -148,7 +146,7 @@ public class FoodServiceImpl implements IFoodService {
 					"UTF-8");
 
 			if (isNullOrEmpty(response) || response.contains("ERROR")) {
-				logger.log(Level.SEVERE, response);
+				logger.error(String.format("Unable to get foods from service. Response was: '%s'", response));
 				throw new FoodServiceException(FoodServiceException.NO_FOOD_FOR_WEEK);
 			}
 
@@ -160,11 +158,10 @@ public class FoodServiceImpl implements IFoodService {
 
 			return response;
 		} catch (MalformedURLException e) {
-			//TODO: recommend to check URL
-			logger.throwing("FoodService", "getFoodsBy", e);
+			logger.fatal("Service's URL was malformed, check URL!", e);
 			throw new FoodServiceException(FoodServiceException.SERVICE_DOWN);
 		} catch (IOException e) {
-			logger.throwing("FoodService", "getFoodsBy", e);
+			logger.fatal("Service seems to down for some reason", e);
 			throw new FoodServiceException(FoodServiceException.SERVICE_DOWN);
 		}
 	}

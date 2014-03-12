@@ -46,6 +46,8 @@ public class DaggerApplication extends Application implements IFileSystemService
 		androidModule.setDaggerApplication(this);
 		graph = ObjectGraph.create(androidModule);
 		graph.inject(this);
+		
+		LoggingConfigurer.configure();
 	}
 
 	public void inject(Object object) {
