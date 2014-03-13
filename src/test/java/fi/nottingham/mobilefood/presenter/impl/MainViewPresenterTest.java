@@ -7,6 +7,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -26,6 +27,7 @@ import fi.nottingham.mobilefood.service.IFoodService;
 import fi.nottingham.mobilefood.service.INetworkStatusService;
 import fi.nottingham.mobilefood.service.exceptions.FoodServiceException;
 import fi.nottingham.mobilefood.service.exceptions.NoInternetConnectionException;
+import fi.nottingham.mobilefood.util.DateUtils;
 import fi.nottingham.mobilefood.view.IMainView;
 
 public class MainViewPresenterTest {
@@ -94,6 +96,14 @@ public class MainViewPresenterTest {
 	public void OnViewCreation_setsDateForView() {
 		mainViewPresenter.onViewCreation(mainView);
 		verify(mainView).setDate(Mockito.any(Date.class));
+	}
+	
+	@Test
+	public void onViewCreation_setsAvailableWeekDaysForView() {
+		int[] expectedWeekDays = {2, 3, 4, 5, 6};
+		mainViewPresenter = new MainViewPresenterImpl(foodService, DateUtils.getDateAtMidnight(2014, Calendar.MARCH, 12), networkStatusService);
+		mainViewPresenter.onViewCreation(mainView);
+		verify(mainView).setAvailableWeekDays(expectedWeekDays);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -179,5 +189,6 @@ public class MainViewPresenterTest {
 		verify(mainView).notifyThatDeviceHasNoInternetConnection();
 		verify(mainView).showRefreshButton();
 	}
+	
 
 }

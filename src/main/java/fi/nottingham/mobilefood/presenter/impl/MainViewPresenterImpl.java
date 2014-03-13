@@ -40,6 +40,7 @@ public class MainViewPresenterImpl implements IMainViewPresenter {
 	public void onViewCreation(final IMainView mainView) {
 		checkNotNull("mainView cannot be null", mainView);
 
+		mainView.setAvailableWeekDays(DateUtils.getRestOfTheWeeksDayNumbersFrom(selectedDate));
 		mainView.setDate(selectedDate);
 
 		if (currentFoods == null) {

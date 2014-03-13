@@ -8,8 +8,10 @@ import java.util.GregorianCalendar;
 
 import android.content.Context;
 import android.text.format.DateFormat;
+import java.util.Arrays;
 
 public class DateUtils {
+	private static int[] WEEK_DAY_NUMBERS = { 0, 1, 2, 3, 4, 5, 6 };
 
 	public static Date getDateAtMidnight(Date date) {
 		checkNotNull(date, "date cannot be null");
@@ -22,21 +24,22 @@ public class DateUtils {
 		calendar.set(Calendar.MILLISECOND, 0);
 		return calendar.getTime();
 	}
-	
+
 	public static String getWeekDay(Date date) {
-		//TODO: use other than android solution?
+		// TODO: use other than android solution?
 		checkNotNull(date, "date cannot be null");
 		return DateFormat.format("EEEE", date).toString();
 	}
-	
+
 	/**
 	 * 
 	 * @param context
 	 * @param date
-	 * @return like 6.7.2014 or 12/2/2014 depending on the devices localization settings.
+	 * @return like 6.7.2014 or 12/2/2014 depending on the devices localization
+	 *         settings.
 	 */
 	public static String getDateInShortFormat(Context context, Date date) {
-		//TODO: use other than android solution?
+		// TODO: use other than android solution?
 		checkNotNull(date, "date cannot be null");
 		return DateFormat.getDateFormat(context).format(date);
 	}
@@ -47,9 +50,10 @@ public class DateUtils {
 	/**
 	 * @param date
 	 * @return day of the week where 0 is Monday and 6 is Sunday
-	 * <pre>
+	 * 
+	 *         <pre>
 	 * Monday Tuesday Wednesday Thursday Friday Saturday Sunday
-	 * 0      1       2         3        4      5        6 
+	 * 0      1       2         3        4      5        6
 	 * </pre>
 	 * 
 	 */
@@ -58,10 +62,10 @@ public class DateUtils {
 		Calendar calendar = new GregorianCalendar();
 		calendar.setTime(date);
 		int dayOfTheWeek = calendar.get(Calendar.DAY_OF_WEEK);
-		if(dayOfTheWeek == Calendar.SUNDAY) {
+		if (dayOfTheWeek == Calendar.SUNDAY) {
 			return 6;
 		}
-		//calendar's Monday is 2
+		// calendar's Monday is 2
 		return dayOfTheWeek - 2;
 	}
 
@@ -78,7 +82,8 @@ public class DateUtils {
 
 	/**
 	 * @param year
-	 * @param month is zero based and between 0-11
+	 * @param month
+	 *            is zero based and between 0-11
 	 * @param day
 	 * @return date to corresponding date
 	 */
@@ -87,5 +92,16 @@ public class DateUtils {
 		calendar.clear();
 		calendar.set(year, month, day);
 		return calendar.getTime();
+	}
+
+	/**
+	 * @param date
+	 * @return if parameter date is friday this method returns 5,6,7
+	 *         corresponding Friday, Saturday, Sunday.
+	 */
+	public static int[] getRestOfTheWeeksDayNumbersFrom(Date date) {
+		int currentDayOfTheWeek = getDayOfTheWeek(date);
+		return Arrays.copyOfRange(WEEK_DAY_NUMBERS, currentDayOfTheWeek,
+				WEEK_DAY_NUMBERS.length);
 	}
 }

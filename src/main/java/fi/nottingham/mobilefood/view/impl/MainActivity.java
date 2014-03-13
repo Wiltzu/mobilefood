@@ -7,11 +7,13 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import com.google.common.base.Joiner;
-
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBar.Tab;
+import android.support.v7.app.ActionBar.TabListener;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -26,6 +28,9 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.common.base.Joiner;
+
 import fi.nottingham.mobilefood.DaggerBaseActivity;
 import fi.nottingham.mobilefood.R;
 import fi.nottingham.mobilefood.model.Food;
@@ -34,7 +39,8 @@ import fi.nottingham.mobilefood.presenter.IMainViewPresenter;
 import fi.nottingham.mobilefood.util.DateUtils;
 import fi.nottingham.mobilefood.view.IMainView;
 
-public class MainActivity extends DaggerBaseActivity implements IMainView {
+public class MainActivity extends DaggerBaseActivity implements IMainView,
+		TabListener {
 	private static final String TAG = "MainActivity";
 
 	private TextView mDateTV;
@@ -42,10 +48,10 @@ public class MainActivity extends DaggerBaseActivity implements IMainView {
 	private ListView mFoodsTV;
 	private ProgressBar mProgressBar;
 	private Button mRefreshButton;
+	private ActionBar mActionbar;
 
 	@Inject
 	IMainViewPresenter presenter;
-
 
 	/**
 	 * Called when the activity is first created.
@@ -66,8 +72,11 @@ public class MainActivity extends DaggerBaseActivity implements IMainView {
 		mFoodsTV = (ListView) findViewById(R.id.listview_foods);
 		mProgressBar = (ProgressBar) findViewById(R.id.progressbar_indeterminate);
 		mRefreshButton = (Button) findViewById(R.id.main_refresh_button);
-		
-		mRefreshButton.setOnClickListener(new OnClickListener() {	
+
+		mActionbar = getSupportActionBar();
+		mActionbar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+
+		mRefreshButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				Log.i(TAG, "Refresh button clicked.");
@@ -75,7 +84,7 @@ public class MainActivity extends DaggerBaseActivity implements IMainView {
 				presenter.onViewCreation(MainActivity.this);
 			}
 		});
-		
+
 		presenter.onViewCreation(this);
 	}
 
@@ -106,16 +115,37 @@ public class MainActivity extends DaggerBaseActivity implements IMainView {
 		checkNotNull(selectedDate, "selectedDate cannot be null.");
 		mWeekDay.setText(DateUtils.getWeekDay(selectedDate));
 		mDateTV.setText(DateUtils.getDateInShortFormat(this, selectedDate));
+		
+		for(int tabIndex = 0; tabIndex < mActionbar.getTabCount(); tabIndex++) {
+			Object tag = mActionbar.getTabAt(tabIndex).getTag();
+			if(tag != null && tag.equals(DateUtils.getDayOfTheWeek(selectedDate))) {
+				mActionbar.selectTab(mActionbar.getTabAt(tabIndex));
+				break;
+			}
+		}
+	}
+
+	@Override
+	public void setAvailableWeekDays(int[] availableWeekDays) {
+		String[] weekDayNames = getResources()
+				.getStringArray(R.array.week_days);
+		for (int weekDayNumber : availableWeekDays) {
+			mActionbar.addTab(mActionbar.newTab()
+					.setText(weekDayNames[weekDayNumber]).setTag(weekDayNumber)
+					.setTabListener(this));
+		}
 	}
 
 	@Override
 	public void notifyThatDeviceHasNoInternetConnection() {
-		Toast.makeText(this, getText(R.string.no_internet), Toast.LENGTH_LONG).show();
+		Toast.makeText(this, getText(R.string.no_internet), Toast.LENGTH_LONG)
+				.show();
 	}
 
 	@Override
 	public void notifyThatFoodsAreCurrentlyUnavailable() {
-		Toast.makeText(this, getText(R.string.no_foods_available), Toast.LENGTH_LONG).show();
+		Toast.makeText(this, getText(R.string.no_foods_available),
+				Toast.LENGTH_LONG).show();
 	}
 
 	@Override
@@ -134,11 +164,12 @@ public class MainActivity extends DaggerBaseActivity implements IMainView {
 				backgroundTask.run();
 				return null;
 			}
+
 			@Override
 			protected void onPostExecute(Void result) {
 				Log.d(TAG, "Running ui update task in main thread...");
 				uiUpdateTask.run();
-	
+
 				if (mProgressBar.isShown()) {
 					mProgressBar.setVisibility(View.INVISIBLE);
 				}
@@ -147,21 +178,19 @@ public class MainActivity extends DaggerBaseActivity implements IMainView {
 	}
 
 	class RestaurantDayViewAdapter extends ArrayAdapter<RestaurantDay> {
-
-		private static final int FOOD_ITEM_LAYOUT = R.layout.restaurant_item;
 		private static final String TAG = "RestaurantDayViewAdapter";
 
 		public RestaurantDayViewAdapter(Context context,
 				List<RestaurantDay> items) {
-			super(context, FOOD_ITEM_LAYOUT, items);
+			super(context, R.layout.restaurant_item, items);
 			Log.d(TAG, "Added Following RestaurantDays" + items);
 		}
 
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
 			LayoutInflater inflater = getLayoutInflater();
-			View restaurantDayView = inflater.inflate(FOOD_ITEM_LAYOUT, parent,
-					false);
+			View restaurantDayView = inflater.inflate(R.layout.restaurant_item,
+					parent, false);
 
 			ImageView chainLogo = (ImageView) restaurantDayView
 					.findViewById(R.id.restaurant_item_chain_logo);
@@ -176,7 +205,8 @@ public class MainActivity extends DaggerBaseActivity implements IMainView {
 			textView.setText(restaurantDay.getRestaurantName());
 
 			for (Food lunch : restaurantDay.getLunches()) {
-				View lunchlayoutItem = inflater.inflate(R.layout.food_item, null, false);
+				View lunchlayoutItem = inflater.inflate(R.layout.food_item,
+						null, false);
 				((TextView) lunchlayoutItem.findViewById(R.id.food_item_name))
 						.setText(lunch.getFoodName());
 				((TextView) lunchlayoutItem.findViewById(R.id.food_item_diets))
@@ -186,10 +216,28 @@ public class MainActivity extends DaggerBaseActivity implements IMainView {
 				lunchLayout.addView(lunchlayoutItem);
 			}
 
-			Log.d(TAG, "Restaurant added to ui:"  + restaurantDay);
+			Log.d(TAG, "Restaurant added to ui:" + restaurantDay);
 			return restaurantDayView;
 
 		}
+
+	}
+
+	@Override
+	public void onTabReselected(Tab arg0, FragmentTransaction arg1) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void onTabSelected(Tab arg0, FragmentTransaction arg1) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void onTabUnselected(Tab arg0, FragmentTransaction arg1) {
+		// TODO Auto-generated method stub
 
 	}
 }

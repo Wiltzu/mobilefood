@@ -24,4 +24,6 @@ public interface IMainView {
 	
 	void showRefreshButton();
 
+	void setAvailableWeekDays(int[] expectedWeekDays);
+
 }
