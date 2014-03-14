@@ -7,6 +7,10 @@ mobilefood application UI
 
 ## Setting up a environment
 
+### Needed projects
+
+* use https://github.com/mosabua/maven-android-sdk-deployer to install android version 4 and 7 compability libraries to your maven repo locally
+
 ### Installing software
 
 Install Eclipse with ADT and m2Eclipse android plugin
