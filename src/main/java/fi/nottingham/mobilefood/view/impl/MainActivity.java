@@ -110,13 +110,7 @@ public class MainActivity extends DaggerBaseActivity implements IMainView,
 		} else {
 			mFoodsListView.setAdapter(new ArrayAdapter<String>(this,
 					android.R.layout.simple_list_item_1, getResources()
-							.getStringArray(R.array.no_food_for_day)) {
-				@Override
-				public boolean isEnabled(int position) {
-					//can't be selected
-					return false;
-				}
-			});
+							.getStringArray(R.array.no_food_for_day)));
 		}
 	}
 

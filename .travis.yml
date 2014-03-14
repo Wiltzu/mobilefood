@@ -27,7 +27,7 @@ before_install:
   #support libraries
   - git config --global user.email "you@example.com"
   - git config --global user.name "Your Name"
-  - git pull https://github.com/mosabua/maven-android-sdk-deployer.git
+  - git clone https://github.com/mosabua/maven-android-sdk-deployer.git
   - cd maven-android-sdk-deployer
   - mvn install -P 4.4
   - cd extras
