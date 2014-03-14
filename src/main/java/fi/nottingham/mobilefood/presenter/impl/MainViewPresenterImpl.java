@@ -58,7 +58,7 @@ public class MainViewPresenterImpl implements IMainViewPresenter {
 		}
 	}
 
-	private synchronized void updateFoodsInBackground(final IMainView mainView) {
+	protected synchronized void updateFoodsInBackground(final IMainView mainView) {
 		mainView.showLoadingIcon();
 		
 		mainView.runInBackgroud(new Runnable() {

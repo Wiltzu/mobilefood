@@ -74,12 +74,25 @@ public class MainViewPresenterTest {
 
 		verify(mainView).setFoods(foods);
 	}
+	
+	public void updateFoodsInBackground_showLoadingIconAndFetchesFoodsFromService() {
+		((MainViewPresenterImpl) mainViewPresenter).updateFoodsInBackground(mainView);
+		verify(mainView).showLoadingIcon();
+		verify(mainView).runInBackgroud(Mockito.any(Runnable.class), Mockito.any(Runnable.class));
+	}
 
 	@Test
 	public void OnViewCreation_foodsAreFetchedFromFoodServiceInBackground() {
 		mainViewPresenter.onViewCreation(mainView, null);
 		verify(mainView).runInBackgroud(Mockito.any(Runnable.class),
 				Mockito.any(Runnable.class));
+	}
+	
+	@Test
+	public void OnViewCreation_ifSavedWeekDayIsGiven_itsSelectedInMainView() {
+		int savedWeekDay = 0;
+		mainViewPresenter.onViewCreation(mainView, savedWeekDay);
+		verify(mainView).setSelectedDate(savedWeekDay);
 	}
 
 	@Test
@@ -205,6 +218,13 @@ public class MainViewPresenterTest {
 
 		verify(mainView).notifyThatDeviceHasNoInternetConnection();
 		verify(mainView).showRefreshButton();
+	}
+	
+	@Test
+	public void updateUI_hidesLoadingIcon() {
+		((MainViewPresenterImpl) mainViewPresenter).updateUI(mainView);
+
+		verify(mainView).hideLoadingIcon();
 	}
 	
 

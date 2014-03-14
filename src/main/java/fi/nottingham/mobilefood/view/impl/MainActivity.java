@@ -158,9 +158,7 @@ public class MainActivity extends DaggerBaseActivity implements IMainView,
 			protected void onPostExecute(Void result) {
 				Log.d(TAG, "Running ui update task in main thread...");
 				uiUpdateTask.run();
-
 			}
-
 			
 		}.execute();
 	}
@@ -219,22 +217,12 @@ public class MainActivity extends DaggerBaseActivity implements IMainView,
 	}
 
 	@Override
-	public void onTabReselected(Tab arg0, FragmentTransaction arg1) {
-		//NOT NEEDED
-	}
-
-	@Override
 	public void onTabSelected(Tab tab, FragmentTransaction arg1) {
 		if(tab.getTag() != null) {			
 			presenter.onDateChanged(this, (Integer) tab.getTag());
 		}
 	}
 
-	@Override
-	public void onTabUnselected(Tab arg0, FragmentTransaction arg1) {
-		//NOT NEEDED EITHER
-	}
-	
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
 		outState.putInt(LAST_WEEK_DAY_SELECTION, (Integer) mActionbar.getSelectedTab().getTag());
@@ -249,5 +237,15 @@ public class MainActivity extends DaggerBaseActivity implements IMainView,
 				mActionbar.selectTab(currentTab);
 			}
 		}
+	}
+
+	@Override
+	public void onTabReselected(Tab arg0, FragmentTransaction arg1) {
+		//NOT NEEDED
+	}
+
+	@Override
+	public void onTabUnselected(Tab arg0, FragmentTransaction arg1) {
+		//NOT NEEDED EITHER
 	}
 }
