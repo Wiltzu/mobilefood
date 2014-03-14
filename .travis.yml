@@ -24,6 +24,9 @@ before_install:
   #Updates android sdk
   - echo y | android update sdk --filter platform-tools,android-19,addon-google_apis-google-19,extra-android-support --no-ui --force > /dev/null
   
+  #support libraries
+  - git config --global user.email "you@example.com"
+  - git config --global user.name "Your Name"
   - git pull https://github.com/mosabua/maven-android-sdk-deployer.git
   - cd maven-android-sdk-deployer
   - mvn install -P 4.4
