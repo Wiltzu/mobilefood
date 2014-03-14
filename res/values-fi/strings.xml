@@ -6,5 +6,14 @@
     <string name="no_internet">Ruokien haku epäonnistui. Varmista, että sinulla on käytössäsi toimiva Internet yhteys.</string>
     <string name="no_foods_available">Ruokien haku epäonnistui. Ruuat eivät ole tällä hetkellä saatavissa. Yritä myöhemmin uudelleen.</string>
     <string name="refresh_foods">Yritä ruokien hakua uudelleen</string>
+    <string-array name="week_days">
+        <item>Maanantai</item>
+        <item>Tiistai</item>  
+        <item>Keskiviikko</item>  
+        <item>Torstai</item>  
+        <item>Perjantai</item>  
+        <item>Lauantai</item>
+        <item>Sunnuntai</item>         
+    </string-array>
 
 </resources>

@@ -6,7 +6,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.annotation.Nullable;
 import javax.inject.Inject;
+import javax.inject.Provider;
 
 import org.apache.log4j.Logger;
 
@@ -21,6 +23,7 @@ import fi.nottingham.mobilefood.view.IMainView;
 public class MainViewPresenterImpl implements IMainViewPresenter {
 	private final IFoodService foodService;
 	private final INetworkStatusService networkStatusService;
+	private Provider<Date> timeNow;
 	private Date selectedDate;
 	private List<RestaurantDay> currentFoods;
 	
@@ -30,42 +33,48 @@ public class MainViewPresenterImpl implements IMainViewPresenter {
 	private final Logger logger = Logger.getLogger(this.getClass());
 
 	@Inject
-	public MainViewPresenterImpl(IFoodService foodService, Date timeNow, INetworkStatusService networkStatusService) {
+	public MainViewPresenterImpl(IFoodService foodService, Provider<Date> timeNow, INetworkStatusService networkStatusService) {
 		this.foodService = foodService;
 		this.networkStatusService = networkStatusService;
-		selectedDate = DateUtils.getDateAtMidnight(new Date());
+		this.timeNow = timeNow;
+		this.selectedDate = timeNow.get();
 	}
 
 	@Override
-	public void onViewCreation(final IMainView mainView) {
+	public void onViewCreation(final IMainView mainView, @Nullable Integer savedSelectedWeekDay) {
 		checkNotNull("mainView cannot be null", mainView);
 
-		mainView.setAvailableWeekDays(DateUtils.getRestOfTheWeeksDayNumbersFrom(selectedDate));
-		mainView.setDate(selectedDate);
+		mainView.setAvailableWeekDays(DateUtils.getRestOfTheWeeksDayNumbersFrom(timeNow.get()));
+		
+		if(savedSelectedWeekDay != null) {
+			selectedDate = DateUtils.getDateInThisWeekBy(selectedDate, savedSelectedWeekDay);
+			mainView.setSelectedDate(savedSelectedWeekDay);					
+		}
 
 		if (currentFoods == null) {
-			mainView.showLoadingIcon();
-			
-			mainView.runInBackgroud(new Runnable() {
-				@Override
-				public void run() {
-					fetchFoodsFromService();
-				}
-			}, new Runnable() {
-				@Override
-				public void run() {
-					updateUI(mainView);
-				}
-			});
+			updateFoodsInBackground(mainView);
 		} else {
 			mainView.setFoods(currentFoods);
 		}
 	}
 
-	/**
-	 * gets foods from service in synchronized way
-	 */
-	protected synchronized void fetchFoodsFromService() {		
+	private synchronized void updateFoodsInBackground(final IMainView mainView) {
+		mainView.showLoadingIcon();
+		
+		mainView.runInBackgroud(new Runnable() {
+			@Override
+			public void run() {
+				fetchFoodsFromService();
+			}
+		}, new Runnable() {
+			@Override
+			public void run() {
+				updateUI(mainView);
+			}
+		});
+	}
+
+	protected void fetchFoodsFromService() {		
 		foodServiceException = null;
 		int dayOfTheWeek = DateUtils.getDayOfTheWeek(selectedDate);
 		int weekNumber = DateUtils.getWeekOfYear(selectedDate);
@@ -119,6 +128,12 @@ public class MainViewPresenterImpl implements IMainViewPresenter {
 
 	public boolean foodServiceCallResultedInException() {
 		return foodServiceException != null;
+	}
+
+	@Override
+	public void onDateChanged(IMainView mainView, int selectedWeekDay) {
+		selectedDate = DateUtils.getDateInThisWeekBy(selectedDate, selectedWeekDay);
+		updateFoodsInBackground(mainView);
 	}
 
 }

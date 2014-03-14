@@ -1,6 +1,5 @@
 package fi.nottingham.mobilefood.view;
 
-import java.util.Date;
 import java.util.List;
 
 import fi.nottingham.mobilefood.model.RestaurantDay;
@@ -16,8 +15,6 @@ public interface IMainView {
 
 	void showLoadingIcon();
 
-	void setDate(Date date);
-
 	void notifyThatDeviceHasNoInternetConnection();
 
 	void notifyThatFoodsAreCurrentlyUnavailable();
@@ -25,5 +22,7 @@ public interface IMainView {
 	void showRefreshButton();
 
 	void setAvailableWeekDays(int[] expectedWeekDays);
+
+	void setSelectedDate(int dayOfTheWeek);
 
 }

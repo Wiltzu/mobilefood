@@ -56,7 +56,7 @@ public class MainActivityTest {
 
 	@Test
 	public void onViewCreation_notifiesPresenter() {
-		verify(mainViewPresenter).onViewCreation(mainView);
+		verify(mainViewPresenter).onViewCreation(mainView, null);
 	}
 
 	@Test
@@ -122,7 +122,7 @@ public class MainActivityTest {
 		
 		refreshButton.performClick();
 		
-		verify(mainViewPresenter, Mockito.times(2)).onViewCreation(mainView);
+		verify(mainViewPresenter, Mockito.times(2)).onViewCreation(mainView, null);
 	}
 	
 	@Test

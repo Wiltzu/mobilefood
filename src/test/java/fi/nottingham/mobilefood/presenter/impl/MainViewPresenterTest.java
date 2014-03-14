@@ -11,6 +11,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import javax.inject.Provider;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -40,14 +42,19 @@ public class MainViewPresenterTest {
 	IFoodService foodService;
 	INetworkStatusService networkStatusService;
 
-	Date date = new Date();
+	Provider<Date> dateProvider = new Provider<Date>() {
+		@Override
+		public Date get() {
+			return new Date();
+		}	
+	};
 
 	@Before
 	public void setUp() throws Exception {
 		mainView = mock(IMainView.class);
 		foodService = mock(IFoodService.class);
 		networkStatusService = mock(INetworkStatusService.class);
-		mainViewPresenter = new MainViewPresenterImpl(foodService, date,
+		mainViewPresenter = new MainViewPresenterImpl(foodService, dateProvider,
 				networkStatusService);
 	}
 
@@ -63,21 +70,21 @@ public class MainViewPresenterTest {
 		when(foodService.getFoodsBy(Mockito.anyInt(), Mockito.anyInt()))
 				.thenReturn(foods);
 
-		mainViewPresenter.onViewCreation(mainView);
+		mainViewPresenter.onViewCreation(mainView, null);
 
 		verify(mainView).setFoods(foods);
 	}
 
 	@Test
 	public void OnViewCreation_foodsAreFetchedFromFoodServiceInBackground() {
-		mainViewPresenter.onViewCreation(mainView);
+		mainViewPresenter.onViewCreation(mainView, null);
 		verify(mainView).runInBackgroud(Mockito.any(Runnable.class),
 				Mockito.any(Runnable.class));
 	}
 
 	@Test
 	public void OnViewCreation_loadingNotificationIsShowed() {
-		mainViewPresenter.onViewCreation(mainView);
+		mainViewPresenter.onViewCreation(mainView, null);
 		verify(mainView).showLoadingIcon();
 	}
 
@@ -87,23 +94,33 @@ public class MainViewPresenterTest {
 				new ArrayList<Food>()));
 		MockitoAnnotations.initMocks(this); // inits currentFoods
 
-		mainViewPresenter.onViewCreation(mainView);
+		mainViewPresenter.onViewCreation(mainView, null);
 
 		verify(mainView).setFoods(currentFoods);
-	}
-
-	@Test
-	public void OnViewCreation_setsDateForView() {
-		mainViewPresenter.onViewCreation(mainView);
-		verify(mainView).setDate(Mockito.any(Date.class));
 	}
 	
 	@Test
 	public void onViewCreation_setsAvailableWeekDaysForView() {
 		int[] expectedWeekDays = {2, 3, 4, 5, 6};
-		mainViewPresenter = new MainViewPresenterImpl(foodService, DateUtils.getDateAtMidnight(2014, Calendar.MARCH, 12), networkStatusService);
-		mainViewPresenter.onViewCreation(mainView);
+		//March 12th 2014 is Wednesday
+		Provider<Date> dProvider = new Provider<Date>() {
+			@Override
+			public Date get() {
+				return DateUtils.getDateAtMidnight(2014, Calendar.MARCH, 12);
+			}
+		};
+		mainViewPresenter = new MainViewPresenterImpl(foodService, dProvider, networkStatusService);
+		mainViewPresenter.onViewCreation(mainView, null);
 		verify(mainView).setAvailableWeekDays(expectedWeekDays);
+	}
+	
+	@Test
+	public void onDateChanged_setsFoodsCorrespondingTheDay() {
+		int selectedWeekDay = 3;
+		mainViewPresenter.onDateChanged(mainView, selectedWeekDay);
+		
+		verify(mainView).showLoadingIcon();
+		//verify(foodService).getFoodsFromInternalStorageBy(Mockito.anyInt(), selectedWeekDay);
 	}
 
 	@SuppressWarnings("unchecked")

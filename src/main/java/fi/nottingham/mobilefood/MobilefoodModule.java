@@ -2,6 +2,7 @@ package fi.nottingham.mobilefood;
 
 import java.util.Date;
 
+import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import com.typesafe.config.Config;
@@ -30,7 +31,7 @@ public class MobilefoodModule {
 	
 	@Provides
 	@Singleton
-	IMainViewPresenter provideMainViewPresenter(IFoodService foodService, Date timeNow, INetworkStatusService networkStatusService) {
+	IMainViewPresenter provideMainViewPresenter(IFoodService foodService, Provider<Date> timeNow, INetworkStatusService networkStatusService) {
 		return new MainViewPresenterImpl(foodService, timeNow, networkStatusService);
 	}
 	

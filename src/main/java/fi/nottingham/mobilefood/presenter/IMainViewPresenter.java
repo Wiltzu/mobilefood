@@ -5,7 +5,9 @@ import fi.nottingham.mobilefood.view.IMainView;
 
 public interface IMainViewPresenter {
 	
-	void onViewCreation(IMainView mainview);
+	void onViewCreation(IMainView mainview, Integer savedTabSelection);
 
 	IFoodService getFoodService();
+
+	void onDateChanged(IMainView mainView, int selectedWeekDay);
 }

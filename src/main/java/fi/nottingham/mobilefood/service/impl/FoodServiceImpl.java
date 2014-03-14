@@ -46,9 +46,9 @@ public class FoodServiceImpl implements IFoodService {
 		this.fileSystemService = checkNotNull(fileSystemService,
 				"fileSystemService cannot be null");
 	}
-	
+
 	@Override
-	public List<RestaurantDay> getFoodsFromInternalStorageBy(int weekNumber,
+	public synchronized List<RestaurantDay> getFoodsFromInternalStorageBy(int weekNumber,
 			int dayOfTheWeek) {
 		String fileName = getFileNameFor(YEAR, weekNumber, CHAIN_NAME);
 		String responseFromFile = null;
@@ -63,21 +63,22 @@ public class FoodServiceImpl implements IFoodService {
 			logger.debug("No food file in internal storage", e);
 			return null;
 		}
-		
-		if(!isNullOrEmpty(responseFromFile)) {			
+
+		if (!isNullOrEmpty(responseFromFile)) {
 			return parseFoods(dayOfTheWeek, responseFromFile);
-		} else {			
+		} else {
 			return null;
 		}
 	}
 
 	@Override
-	public List<RestaurantDay> getFoodsBy(int weekNumber, int dayOfTheWeek) throws FoodServiceException {
+	public synchronized List<RestaurantDay> getFoodsBy(int weekNumber, int dayOfTheWeek)
+			throws FoodServiceException {
 		final List<RestaurantDay> foodsOfTheDay = Lists.newArrayList();
 		checkArgument(weekNumber >= 1, "week number must be at least one");
 
 		String foodJSON = downloadDataFromService(weekNumber);
-		
+
 		if (foodJSON != null) {
 			foodsOfTheDay.addAll(parseFoods(dayOfTheWeek, foodJSON));
 		}
@@ -88,40 +89,46 @@ public class FoodServiceImpl implements IFoodService {
 	private List<RestaurantDay> parseFoods(int dayOfTheWeek, String foodJSON) {
 		final List<RestaurantDay> foodsOfTheDay = Lists.newArrayList();
 		try {
-			//TODO: JSON versioning so that version compatibility is easily detected
-			//TODO: move parsing to its own class
+			// TODO: JSON versioning so that version compatibility is easily
+			// detected
+			// TODO: move parsing to its own class
 			JSONArray foodsByDay = (JSONArray) new JSONTokener(foodJSON)
 					.nextValue();
 
 			JSONObject requestedWeekDay = foodsByDay
-					.getJSONObject(dayOfTheWeek);
+					.optJSONObject(dayOfTheWeek);
 
-			JSONArray foodsByRestaurant = requestedWeekDay
-					.getJSONArray("foods_by_restaurant");
+			if (requestedWeekDay != null) {
 
-			for (int i = 0; i < foodsByRestaurant.length(); i++) {
-				JSONObject restaurant = foodsByRestaurant.getJSONObject(i);
-				JSONArray itsFoods = restaurant.getJSONArray("foods");
+				JSONArray foodsByRestaurant = requestedWeekDay
+						.getJSONArray("foods_by_restaurant");
 
-				List<Food> foodsOfTheRestaurant = Lists.newArrayList();
-				for (int foodIndex = 0; foodIndex < itsFoods.length(); foodIndex++) {
-					JSONObject food = itsFoods.getJSONObject(foodIndex);
+				for (int i = 0; i < foodsByRestaurant.length(); i++) {
+					JSONObject restaurant = foodsByRestaurant.getJSONObject(i);
+					JSONArray itsFoods = restaurant.getJSONArray("foods");
 
-					JSONArray foodPrices = food.getJSONArray("prices");
-					List<String> prices = Lists.newArrayList();
+					List<Food> foodsOfTheRestaurant = Lists.newArrayList();
+					for (int foodIndex = 0; foodIndex < itsFoods.length(); foodIndex++) {
+						JSONObject food = itsFoods.getJSONObject(foodIndex);
 
-					for (int j = 0; j < foodPrices.length(); j++) {
-						prices.add(foodPrices.getString(j));
+						JSONArray foodPrices = food.getJSONArray("prices");
+						List<String> prices = Lists.newArrayList();
+
+						for (int j = 0; j < foodPrices.length(); j++) {
+							prices.add(foodPrices.getString(j));
+						}
+
+						foodsOfTheRestaurant.add(new Food(food
+								.getString("name"), prices, food
+								.optString("diets")));
 					}
+					String restaurantName = restaurant
+							.getString("restaurant_name");
+					foodsOfTheDay.add(new RestaurantDay(restaurantName,
+							foodsOfTheRestaurant));
 
-					foodsOfTheRestaurant.add(new Food(food
-							.getString("name"), prices, food
-							.optString("diets")));
 				}
-				String restaurantName = restaurant
-						.getString("restaurant_name");
-				foodsOfTheDay.add(new RestaurantDay(restaurantName,
-						foodsOfTheRestaurant));
+
 			}
 
 		} catch (JSONException e) {
@@ -133,21 +140,27 @@ public class FoodServiceImpl implements IFoodService {
 	/**
 	 * @param weekNumber
 	 * @return foods downloaded from service
-	 * @throws NoInternetConnectionException if there is no Internet connection
-	 * @throws FoodServiceException if no foods are available requested week or service is down
+	 * @throws NoInternetConnectionException
+	 *             if there is no Internet connection
+	 * @throws FoodServiceException
+	 *             if no foods are available requested week or service is down
 	 */
-	private String downloadDataFromService(int weekNumber) throws FoodServiceException {
+	private String downloadDataFromService(int weekNumber)
+			throws FoodServiceException {
 		try {
 			HttpURLConnection connection = (HttpURLConnection) new URL(
 					getRequestURL(weekNumber)).openConnection();
-			//TODO: set timeouts for connecting and receiving data from service
+			// TODO: set timeouts for connecting and receiving data from service
 
 			String response = IOUtils.toString(connection.getInputStream(),
 					"UTF-8");
 
 			if (isNullOrEmpty(response) || response.contains("ERROR")) {
-				logger.error(String.format("Unable to get foods from service. Response was: '%s'", response));
-				throw new FoodServiceException(FoodServiceException.NO_FOOD_FOR_WEEK);
+				logger.error(String.format(
+						"Unable to get foods from service. Response was: '%s'",
+						response));
+				throw new FoodServiceException(
+						FoodServiceException.NO_FOOD_FOR_WEEK);
 			}
 
 			OutputStream weekOutputFile = fileSystemService

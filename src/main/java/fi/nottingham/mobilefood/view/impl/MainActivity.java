@@ -2,7 +2,6 @@ package fi.nottingham.mobilefood.view.impl;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.Date;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -36,15 +35,13 @@ import fi.nottingham.mobilefood.R;
 import fi.nottingham.mobilefood.model.Food;
 import fi.nottingham.mobilefood.model.RestaurantDay;
 import fi.nottingham.mobilefood.presenter.IMainViewPresenter;
-import fi.nottingham.mobilefood.util.DateUtils;
 import fi.nottingham.mobilefood.view.IMainView;
 
 public class MainActivity extends DaggerBaseActivity implements IMainView,
 		TabListener {
+	private static final String LAST_WEEK_DAY_SELECTION = "lastWeekDaySelection";
 	private static final String TAG = "MainActivity";
 
-	private TextView mDateTV;
-	private TextView mWeekDay;
 	private ListView mFoodsTV;
 	private ProgressBar mProgressBar;
 	private Button mRefreshButton;
@@ -67,8 +64,6 @@ public class MainActivity extends DaggerBaseActivity implements IMainView,
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
-		mWeekDay = (TextView) findViewById(R.id.textview_week_day);
-		mDateTV = (TextView) findViewById(R.id.textview_date);
 		mFoodsTV = (ListView) findViewById(R.id.listview_foods);
 		mProgressBar = (ProgressBar) findViewById(R.id.progressbar_indeterminate);
 		mRefreshButton = (Button) findViewById(R.id.main_refresh_button);
@@ -81,11 +76,17 @@ public class MainActivity extends DaggerBaseActivity implements IMainView,
 			public void onClick(View v) {
 				Log.i(TAG, "Refresh button clicked.");
 				mRefreshButton.setVisibility(View.INVISIBLE);
-				presenter.onViewCreation(MainActivity.this);
+				presenter.onViewCreation(MainActivity.this, null);
 			}
 		});
+		
+		Integer savedSelectedWeekDay = null;
+		if(savedInstanceState != null) {
+			savedSelectedWeekDay = savedInstanceState.getInt(LAST_WEEK_DAY_SELECTION);
+		}
 
-		presenter.onViewCreation(this);
+		presenter.onViewCreation(this, savedSelectedWeekDay);
+		
 	}
 
 	@Override
@@ -111,28 +112,15 @@ public class MainActivity extends DaggerBaseActivity implements IMainView,
 	}
 
 	@Override
-	public void setDate(Date selectedDate) {
-		checkNotNull(selectedDate, "selectedDate cannot be null.");
-		mWeekDay.setText(DateUtils.getWeekDay(selectedDate));
-		mDateTV.setText(DateUtils.getDateInShortFormat(this, selectedDate));
-		
-		for(int tabIndex = 0; tabIndex < mActionbar.getTabCount(); tabIndex++) {
-			Object tag = mActionbar.getTabAt(tabIndex).getTag();
-			if(tag != null && tag.equals(DateUtils.getDayOfTheWeek(selectedDate))) {
-				mActionbar.selectTab(mActionbar.getTabAt(tabIndex));
-				break;
-			}
-		}
-	}
-
-	@Override
 	public void setAvailableWeekDays(int[] availableWeekDays) {
-		String[] weekDayNames = getResources()
-				.getStringArray(R.array.week_days);
-		for (int weekDayNumber : availableWeekDays) {
-			mActionbar.addTab(mActionbar.newTab()
-					.setText(weekDayNames[weekDayNumber]).setTag(weekDayNumber)
-					.setTabListener(this));
+		if(mActionbar.getTabCount() == 0) {
+			String[] weekDayNames = getResources()
+					.getStringArray(R.array.week_days);
+			for (int weekDayNumber : availableWeekDays) {
+				mActionbar.addTab(mActionbar.newTab()
+						.setText(weekDayNames[weekDayNumber]).setTag(weekDayNumber)
+						.setTabListener(this));
+			}			
 		}
 	}
 
@@ -225,19 +213,34 @@ public class MainActivity extends DaggerBaseActivity implements IMainView,
 
 	@Override
 	public void onTabReselected(Tab arg0, FragmentTransaction arg1) {
-		// TODO Auto-generated method stub
-
+		//NOT NEEDED
 	}
 
 	@Override
-	public void onTabSelected(Tab arg0, FragmentTransaction arg1) {
-		// TODO Auto-generated method stub
-
+	public void onTabSelected(Tab tab, FragmentTransaction arg1) {
+		if(tab.getTag() != null) {			
+			presenter.onDateChanged(this, (Integer) tab.getTag());
+		}
 	}
 
 	@Override
 	public void onTabUnselected(Tab arg0, FragmentTransaction arg1) {
-		// TODO Auto-generated method stub
+		//NOT NEEDED EITHER
+	}
+	
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		outState.putInt(LAST_WEEK_DAY_SELECTION, (Integer) mActionbar.getSelectedTab().getTag());
+		super.onSaveInstanceState(outState);
+	}
 
+	@Override
+	public void setSelectedDate(int dayOfTheWeek) {
+		for(int tabIndex = 0; tabIndex < mActionbar.getTabCount(); tabIndex++) {
+			Tab currentTab = mActionbar.getTabAt(tabIndex);
+			if(dayOfTheWeek == (Integer) currentTab.getTag()) {
+				mActionbar.selectTab(currentTab);
+			}
+		}
 	}
 }

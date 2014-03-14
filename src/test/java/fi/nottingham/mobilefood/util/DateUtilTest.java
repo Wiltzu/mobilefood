@@ -1,5 +1,6 @@
 package fi.nottingham.mobilefood.util;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
@@ -62,5 +63,13 @@ public class DateUtilTest {
 		assertEquals(cal.get(Calendar.HOUR_OF_DAY), 0);
 		assertEquals(cal.get(Calendar.MINUTE), 0);
 		assertEquals(cal.get(Calendar.MILLISECOND), 0);
+	}
+	
+	@Test
+	public void getRestOfTheWeeksDayNumbersFrom_whenDateIsWednesday_returnNumbersFromWednesdayToSunday() {
+		//the day is Wednesday
+		Date wednesday = DateUtils.getDateAtMidnight(2014, Calendar.MARCH, 12);
+		int[] expectedWeekDays = {2,3,4,5,6};
+		assertArrayEquals(expectedWeekDays, DateUtils.getRestOfTheWeeksDayNumbersFrom(wednesday));
 	}
 }

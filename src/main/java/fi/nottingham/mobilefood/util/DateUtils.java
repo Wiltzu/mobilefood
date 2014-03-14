@@ -2,16 +2,23 @@ package fi.nottingham.mobilefood.util;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
 import android.content.Context;
 import android.text.format.DateFormat;
-import java.util.Arrays;
 
 public class DateUtils {
-	private static int[] WEEK_DAY_NUMBERS = { 0, 1, 2, 3, 4, 5, 6 };
+	private static final int MONDAY = 0;
+	private static final int TUESDAY = 1;
+	private static final int WEDNESDAY = 2;
+	private static final int THURSDAY = 3;
+	private static final int FRIDAY = 4;
+	private static final int SATURDAY = 5;
+	private static final int SUNDAY = 6;
+	private static int[] WEEK_DAY_NUMBERS = { MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY };
 
 	public static Date getDateAtMidnight(Date date) {
 		checkNotNull(date, "date cannot be null");
@@ -96,12 +103,24 @@ public class DateUtils {
 
 	/**
 	 * @param date
-	 * @return if parameter date is friday this method returns 5,6,7
+	 * @return if parameter date is friday this method returns 4,5,6
 	 *         corresponding Friday, Saturday, Sunday.
 	 */
 	public static int[] getRestOfTheWeeksDayNumbersFrom(Date date) {
 		int currentDayOfTheWeek = getDayOfTheWeek(date);
 		return Arrays.copyOfRange(WEEK_DAY_NUMBERS, currentDayOfTheWeek,
 				WEEK_DAY_NUMBERS.length);
+	}
+
+	public static Date getDateInThisWeekBy(Date date, int selectedDayOfTheWeek) {
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(date);
+		
+		int dayOfTheWeekNow = getDayOfTheWeek(date);
+		int substractionOfWeekDays = selectedDayOfTheWeek - dayOfTheWeekNow;
+		
+		calendar.add(Calendar.DATE, substractionOfWeekDays);
+		
+		return calendar.getTime();
 	}
 }
