@@ -42,7 +42,7 @@ public class MainActivity extends DaggerBaseActivity implements IMainView,
 	private static final String LAST_WEEK_DAY_SELECTION = "lastWeekDaySelection";
 	private static final String TAG = "MainActivity";
 
-	private ListView mFoodsTV;
+	private ListView mFoodsListView;
 	private ProgressBar mProgressBar;
 	private Button mRefreshButton;
 	private ActionBar mActionbar;
@@ -64,7 +64,7 @@ public class MainActivity extends DaggerBaseActivity implements IMainView,
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
-		mFoodsTV = (ListView) findViewById(R.id.listview_foods);
+		mFoodsListView = (ListView) findViewById(R.id.listview_foods);
 		mProgressBar = (ProgressBar) findViewById(R.id.progressbar_indeterminate);
 		mRefreshButton = (Button) findViewById(R.id.main_refresh_button);
 
@@ -79,14 +79,15 @@ public class MainActivity extends DaggerBaseActivity implements IMainView,
 				presenter.onViewCreation(MainActivity.this, null);
 			}
 		});
-		
+
 		Integer savedSelectedWeekDay = null;
-		if(savedInstanceState != null) {
-			savedSelectedWeekDay = savedInstanceState.getInt(LAST_WEEK_DAY_SELECTION);
+		if (savedInstanceState != null) {
+			savedSelectedWeekDay = savedInstanceState
+					.getInt(LAST_WEEK_DAY_SELECTION);
 		}
 
 		presenter.onViewCreation(this, savedSelectedWeekDay);
-		
+
 	}
 
 	@Override
@@ -102,8 +103,21 @@ public class MainActivity extends DaggerBaseActivity implements IMainView,
 
 	public void setFoods(List<RestaurantDay> foodsByRestaurant) {
 		checkNotNull(foodsByRestaurant, "foodsByRestaurant cannot be null");
-		mFoodsTV.setAdapter(new RestaurantDayViewAdapter(this,
-				foodsByRestaurant));
+
+		if (!foodsByRestaurant.isEmpty()) {
+			mFoodsListView.setAdapter(new RestaurantDayViewAdapter(this,
+					foodsByRestaurant));
+		} else {
+			mFoodsListView.setAdapter(new ArrayAdapter<String>(this,
+					android.R.layout.simple_list_item_1, getResources()
+							.getStringArray(R.array.no_food_for_day)) {
+				@Override
+				public boolean isEnabled(int position) {
+					//can't be selected
+					return false;
+				}
+			});
+		}
 	}
 
 	@Override
@@ -114,14 +128,14 @@ public class MainActivity extends DaggerBaseActivity implements IMainView,
 
 	@Override
 	public void setAvailableWeekDays(int[] availableWeekDays) {
-		if(mActionbar.getTabCount() == 0) {
-			String[] weekDayNames = getResources()
-					.getStringArray(R.array.week_days);
+		if (mActionbar.getTabCount() == 0) {
+			String[] weekDayNames = getResources().getStringArray(
+					R.array.week_days);
 			for (int weekDayNumber : availableWeekDays) {
 				mActionbar.addTab(mActionbar.newTab()
-						.setText(weekDayNames[weekDayNumber]).setTag(weekDayNumber)
-						.setTabListener(this));
-			}			
+						.setText(weekDayNames[weekDayNumber])
+						.setTag(weekDayNumber).setTabListener(this));
+			}
 		}
 	}
 
@@ -159,10 +173,10 @@ public class MainActivity extends DaggerBaseActivity implements IMainView,
 				Log.d(TAG, "Running ui update task in main thread...");
 				uiUpdateTask.run();
 			}
-			
+
 		}.execute();
 	}
-	
+
 	@Override
 	public void hideLoadingIcon() {
 		if (mProgressBar.isShown()) {
@@ -213,27 +227,34 @@ public class MainActivity extends DaggerBaseActivity implements IMainView,
 			return restaurantDayView;
 
 		}
+		
+		@Override
+		public boolean isEnabled(int position) {
+			//no item can be selected
+			return false;
+		}
 
 	}
 
 	@Override
 	public void onTabSelected(Tab tab, FragmentTransaction arg1) {
-		if(tab.getTag() != null) {			
+		if (tab.getTag() != null) {
 			presenter.onDateChanged(this, (Integer) tab.getTag());
 		}
 	}
 
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
-		outState.putInt(LAST_WEEK_DAY_SELECTION, (Integer) mActionbar.getSelectedTab().getTag());
+		outState.putInt(LAST_WEEK_DAY_SELECTION, (Integer) mActionbar
+				.getSelectedTab().getTag());
 		super.onSaveInstanceState(outState);
 	}
 
 	@Override
 	public void setSelectedDate(int dayOfTheWeek) {
-		for(int tabIndex = 0; tabIndex < mActionbar.getTabCount(); tabIndex++) {
+		for (int tabIndex = 0; tabIndex < mActionbar.getTabCount(); tabIndex++) {
 			Tab currentTab = mActionbar.getTabAt(tabIndex);
-			if(dayOfTheWeek == (Integer) currentTab.getTag()) {
+			if (dayOfTheWeek == (Integer) currentTab.getTag()) {
 				mActionbar.selectTab(currentTab);
 			}
 		}
@@ -241,11 +262,11 @@ public class MainActivity extends DaggerBaseActivity implements IMainView,
 
 	@Override
 	public void onTabReselected(Tab arg0, FragmentTransaction arg1) {
-		//NOT NEEDED
+		// NOT NEEDED
 	}
 
 	@Override
 	public void onTabUnselected(Tab arg0, FragmentTransaction arg1) {
-		//NOT NEEDED EITHER
+		// NOT NEEDED EITHER
 	}
 }
