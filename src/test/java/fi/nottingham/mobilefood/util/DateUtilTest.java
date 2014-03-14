@@ -2,7 +2,6 @@ package fi.nottingham.mobilefood.util;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 
 import java.util.Calendar;
 import java.util.Date;

@@ -109,6 +109,7 @@ public class MainActivity extends DaggerBaseActivity implements IMainView,
 	@Override
 	public void showLoadingIcon() {
 		mProgressBar.setVisibility(View.VISIBLE);
+		mProgressBar.bringToFront();
 	}
 
 	@Override
@@ -158,11 +159,17 @@ public class MainActivity extends DaggerBaseActivity implements IMainView,
 				Log.d(TAG, "Running ui update task in main thread...");
 				uiUpdateTask.run();
 
-				if (mProgressBar.isShown()) {
-					mProgressBar.setVisibility(View.INVISIBLE);
-				}
 			}
+
+			
 		}.execute();
+	}
+	
+	@Override
+	public void hideLoadingIcon() {
+		if (mProgressBar.isShown()) {
+			mProgressBar.setVisibility(View.INVISIBLE);
+		}
 	}
 
 	class RestaurantDayViewAdapter extends ArrayAdapter<RestaurantDay> {

@@ -5,7 +5,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 
 import android.content.Context;
 import android.text.format.DateFormat;
@@ -19,10 +18,11 @@ public class DateUtils {
 	private static final int SATURDAY = 5;
 	private static final int SUNDAY = 6;
 	private static int[] WEEK_DAY_NUMBERS = { MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY };
+	
+	private static Calendar calendar = Calendar.getInstance();
 
 	public static Date getDateAtMidnight(Date date) {
 		checkNotNull(date, "date cannot be null");
-		Calendar calendar = new GregorianCalendar();
 		calendar.setTime(date);
 		// reset hour, minutes, seconds and millis
 		calendar.set(Calendar.HOUR_OF_DAY, 0);
@@ -66,7 +66,6 @@ public class DateUtils {
 	 */
 	public static int getDayOfTheWeek(Date date) {
 		checkNotNull(date, "date cannot be null");
-		Calendar calendar = new GregorianCalendar();
 		calendar.setTime(date);
 		int dayOfTheWeek = calendar.get(Calendar.DAY_OF_WEEK);
 		if (dayOfTheWeek == Calendar.SUNDAY) {
@@ -82,7 +81,6 @@ public class DateUtils {
 	 */
 	public static int getWeekOfYear(Date date) {
 		checkNotNull(date, "date cannot be null");
-		Calendar calendar = new GregorianCalendar();
 		calendar.setTime(date);
 		return calendar.get(Calendar.WEEK_OF_YEAR);
 	}
@@ -95,7 +93,6 @@ public class DateUtils {
 	 * @return date to corresponding date
 	 */
 	public static Date getDateAtMidnight(int year, int month, int day) {
-		Calendar calendar = new GregorianCalendar();
 		calendar.clear();
 		calendar.set(year, month, day);
 		return calendar.getTime();
@@ -113,7 +110,6 @@ public class DateUtils {
 	}
 
 	public static Date getDateInThisWeekBy(Date date, int selectedDayOfTheWeek) {
-		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(date);
 		
 		int dayOfTheWeekNow = getDayOfTheWeek(date);

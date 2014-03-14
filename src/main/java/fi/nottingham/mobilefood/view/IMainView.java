@@ -25,4 +25,6 @@ public interface IMainView {
 
 	void setSelectedDate(int dayOfTheWeek);
 
+	public abstract void hideLoadingIcon();
+
 }

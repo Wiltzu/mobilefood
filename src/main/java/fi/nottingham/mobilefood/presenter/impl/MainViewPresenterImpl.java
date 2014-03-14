@@ -94,6 +94,7 @@ public class MainViewPresenterImpl implements IMainViewPresenter {
 	}
 	
 	protected void updateUI(final IMainView mainView) {
+		mainView.hideLoadingIcon();
 		if (currentFoods != null) {			
 			mainView.setFoods(currentFoods);
 		} else {
