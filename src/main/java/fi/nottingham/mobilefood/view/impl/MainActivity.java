@@ -3,49 +3,79 @@ package fi.nottingham.mobilefood.view.impl;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 
-import android.content.Context;
+import com.google.common.collect.Maps;
+
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBar.Tab;
 import android.support.v7.app.ActionBar.TabListener;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
+import android.view.View.OnClickListener;
 import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 import android.widget.Toast;
-
-import com.google.common.base.Joiner;
-
 import fi.nottingham.mobilefood.DaggerBaseActivity;
 import fi.nottingham.mobilefood.R;
-import fi.nottingham.mobilefood.model.Food;
 import fi.nottingham.mobilefood.model.RestaurantDay;
 import fi.nottingham.mobilefood.presenter.IMainViewPresenter;
 import fi.nottingham.mobilefood.view.IMainView;
+import fi.nottingham.mobilefood.view.ViewIsReadyListener;
 
 public class MainActivity extends DaggerBaseActivity implements IMainView,
 		TabListener {
+
+	public class LunchDayPagerAdapter extends FragmentStatePagerAdapter {
+		private final ActionBar actionBar;
+
+		public LunchDayPagerAdapter(FragmentManager fm, ActionBar actionBar) {
+			super(fm);
+			this.actionBar = checkNotNull(actionBar, "ActionBar cannot be null");
+		}
+
+		@Override
+		public int getCount() {
+			return actionBar.getTabCount();
+		}
+
+		@Override
+		public Fragment getItem(int position) {
+			Log.d("LunchDayPagerAdapter", "fragment created");
+			OneDayLunchesFragment lunchFragment = new OneDayLunchesFragment();
+			lunchFragment.setListener((ViewIsReadyListener) presenter);
+			mLunchFragmentsMap.put(position, lunchFragment);
+			return lunchFragment;
+		}
+
+		@Override
+		public void destroyItem(ViewGroup container, int position, Object object) {
+			mLunchFragmentsMap.remove(position);
+			super.destroyItem(container, position, object);
+		}
+
+	}
+
 	private static final String LAST_WEEK_DAY_SELECTION = "lastWeekDaySelection";
 	private static final String TAG = "MainActivity";
 
-	private ListView mFoodsListView;
 	private ProgressBar mProgressBar;
 	private Button mRefreshButton;
 	private ActionBar mActionbar;
+	private ViewPager mViewPager;
+
+	private Map<Integer, OneDayLunchesFragment> mLunchFragmentsMap;
 
 	@Inject
 	IMainViewPresenter presenter;
@@ -62,14 +92,15 @@ public class MainActivity extends DaggerBaseActivity implements IMainView,
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
+		setContentView(R.layout.main_activity_parent);
 
-		mFoodsListView = (ListView) findViewById(R.id.listview_foods);
-		mProgressBar = (ProgressBar) findViewById(R.id.progressbar_indeterminate);
-		mRefreshButton = (Button) findViewById(R.id.main_refresh_button);
+		mViewPager = (ViewPager) findViewById(R.id.slide_view_pager);
 
 		mActionbar = getSupportActionBar();
 		mActionbar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+
+		mProgressBar = (ProgressBar) findViewById(R.id.progressbar_indeterminate);
+		mRefreshButton = (Button) findViewById(R.id.main_refresh_button);
 
 		mRefreshButton.setOnClickListener(new OnClickListener() {
 			@Override
@@ -85,8 +116,30 @@ public class MainActivity extends DaggerBaseActivity implements IMainView,
 			savedSelectedWeekDay = savedInstanceState
 					.getInt(LAST_WEEK_DAY_SELECTION);
 		}
-
+		
+		mLunchFragmentsMap = Maps.newHashMap();
 		presenter.onViewCreation(this, savedSelectedWeekDay);
+
+		mViewPager
+				.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+
+					@Override
+					public void onPageSelected(int position) {
+						mActionbar.setSelectedNavigationItem(position);
+						presenter.onDateChanged(MainActivity.this,
+								(Integer) mActionbar.getTabAt(position)
+										.getTag());
+					}
+
+					@Override
+					public void onPageScrolled(int arg0, float arg1, int arg2) {
+					}
+
+					@Override
+					public void onPageScrollStateChanged(int arg0) {
+					}
+				});
+
 
 	}
 
@@ -102,15 +155,10 @@ public class MainActivity extends DaggerBaseActivity implements IMainView,
 	}
 
 	public void setFoods(List<RestaurantDay> foodsByRestaurant) {
-		checkNotNull(foodsByRestaurant, "foodsByRestaurant cannot be null");
-
-		if (!foodsByRestaurant.isEmpty()) {
-			mFoodsListView.setAdapter(new RestaurantDayViewAdapter(this,
-					foodsByRestaurant));
-		} else {
-			mFoodsListView.setAdapter(new ArrayAdapter<String>(this,
-					android.R.layout.simple_list_item_1, getResources()
-							.getStringArray(R.array.no_food_for_day)));
+		OneDayLunchesFragment currentLunchFragment = mLunchFragmentsMap
+				.get(mActionbar.getSelectedTab().getPosition());
+		if (currentLunchFragment != null) {
+			currentLunchFragment.setFoods(foodsByRestaurant);
 		}
 	}
 
@@ -130,6 +178,8 @@ public class MainActivity extends DaggerBaseActivity implements IMainView,
 						.setText(weekDayNames[weekDayNumber])
 						.setTag(weekDayNumber).setTabListener(this));
 			}
+			mViewPager.setAdapter(new LunchDayPagerAdapter(
+					getSupportFragmentManager(), mActionbar));
 		}
 	}
 
@@ -178,63 +228,10 @@ public class MainActivity extends DaggerBaseActivity implements IMainView,
 		}
 	}
 
-	class RestaurantDayViewAdapter extends ArrayAdapter<RestaurantDay> {
-		private static final String TAG = "RestaurantDayViewAdapter";
-
-		public RestaurantDayViewAdapter(Context context,
-				List<RestaurantDay> items) {
-			super(context, R.layout.restaurant_item, items);
-			Log.d(TAG, "Added Following RestaurantDays" + items);
-		}
-
-		@Override
-		public View getView(int position, View convertView, ViewGroup parent) {
-			LayoutInflater inflater = getLayoutInflater();
-			View restaurantDayView = inflater.inflate(R.layout.restaurant_item,
-					parent, false);
-
-			ImageView chainLogo = (ImageView) restaurantDayView
-					.findViewById(R.id.restaurant_item_chain_logo);
-			TextView textView = (TextView) restaurantDayView
-					.findViewById(R.id.restaurant_item_restaurant_name);
-			LinearLayout lunchLayout = (LinearLayout) restaurantDayView
-					.findViewById(R.id.restaurant_item_food_layout);
-
-			RestaurantDay restaurantDay = getItem(position);
-
-			chainLogo.setImageResource(R.drawable.unica_logo);
-			textView.setText(restaurantDay.getRestaurantName());
-
-			for (Food lunch : restaurantDay.getLunches()) {
-				View lunchlayoutItem = inflater.inflate(R.layout.food_item,
-						null, false);
-				((TextView) lunchlayoutItem.findViewById(R.id.food_item_name))
-						.setText(lunch.getFoodName());
-				((TextView) lunchlayoutItem.findViewById(R.id.food_item_diets))
-						.setText(lunch.getDiets());
-				((TextView) lunchlayoutItem.findViewById(R.id.food_item_prices))
-						.setText(Joiner.on(" / ").join(lunch.getPrices()));
-				lunchLayout.addView(lunchlayoutItem);
-			}
-
-			Log.d(TAG, "Restaurant added to ui:" + restaurantDay);
-			return restaurantDayView;
-
-		}
-		
-		@Override
-		public boolean isEnabled(int position) {
-			//no item can be selected
-			return false;
-		}
-
-	}
-
 	@Override
 	public void onTabSelected(Tab tab, FragmentTransaction arg1) {
-		if (tab.getTag() != null) {
-			presenter.onDateChanged(this, (Integer) tab.getTag());
-		}
+		mViewPager.setCurrentItem(tab.getPosition());
+		presenter.onDateChanged(this, (Integer) tab.getTag());
 	}
 
 	@Override
