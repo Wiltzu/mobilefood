@@ -8,7 +8,8 @@
         android:id="@+id/listview_foods"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:layout_marginTop="5dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
         android:divider="@null"
         android:dividerHeight="0dp" >
     </ListView>

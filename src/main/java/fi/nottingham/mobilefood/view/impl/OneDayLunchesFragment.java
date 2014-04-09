@@ -26,6 +26,7 @@ import fi.nottingham.mobilefood.view.ViewIsReadyListener;
 
 public class OneDayLunchesFragment extends DaggerBaseFragment{
 
+	private static final String TAG = "OneDayLunchesFragment";
 	private ListView mFoodsListView;
 	private ViewIsReadyListener listener;
 	
@@ -45,6 +46,7 @@ public class OneDayLunchesFragment extends DaggerBaseFragment{
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
+		Log.d(TAG, "Activity has been created");
 		if(listener != null) {
 			listener.viewIsReady();			
 		}
@@ -55,13 +57,13 @@ public class OneDayLunchesFragment extends DaggerBaseFragment{
 
 		
 		if (isAdded()) {
-			Log.d("OneDayLunchesFragment", "Fragment added to activity");
+			Log.d(TAG, "Fragment is added to activity");
 			if (!foodsByRestaurant.isEmpty()) {
-				Log.d("OneDayLunchesFragment", "Foods set to listView of the fragment");
+				Log.d(TAG, "Foods set to listView of the fragment");
 				mFoodsListView.setAdapter(new RestaurantDayViewAdapter(
 						getActivity(), foodsByRestaurant));
 			} else {
-				Log.d("OneDayLunchesFragment", "Empty Foods set to listView of the fragment");
+				Log.d(TAG, "Empty Foods set to listView of the fragment");
 				mFoodsListView
 						.setAdapter(new ArrayAdapter<String>(getActivity(),
 								android.R.layout.simple_list_item_1,

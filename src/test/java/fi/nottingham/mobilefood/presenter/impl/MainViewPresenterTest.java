@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import javax.inject.Provider;
 
@@ -75,17 +77,10 @@ public class MainViewPresenterTest {
 		verify(mainView).setFoods(foods);
 	}
 	
-	public void updateFoodsInBackground_showLoadingIconAndFetchesFoodsFromService() {
-		((MainViewPresenterImpl) mainViewPresenter).updateFoodsInBackground(mainView);
-		verify(mainView).showLoadingIcon();
-		verify(mainView).runInBackgroud(Mockito.any(Runnable.class), Mockito.any(Runnable.class));
-	}
-
 	@Test
-	public void OnViewCreation_foodsAreFetchedFromFoodServiceInBackground() {
-		mainViewPresenter.onViewCreation(mainView, null);
-		verify(mainView).runInBackgroud(Mockito.any(Runnable.class),
-				Mockito.any(Runnable.class));
+	public void getFoodsFromService_showLoadingIconAndFetchesFoodsFromService() {
+		((MainViewPresenterImpl) mainViewPresenter).getFoodsFromService();
+		verify(mainView).showLoadingIcon();
 	}
 	
 	@Test
@@ -136,26 +131,14 @@ public class MainViewPresenterTest {
 		//verify(foodService).getFoodsFromInternalStorageBy(Mockito.anyInt(), selectedWeekDay);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
-	public void fetchFoodsFromService_clearsFoodListAndAddsNewValuesFromService()
-			throws FoodServiceException {
-		MockitoAnnotations.initMocks(this); // inits currentFoods
-
-		List<RestaurantDay> mockFoodsFromService = mock(List.class);
-		when(foodService.getFoodsBy(Mockito.anyInt(), Mockito.anyInt()))
-				.thenReturn(mockFoodsFromService);
-
-		((MainViewPresenterImpl) mainViewPresenter).fetchFoodsFromService();
-	}
-
-	@Test
-	public void fetchFoodsFromService_withNoInternetConnection_triesTogetFoodsFromInternalStorage()
-			throws FoodServiceException {
+	public void getFoodsFromService_withNoInternetConnection_triesTogetFoodsFromInternalStorage()
+			throws FoodServiceException, InterruptedException, ExecutionException {
 
 		when(networkStatusService.isConnectedToInternet()).thenReturn(false);
 
-		((MainViewPresenterImpl) mainViewPresenter).fetchFoodsFromService();
+		Future<List<RestaurantDay>> foodsFromService = ((MainViewPresenterImpl) mainViewPresenter).getFoodsFromService();
+		foodsFromService.get();
 
 		verify(foodService).getFoodsFromInternalStorageBy(Mockito.anyInt(),
 				Mockito.anyInt());
@@ -163,8 +146,8 @@ public class MainViewPresenterTest {
 	}
 
 	@Test
-	public void fetchFoodsFromService_withInternetButServiceHasNoFoodsForWeek_exceptionIsCacthed()
-			throws FoodServiceException {
+	public void getFoodsFromService_withInternetButServiceHasNoFoodsForWeek_exceptionIsCacthed()
+			throws FoodServiceException, InterruptedException, ExecutionException {
 		when(networkStatusService.isConnectedToInternet()).thenReturn(true);
 		when(foodService.getFoodsFromInternalStorageBy(Mockito.anyInt(), Mockito.anyInt())).thenReturn(null);
 		when(foodService.getFoodsBy(Mockito.anyInt(), Mockito.anyInt()))
@@ -172,7 +155,8 @@ public class MainViewPresenterTest {
 						new FoodServiceException(
 								FoodServiceException.SERVICE_DOWN));
 
-		((MainViewPresenterImpl) mainViewPresenter).fetchFoodsFromService();
+		Future<List<RestaurantDay>> foodsFromService = ((MainViewPresenterImpl) mainViewPresenter).getFoodsFromService();
+		foodsFromService.get();
 
 		verify(foodService).getFoodsBy(Mockito.anyInt(), Mockito.anyInt());
 		
@@ -189,7 +173,7 @@ public class MainViewPresenterTest {
 						new FoodServiceException(
 								FoodServiceException.SERVICE_DOWN));
 
-		((MainViewPresenterImpl) mainViewPresenter).fetchFoodsFromService();
+		((MainViewPresenterImpl) mainViewPresenter).getFoodsFromService();
 		((MainViewPresenterImpl) mainViewPresenter).updateUI(mainView);
 
 		verify(foodService).getFoodsBy(Mockito.anyInt(), Mockito.anyInt());

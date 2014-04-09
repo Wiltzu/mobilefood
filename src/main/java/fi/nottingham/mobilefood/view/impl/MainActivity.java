@@ -75,7 +75,7 @@ public class MainActivity extends DaggerBaseActivity implements IMainView,
 	private ActionBar mActionbar;
 	private ViewPager mViewPager;
 
-	private Map<Integer, OneDayLunchesFragment> mLunchFragmentsMap;
+	private Map<Integer, OneDayLunchesFragment> mLunchFragmentsMap = Maps.newHashMap();
 
 	@Inject
 	IMainViewPresenter presenter;
@@ -116,9 +116,8 @@ public class MainActivity extends DaggerBaseActivity implements IMainView,
 			savedSelectedWeekDay = savedInstanceState
 					.getInt(LAST_WEEK_DAY_SELECTION);
 		}
-		
-		mLunchFragmentsMap = Maps.newHashMap();
 		presenter.onViewCreation(this, savedSelectedWeekDay);
+		
 
 		mViewPager
 				.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
@@ -130,7 +129,6 @@ public class MainActivity extends DaggerBaseActivity implements IMainView,
 								(Integer) mActionbar.getTabAt(position)
 										.getTag());
 					}
-
 					@Override
 					public void onPageScrolled(int arg0, float arg1, int arg2) {
 					}
@@ -139,7 +137,6 @@ public class MainActivity extends DaggerBaseActivity implements IMainView,
 					public void onPageScrollStateChanged(int arg0) {
 					}
 				});
-
 
 	}
 
