@@ -25,6 +25,7 @@ before_install:
   - echo y | android update sdk --filter platform-tools,android-19,addon-google_apis-google-19,extra-android-support --no-ui --force > /dev/null
   
   #support libraries
+  - cd ..
   - git config --global user.email "you@example.com"
   - git config --global user.name "Your Name"
   - git clone https://github.com/mosabua/maven-android-sdk-deployer.git
@@ -37,6 +38,7 @@ before_install:
   - cd ../compatibility-v7-appcompat
   - mvn clean install
   - cd ../../..
+  - cd mobilefood
   - pwd
 
 install: mvn install -Dskip.unit.tests=true -Dskip.integration.tests=true -B -V
