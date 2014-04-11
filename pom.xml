@@ -51,21 +51,21 @@
 		<dependency>
 			<groupId>android.support</groupId>
 			<artifactId>compatibility-v4</artifactId>
-			<version>19.0.1</version>
+			<version>19.1.0</version>
 			<scope>compile</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>android.support</groupId>
 			<artifactId>compatibility-v7-appcompat</artifactId>
-			<version>19.0.1</version>
+			<version>19.1.0</version>
 			<type>apklib</type>
 		</dependency>
 
 		<dependency>
 			<groupId>android.support</groupId>
 			<artifactId>compatibility-v7-appcompat</artifactId>
-			<version>19.0.1</version>
+			<version>19.1.0</version>
 			<type>jar</type>
 		</dependency>
 
