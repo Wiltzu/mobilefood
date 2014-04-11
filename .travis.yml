@@ -22,7 +22,9 @@ before_install:
   #- export PATH=${MVN_HOME}/bin/:${PATH}
   - mvn --version
   #Updates android sdk
-  - echo y | android update sdk --filter platform-tools,android-19,addon-google_apis-google-19,extra-android-support,extra-android-m2repository --no-ui --force
+  - echo y | android update sdk --filter platform-tools,android-19,addon-google_apis-google-19,extra-android-support --no-ui --force
+  #update must be done twice to get support version 19.1
+  - echo y | android update sdk --filter extra-android-support --no-ui --force
   
   #support libraries
   - cd ..
