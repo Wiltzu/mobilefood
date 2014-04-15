@@ -198,26 +198,6 @@ public class MainActivity extends DaggerBaseActivity implements IMainView,
 	}
 
 	@Override
-	public void runInBackgroud(final Runnable backgroundTask,
-			final Runnable uiUpdateTask) {
-		new AsyncTask<Void, Void, Void>() {
-			@Override
-			protected Void doInBackground(Void... params) {
-				Log.d(TAG, "Running task in background thread...");
-				backgroundTask.run();
-				return null;
-			}
-
-			@Override
-			protected void onPostExecute(Void result) {
-				Log.d(TAG, "Running ui update task in main thread...");
-				uiUpdateTask.run();
-			}
-
-		}.execute();
-	}
-
-	@Override
 	public void hideLoadingIcon() {
 		if (mProgressBar.isShown()) {
 			mProgressBar.setVisibility(View.INVISIBLE);

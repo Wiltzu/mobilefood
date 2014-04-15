@@ -11,8 +11,6 @@ public interface IMainView {
 
 	void setFoods(List<RestaurantDay> foodsByRestaurant);
 
-	void runInBackgroud(Runnable backgroundTask, Runnable uiUpdateTask);
-
 	void showLoadingIcon();
 
 	void notifyThatDeviceHasNoInternetConnection();
