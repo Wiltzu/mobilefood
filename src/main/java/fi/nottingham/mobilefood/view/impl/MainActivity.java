@@ -107,7 +107,7 @@ public class MainActivity extends DaggerBaseActivity implements IMainView,
 			public void onClick(View v) {
 				Log.i(TAG, "Refresh button clicked.");
 				mRefreshButton.setVisibility(View.INVISIBLE);
-				presenter.onViewCreation(MainActivity.this, null);
+				presenter.refreshFoods(MainActivity.this);
 			}
 		});
 
@@ -121,7 +121,6 @@ public class MainActivity extends DaggerBaseActivity implements IMainView,
 
 		mViewPager
 				.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-
 					@Override
 					public void onPageSelected(int position) {
 						mActionbar.setSelectedNavigationItem(position);
@@ -132,7 +131,6 @@ public class MainActivity extends DaggerBaseActivity implements IMainView,
 					@Override
 					public void onPageScrolled(int arg0, float arg1, int arg2) {
 					}
-
 					@Override
 					public void onPageScrollStateChanged(int arg0) {
 					}
@@ -143,8 +141,9 @@ public class MainActivity extends DaggerBaseActivity implements IMainView,
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(fi.nottingham.mobilefood.R.menu.main, menu);
-		return true;
+		//getMenuInflater().inflate(fi.nottingham.mobilefood.R.menu.main, menu);
+		//return true;
+		return false;
 	}
 
 	public IMainViewPresenter getPresenter() {

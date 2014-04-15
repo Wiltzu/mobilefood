@@ -10,4 +10,6 @@ public interface IMainViewPresenter {
 	IFoodService getFoodService();
 
 	void onDateChanged(IMainView mainView, int selectedWeekDay);
+
+	void refreshFoods(IMainView mainView);
 }

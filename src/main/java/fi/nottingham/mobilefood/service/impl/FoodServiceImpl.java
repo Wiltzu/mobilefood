@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.List;
 
@@ -22,6 +23,7 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import com.google.common.collect.Lists;
+import com.typesafe.config.ConfigFactory;
 
 import fi.nottingham.mobilefood.model.Food;
 import fi.nottingham.mobilefood.model.RestaurantDay;
@@ -37,6 +39,7 @@ public class FoodServiceImpl implements IFoodService {
 	private final String serviceLocation;
 	private final Logger logger = Logger.getLogger(this.getClass());
 	private final IFileSystemService fileSystemService;
+	private int connectTimeout;
 
 	@Inject
 	public FoodServiceImpl(String serviceLocation,
@@ -45,6 +48,7 @@ public class FoodServiceImpl implements IFoodService {
 				"serviceLocation cannot be null");
 		this.fileSystemService = checkNotNull(fileSystemService,
 				"fileSystemService cannot be null");
+		connectTimeout = ConfigFactory.load().getInt("mobilefood.foodservice.timeout.connect");
 	}
 
 	@Override
@@ -150,6 +154,7 @@ public class FoodServiceImpl implements IFoodService {
 		try {
 			HttpURLConnection connection = (HttpURLConnection) new URL(
 					getRequestURL(weekNumber)).openConnection();
+			connection.setConnectTimeout(connectTimeout);
 			// TODO: set timeouts for connecting and receiving data from service
 
 			String response = IOUtils.toString(connection.getInputStream(),
@@ -170,11 +175,14 @@ public class FoodServiceImpl implements IFoodService {
 			weekOutputFile.close();
 
 			return response;
+		} catch (SocketTimeoutException e) {
+			logger.fatal("Connecting to service resulted in a timeout. Service is likely down!", e);
+			throw new FoodServiceException(FoodServiceException.SERVICE_DOWN);
 		} catch (MalformedURLException e) {
 			logger.fatal("Service's URL was malformed, check URL!", e);
 			throw new FoodServiceException(FoodServiceException.SERVICE_DOWN);
 		} catch (IOException e) {
-			logger.fatal("Service seems to down for some reason", e);
+			logger.fatal("Can't read data from service!", e);
 			throw new FoodServiceException(FoodServiceException.SERVICE_DOWN);
 		}
 	}

@@ -26,6 +26,7 @@ import fi.nottingham.mobilefood.util.DateUtils;
 import fi.nottingham.mobilefood.view.IMainView;
 import fi.nottingham.mobilefood.view.ViewIsReadyListener;
 
+//TODO: refactor this class and make tests for it
 public class MainViewPresenterImpl implements IMainViewPresenter, ViewIsReadyListener {
 	private final Logger logger = Logger.getLogger(this.getClass());
 
@@ -37,7 +38,6 @@ public class MainViewPresenterImpl implements IMainViewPresenter, ViewIsReadyLis
 	private Future<List<RestaurantDay>> currentFoodsFuture;
 	
 	private boolean hasInternetConnection = true;
-	private FoodServiceException foodServiceException = null;
 	
 	private final ExecutorService pool = Executors.newFixedThreadPool(2);
 	private IMainView mainView;
@@ -54,6 +54,7 @@ public class MainViewPresenterImpl implements IMainViewPresenter, ViewIsReadyLis
 	public void onViewCreation(final IMainView mainView, @Nullable Integer savedSelectedWeekDay) {
 		checkNotNull("mainView cannot be null", mainView);
 		this.mainView = mainView;
+		//TODO: reconsider can we set this here 
 		mainView.setAvailableWeekDays(DateUtils.getRestOfTheWeeksDayNumbersFrom(timeNow.get()));
 		
 		if(savedSelectedWeekDay != null) {
@@ -74,7 +75,6 @@ public class MainViewPresenterImpl implements IMainViewPresenter, ViewIsReadyLis
 		return pool.submit(new Callable<List<RestaurantDay>>() {
 			@Override
 			public List<RestaurantDay> call() throws Exception {
-				foodServiceException = null;
 				int dayOfTheWeek = DateUtils.getDayOfTheWeek(selectedDate);
 				int weekNumber = DateUtils.getWeekOfYear(selectedDate);
 				
@@ -82,12 +82,8 @@ public class MainViewPresenterImpl implements IMainViewPresenter, ViewIsReadyLis
 				List<RestaurantDay> foods = foodService.getFoodsFromInternalStorageBy(weekNumber, dayOfTheWeek);
 				
 				if(foods == null && (hasInternetConnection = networkStatusService.isConnectedToInternet())) {
-					try {
-						logger.debug("Fething foods from service.");
-						foods = foodService.getFoodsBy(weekNumber, dayOfTheWeek);
-					} catch(FoodServiceException e) {
-						foodServiceException = e;
-					}	
+					logger.debug("Fething foods from service.");
+					foods = foodService.getFoodsBy(weekNumber, dayOfTheWeek);
 				}
 				return foods;
 			}
@@ -96,20 +92,27 @@ public class MainViewPresenterImpl implements IMainViewPresenter, ViewIsReadyLis
 	}
 	
 	protected void updateUI(final IMainView mainView) {
-		mainView.hideLoadingIcon();
+		//TODO: Refactor this!!
 		List<RestaurantDay> foods = null;
 		try {
 			if(currentFoodsFuture != null) {
+				logger.debug("Getting foods from FoodService...");
 				foods = currentFoodsFuture.get();				
 			}
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (ExecutionException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}	
+			if(e.getCause() instanceof FoodServiceException) {
+				logger.debug("Food service is down or foods are unavailable.");
+				mainView.notifyThatFoodsAreCurrentlyUnavailable();
+				mainView.showRefreshButton();
+			} else {
+				logger.error("Unexpected error", e);
+			}
+		}		
 		
+		mainView.hideLoadingIcon();
 		if(foods != null) {
 			mainView.setFoods(foods);
 		} else {
@@ -120,11 +123,7 @@ public class MainViewPresenterImpl implements IMainViewPresenter, ViewIsReadyLis
 				mainView.notifyThatDeviceHasNoInternetConnection();
 				mainView.showRefreshButton();
 			
-			} else if (foodServiceCallResultedInException()) {
-				logger.debug("Food service is down or foods are unavailable.");
-				mainView.notifyThatFoodsAreCurrentlyUnavailable();
-				mainView.showRefreshButton();
-			}
+			} 
 		}
 		
 	}
@@ -142,10 +141,6 @@ public class MainViewPresenterImpl implements IMainViewPresenter, ViewIsReadyLis
 		return foodService;
 	}
 
-	public boolean foodServiceCallResultedInException() {
-		return foodServiceException != null;
-	}
-
 	@Override
 	public void onDateChanged(IMainView mainView, int selectedWeekDay) {
 		mainView.showLoadingIcon();
@@ -156,6 +151,13 @@ public class MainViewPresenterImpl implements IMainViewPresenter, ViewIsReadyLis
 
 	@Override
 	public void viewIsReady() {
+		updateUI(mainView);
+	}
+
+	@Override
+	public void refreshFoods(IMainView mainView) {
+		mainView.showLoadingIcon();
+		currentFoodsFuture = getFoodsFromService();
 		updateUI(mainView);
 	}
 

@@ -78,8 +78,8 @@ public class MainViewPresenterTest {
 	}
 	
 	@Test
-	public void getFoodsFromService_showLoadingIconAndFetchesFoodsFromService() {
-		((MainViewPresenterImpl) mainViewPresenter).getFoodsFromService();
+	public void onViewCreation_showLoadingIconAndFetchesFoodsFromService() {
+		((MainViewPresenterImpl) mainViewPresenter).onViewCreation(mainView, null);
 		verify(mainView).showLoadingIcon();
 	}
 	
@@ -159,8 +159,6 @@ public class MainViewPresenterTest {
 		foodsFromService.get();
 
 		verify(foodService).getFoodsBy(Mockito.anyInt(), Mockito.anyInt());
-		
-		assertTrue(((MainViewPresenterImpl) mainViewPresenter).foodServiceCallResultedInException());
 	}
 	
 	@Test
@@ -191,6 +189,17 @@ public class MainViewPresenterTest {
 		((MainViewPresenterImpl) mainViewPresenter).updateUI(mainView);
 
 		verify(mainView).setFoods(currentFoods);
+	}
+	
+	@Test
+	public void updateUI_doesnotSetFoodsCurrentFoodsIfItdoesnotHaveThem() {
+		currentFoods = Lists.newArrayList(new RestaurantDay("restName",
+				new ArrayList<Food>()));
+		MockitoAnnotations.initMocks(this); // inits currentFoods
+		
+		((MainViewPresenterImpl) mainViewPresenter).updateUI(mainView);
+
+		verify(mainView, Mockito.never()).setFoods(currentFoods);
 	}
 
 	@Test
