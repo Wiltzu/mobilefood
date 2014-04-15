@@ -34,7 +34,6 @@ public class MainViewPresenterImpl implements IMainViewPresenter, ViewIsReadyLis
 	private final INetworkStatusService networkStatusService;
 	private Provider<Date> timeNow;
 	private Date selectedDate;
-	private List<RestaurantDay> currentFoods;
 	private Future<List<RestaurantDay>> currentFoodsFuture;
 	
 	private boolean hasInternetConnection = true;
@@ -62,12 +61,8 @@ public class MainViewPresenterImpl implements IMainViewPresenter, ViewIsReadyLis
 			mainView.setSelectedDate(savedSelectedWeekDay);					
 		}
 
-		if (currentFoods == null) {		
-			mainView.showLoadingIcon();
-			currentFoodsFuture = getFoodsFromService();
-		} else {
-			mainView.setFoods(currentFoods);
-		}
+		mainView.showLoadingIcon();
+		currentFoodsFuture = getFoodsFromService();
 	}
 	
 	protected Future<List<RestaurantDay>> getFoodsFromService() {

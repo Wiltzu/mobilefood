@@ -45,11 +45,11 @@ public class OneDayLunchesFragment extends DaggerBaseFragment{
 	
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
-		Log.d(TAG, "Activity is created.");
+		super.onActivityCreated(savedInstanceState);
+		Log.d(TAG, "Activity has been created");
 		if(listener != null) {
 			listener.viewIsReady();			
 		}
-		super.onActivityCreated(savedInstanceState);
 	}
 
 	public void setFoods(List<RestaurantDay> foodsByRestaurant) {

@@ -7,9 +7,6 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
-import com.google.common.collect.Maps;
-
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -22,11 +19,14 @@ import android.support.v7.app.ActionBar.TabListener;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.Toast;
+
+import com.google.common.collect.Maps;
+
 import fi.nottingham.mobilefood.DaggerBaseActivity;
 import fi.nottingham.mobilefood.R;
 import fi.nottingham.mobilefood.model.RestaurantDay;
@@ -124,9 +124,9 @@ public class MainActivity extends DaggerBaseActivity implements IMainView,
 					@Override
 					public void onPageSelected(int position) {
 						mActionbar.setSelectedNavigationItem(position);
-						presenter.onDateChanged(MainActivity.this,
-								(Integer) mActionbar.getTabAt(position)
-										.getTag());
+//						presenter.onDateChanged(MainActivity.this,
+//								(Integer) mActionbar.getTabAt(position)
+//										.getTag());
 					}
 					@Override
 					public void onPageScrolled(int arg0, float arg1, int arg2) {
