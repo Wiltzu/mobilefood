@@ -76,8 +76,8 @@ public class MainViewSteps {
 		when(foodService.getFoodsFromInternalStorageBy(Mockito.anyInt(), Mockito.anyInt())).thenReturn(null);
 		//add provided foods to service's mock
 		List<RestaurantDay> foodList = getExampleFoodsAsList(foodsTable);
-		when(foodService.getFoodsBy(Mockito.anyInt(), Mockito.anyInt())).thenReturn(
-				foodList);
+		//when(foodService.getFoodsBy(Mockito.anyInt(), Mockito.anyInt())).thenReturn(
+			//	foodList);
 		//start activity
 		mainActivity = Robolectric.buildActivity(MainActivity.class).create().start().resume().get();
 	}
@@ -109,12 +109,6 @@ public class MainViewSteps {
 		@Singleton
 		IFoodService provideFoodService(Config conf) {
 			return foodService;
-		}
-		
-		@Provides
-		@Singleton
-		INetworkStatusService provideNetworkStatus() {
-			return networkStatusService;
 		}
 	}
 

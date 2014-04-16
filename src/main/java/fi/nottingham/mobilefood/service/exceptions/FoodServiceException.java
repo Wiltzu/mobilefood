@@ -9,6 +9,7 @@ public class FoodServiceException extends Exception {
 	public static final int NO_FOOD_FOR_WEEK = 1;
 	private static final String[] errorMessages =  {"Service is down.","No foods available for requested week."};
 
+
 	private final int errorCode;
 	
 	/**

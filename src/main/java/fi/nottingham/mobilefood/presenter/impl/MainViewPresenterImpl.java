@@ -22,110 +22,102 @@ import fi.nottingham.mobilefood.presenter.IMainViewPresenter;
 import fi.nottingham.mobilefood.service.IFoodService;
 import fi.nottingham.mobilefood.service.INetworkStatusService;
 import fi.nottingham.mobilefood.service.exceptions.FoodServiceException;
+import fi.nottingham.mobilefood.service.exceptions.NoInternetConnectionException;
 import fi.nottingham.mobilefood.util.DateUtils;
 import fi.nottingham.mobilefood.view.IMainView;
 import fi.nottingham.mobilefood.view.ViewIsReadyListener;
 
 //TODO: refactor this class and make tests for it
-public class MainViewPresenterImpl implements IMainViewPresenter, ViewIsReadyListener {
+public class MainViewPresenterImpl implements IMainViewPresenter,
+		ViewIsReadyListener {
 	private final Logger logger = Logger.getLogger(this.getClass());
 
 	private final IFoodService foodService;
-	private final INetworkStatusService networkStatusService;
 	private Provider<Date> timeNow;
 	private Date selectedDate;
 	private Future<List<RestaurantDay>> currentFoodsFuture;
-	
+
 	private boolean hasInternetConnection = true;
-	
-	private final ExecutorService pool = Executors.newFixedThreadPool(2);
+
 	private IMainView mainView;
 
 	@Inject
-	public MainViewPresenterImpl(IFoodService foodService, Provider<Date> timeNow, INetworkStatusService networkStatusService) {
+	public MainViewPresenterImpl(IFoodService foodService,
+			Provider<Date> timeNow) {
 		this.foodService = foodService;
-		this.networkStatusService = networkStatusService;
 		this.timeNow = timeNow;
 		this.selectedDate = timeNow.get();
 	}
 
 	@Override
-	public void onViewCreation(final IMainView mainView, @Nullable Integer savedSelectedWeekDay) {
+	public void onViewCreation(final IMainView mainView,
+			@Nullable Integer savedSelectedWeekDay) {
 		checkNotNull("mainView cannot be null", mainView);
 		this.mainView = mainView;
-		//TODO: reconsider can we set this here 
-		mainView.setAvailableWeekDays(DateUtils.getRestOfTheWeeksDayNumbersFrom(timeNow.get()));
-		
-		if(savedSelectedWeekDay != null) {
-			selectedDate = DateUtils.getDateInThisWeekBy(selectedDate, savedSelectedWeekDay);
-			mainView.setSelectedDate(savedSelectedWeekDay);					
+		// TODO: reconsider can we set this here
+		mainView.setAvailableWeekDays(DateUtils
+				.getRestOfTheWeeksDayNumbersFrom(timeNow.get()));
+
+		if (savedSelectedWeekDay != null) {
+			selectedDate = DateUtils.getDateInThisWeekBy(selectedDate,
+					savedSelectedWeekDay);
+			mainView.setSelectedDate(savedSelectedWeekDay);
 		}
 
 		mainView.showLoadingIcon();
 		currentFoodsFuture = getFoodsFromService();
 	}
-	
+
 	protected Future<List<RestaurantDay>> getFoodsFromService() {
-		
-		return pool.submit(new Callable<List<RestaurantDay>>() {
-			@Override
-			public List<RestaurantDay> call() throws Exception {
-				int dayOfTheWeek = DateUtils.getDayOfTheWeek(selectedDate);
-				int weekNumber = DateUtils.getWeekOfYear(selectedDate);
-				
-				logger.debug("Fething foods from internal storage.");
-				List<RestaurantDay> foods = foodService.getFoodsFromInternalStorageBy(weekNumber, dayOfTheWeek);
-				
-				if(foods == null && (hasInternetConnection = networkStatusService.isConnectedToInternet())) {
-					logger.debug("Fething foods from service.");
-					foods = foodService.getFoodsBy(weekNumber, dayOfTheWeek);
-				}
-				return foods;
-			}
-			
-		});
+		int dayOfTheWeek = DateUtils.getDayOfTheWeek(selectedDate);
+		int weekNumber = DateUtils.getWeekOfYear(selectedDate);
+
+		Future<List<RestaurantDay>> foods = foodService
+				.getFoodsFromInternalStorageBy(weekNumber, dayOfTheWeek);
+
+		if (foods == null) {
+			foods = foodService.getFoodsBy(weekNumber, dayOfTheWeek);
+		}
+		return foods;
 	}
-	
+
 	protected void updateUI(final IMainView mainView) {
-		//TODO: Refactor this!!
+		// TODO: Refactor this!!
 		List<RestaurantDay> foods = null;
 		try {
-			if(currentFoodsFuture != null) {
+			if (currentFoodsFuture != null) {
 				logger.debug("Getting foods from FoodService...");
-				foods = currentFoodsFuture.get();				
+				foods = currentFoodsFuture.get();
 			}
 		} catch (InterruptedException e) {
 			logger.error("Unexpected exception", e);
 		} catch (ExecutionException e) {
-			if(e.getCause() instanceof FoodServiceException) {
+			if (e.getCause() instanceof FoodServiceException) {
 				logger.debug("Food service is down or foods are unavailable.");
 				mainView.notifyThatFoodsAreCurrentlyUnavailable();
+				mainView.showRefreshButton();
+			} else if(e.getCause() instanceof NoInternetConnectionException) {
+				logger.debug("Device doesn't got Internet connection.");
+				mainView.notifyThatDeviceHasNoInternetConnection();
 				mainView.showRefreshButton();
 			} else {
 				logger.error("Unexpected error", e);
 			}
-		}		
-		
+		}
+
 		mainView.hideLoadingIcon();
-		if(foods != null) {
+		if (foods != null) {
 			mainView.setFoods(foods);
 		} else {
 			mainView.setFoods(new ArrayList<RestaurantDay>());
-			
-			if(!hasInternetConnection()) {
-				logger.debug("Device doesn't got Internet connection.");
-				mainView.notifyThatDeviceHasNoInternetConnection();
-				mainView.showRefreshButton();
-			
-			} 
 		}
-		
+
 	}
-	
+
 	protected boolean hasInternetConnection() {
 		return hasInternetConnection;
 	}
-	
+
 	protected void setHasInternetConnection(boolean hasConnection) {
 		hasInternetConnection = hasConnection;
 	}
@@ -138,7 +130,8 @@ public class MainViewPresenterImpl implements IMainViewPresenter, ViewIsReadyLis
 	@Override
 	public void onDateChanged(IMainView mainView, int selectedWeekDay) {
 		mainView.showLoadingIcon();
-		selectedDate = DateUtils.getDateInThisWeekBy(selectedDate, selectedWeekDay);
+		selectedDate = DateUtils.getDateInThisWeekBy(selectedDate,
+				selectedWeekDay);
 		currentFoodsFuture = getFoodsFromService();
 		updateUI(mainView);
 	}

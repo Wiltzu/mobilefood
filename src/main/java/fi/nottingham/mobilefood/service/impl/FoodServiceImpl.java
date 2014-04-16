@@ -12,6 +12,10 @@ import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import javax.inject.Inject;
 
@@ -23,71 +27,97 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import com.google.common.collect.Lists;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.typesafe.config.ConfigFactory;
 
 import fi.nottingham.mobilefood.model.Food;
 import fi.nottingham.mobilefood.model.RestaurantDay;
 import fi.nottingham.mobilefood.service.IFileSystemService;
 import fi.nottingham.mobilefood.service.IFoodService;
+import fi.nottingham.mobilefood.service.INetworkStatusService;
 import fi.nottingham.mobilefood.service.exceptions.FoodServiceException;
 import fi.nottingham.mobilefood.service.exceptions.NoInternetConnectionException;
 
 public class FoodServiceImpl implements IFoodService {
 	private static final String CHAIN_NAME = "unica";
 	private static final int YEAR = 2014;
+	private final Logger logger = Logger.getLogger(this.getClass());
 
 	private final String serviceLocation;
-	private final Logger logger = Logger.getLogger(this.getClass());
-	private final IFileSystemService fileSystemService;
 	private int connectTimeout;
+	
+	private final IFileSystemService fileSystemService;
+	private final INetworkStatusService networkStatusService;
+
+	private final ExecutorService pool = Executors.newFixedThreadPool(
+			2,
+			new ThreadFactoryBuilder().setNameFormat(
+					"FoodServicePool-thread-%d").build());
 
 	@Inject
 	public FoodServiceImpl(String serviceLocation,
-			IFileSystemService fileSystemService) {
+			IFileSystemService fileSystemService, INetworkStatusService networkStatusService) {
 		this.serviceLocation = checkNotNull(serviceLocation,
 				"serviceLocation cannot be null");
 		this.fileSystemService = checkNotNull(fileSystemService,
 				"fileSystemService cannot be null");
-		connectTimeout = ConfigFactory.load().getInt("mobilefood.foodservice.timeout.connect");
+		this.networkStatusService = checkNotNull(networkStatusService, "networkStatusService cannot be null");
+		connectTimeout = ConfigFactory.load().getInt(
+				"mobilefood.foodservice.timeout.connect");
 	}
 
 	@Override
-	public synchronized List<RestaurantDay> getFoodsFromInternalStorageBy(int weekNumber,
-			int dayOfTheWeek) {
-		String fileName = getFileNameFor(YEAR, weekNumber, CHAIN_NAME);
-		String responseFromFile = null;
-
-		try {
-			InputStream weekInputFile = fileSystemService
-					.openInputFile(fileName);
-
-			responseFromFile = IOUtils.toString(weekInputFile);
-			weekInputFile.close();
-		} catch (IOException e) {
-			logger.debug("No food file in internal storage", e);
-			return null;
-		}
-
-		if (!isNullOrEmpty(responseFromFile)) {
-			return parseFoods(dayOfTheWeek, responseFromFile);
-		} else {
-			return null;
-		}
-	}
-
-	@Override
-	public synchronized List<RestaurantDay> getFoodsBy(int weekNumber, int dayOfTheWeek)
-			throws FoodServiceException {
-		final List<RestaurantDay> foodsOfTheDay = Lists.newArrayList();
+	public synchronized Future<List<RestaurantDay>> getFoodsFromInternalStorageBy(
+			final int weekNumber, final int dayOfTheWeek) {
 		checkArgument(weekNumber >= 1, "week number must be at least one");
+		return pool.submit(new Callable<List<RestaurantDay>>() {
 
-		String foodJSON = downloadDataFromService(weekNumber);
+			@Override
+			public List<RestaurantDay> call() throws Exception {
+				String fileName = getFileNameFor(YEAR, weekNumber, CHAIN_NAME);
+				String responseFromFile = null;
 
-		if (foodJSON != null) {
-			foodsOfTheDay.addAll(parseFoods(dayOfTheWeek, foodJSON));
-		}
+				try {
+					InputStream weekInputFile = fileSystemService
+							.openInputFile(fileName);
 
-		return foodsOfTheDay;
+					responseFromFile = IOUtils.toString(weekInputFile);
+					weekInputFile.close();
+				} catch (IOException e) {
+					logger.debug("No food file in internal storage", e);
+					return null;
+				}
+
+				if (!isNullOrEmpty(responseFromFile)) {
+					return parseFoods(dayOfTheWeek, responseFromFile);
+				} else {
+					return null;
+				}
+			}
+			
+		});
+		
+	}
+
+	@Override
+	public synchronized Future<List<RestaurantDay>> getFoodsBy(final int weekNumber,
+			final int dayOfTheWeek) {
+		checkArgument(weekNumber >= 1, "week number must be at least one");
+		return pool.submit(new Callable<List<RestaurantDay>>() {
+
+			@Override
+			public List<RestaurantDay> call() throws Exception {
+				final List<RestaurantDay> foodsOfTheDay = Lists.newArrayList();
+
+				String foodJSON = downloadDataFromService(weekNumber);
+
+				if (foodJSON != null) {
+					foodsOfTheDay.addAll(parseFoods(dayOfTheWeek, foodJSON));
+				}
+
+				return foodsOfTheDay;
+			}
+		});
 	}
 
 	private List<RestaurantDay> parseFoods(int dayOfTheWeek, String foodJSON) {
@@ -150,7 +180,11 @@ public class FoodServiceImpl implements IFoodService {
 	 *             if no foods are available requested week or service is down
 	 */
 	private String downloadDataFromService(int weekNumber)
-			throws FoodServiceException {
+			throws FoodServiceException, NoInternetConnectionException {
+		if(!networkStatusService.isConnectedToInternet()) {
+			throw new NoInternetConnectionException();
+		}
+		
 		try {
 			HttpURLConnection connection = (HttpURLConnection) new URL(
 					getRequestURL(weekNumber)).openConnection();
@@ -176,7 +210,9 @@ public class FoodServiceImpl implements IFoodService {
 
 			return response;
 		} catch (SocketTimeoutException e) {
-			logger.fatal("Connecting to service resulted in a timeout. Service is likely down!", e);
+			logger.fatal(
+					"Connecting to service resulted in a timeout. Service is likely down!",
+					e);
 			throw new FoodServiceException(FoodServiceException.SERVICE_DOWN);
 		} catch (MalformedURLException e) {
 			logger.fatal("Service's URL was malformed, check URL!", e);

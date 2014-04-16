@@ -56,8 +56,7 @@ public class MainViewPresenterTest {
 		mainView = mock(IMainView.class);
 		foodService = mock(IFoodService.class);
 		networkStatusService = mock(INetworkStatusService.class);
-		mainViewPresenter = new MainViewPresenterImpl(foodService, dateProvider,
-				networkStatusService);
+		mainViewPresenter = new MainViewPresenterImpl(foodService, dateProvider);
 	}
 
 	@Test
@@ -66,11 +65,14 @@ public class MainViewPresenterTest {
 	}
 
 	// @Test
-	public void OnViewCreation_setsViewsFoodsFromFoodService()
-			throws NoInternetConnectionException, FoodServiceException {
+	public void OnViewCreation_setsViewsFoodsFromFoodService() throws Exception{
 		List<RestaurantDay> foods = Lists.newArrayList();
+		
+		Future<List<RestaurantDay>> foodFuture = mock(Future.class);
+		when(foodFuture.get()).thenReturn(foods);
+		
 		when(foodService.getFoodsBy(Mockito.anyInt(), Mockito.anyInt()))
-				.thenReturn(foods);
+				.thenReturn(foodFuture);
 
 		mainViewPresenter.onViewCreation(mainView, null);
 
@@ -106,7 +108,7 @@ public class MainViewPresenterTest {
 				return DateUtils.getDateAtMidnight(2014, Calendar.MARCH, 12);
 			}
 		};
-		mainViewPresenter = new MainViewPresenterImpl(foodService, dProvider, networkStatusService);
+		mainViewPresenter = new MainViewPresenterImpl(foodService, dProvider);
 		mainViewPresenter.onViewCreation(mainView, null);
 		verify(mainView).setAvailableWeekDays(expectedWeekDays);
 	}
