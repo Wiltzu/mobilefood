@@ -16,7 +16,7 @@
         <item>Sunday</item>         
     </string-array>
     <string-array name="no_food_for_day">
-        <item>There are lunches available for this day.</item>
+        <item>There are no lunches available for this day.</item>
     </string-array>
 
 </resources>
