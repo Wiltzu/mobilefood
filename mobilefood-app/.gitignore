@@ -13,3 +13,5 @@
 /script/node_modules
 /src/main/resources/application.conf
 project.properties
+/${user.home}
+.factorypath

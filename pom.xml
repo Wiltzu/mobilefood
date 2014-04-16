@@ -5,7 +5,7 @@
 	<groupId>fi.nottingham</groupId>
 	<artifactId>mobilefood</artifactId>
 	<version>0.3.6</version>
-	<packaging>apk</packaging>
+	<packaging>pom</packaging>
 	<name>mobilefood</name>
 
 	<properties>
@@ -15,128 +15,10 @@
 		<java.version>1.6</java.version>
 	</properties>
 
-	<dependencies>
-
-		<!-- REGULAR DEPENDENCIES -->
-
-		<dependency>
-			<groupId>com.squareup.dagger</groupId>
-			<artifactId>dagger</artifactId>
-			<version>1.2.0</version>
-		</dependency>
-		<dependency>
-			<groupId>com.squareup.dagger</groupId>
-			<artifactId>dagger-compiler</artifactId>
-			<version>1.2.0</version>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>com.google.code.findbugs</groupId>
-			<artifactId>jsr305</artifactId>
-			<version>1.3.7</version>
-		</dependency>
-		<dependency>
-			<groupId>com.typesafe</groupId>
-			<artifactId>config</artifactId>
-			<version>1.2.0</version>
-		</dependency>
-		<dependency>
-			<groupId>commons-io</groupId>
-			<artifactId>commons-io</artifactId>
-			<version>2.4</version>
-		</dependency>
-
-		<!-- Android compability dependencies -->
-
-		<dependency>
-			<groupId>android.support</groupId>
-			<artifactId>compatibility-v4</artifactId>
-			<version>19.1.0</version>
-			<scope>compile</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>android.support</groupId>
-			<artifactId>compatibility-v7-appcompat</artifactId>
-			<version>19.1.0</version>
-			<type>apklib</type>
-		</dependency>
-
-		<dependency>
-			<groupId>android.support</groupId>
-			<artifactId>compatibility-v7-appcompat</artifactId>
-			<version>19.1.0</version>
-			<type>jar</type>
-		</dependency>
-
-		<!-- LOGGING DEPENDENCIES -->
-
-		<dependency>
-			<groupId>de.mindpipe.android</groupId>
-			<artifactId>android-logging-log4j</artifactId>
-			<version>1.0.3</version>
-		</dependency>
-		<dependency>
-			<groupId>log4j</groupId>
-			<artifactId>log4j</artifactId>
-			<version>1.2.17</version>
-		</dependency>
-
-
-		<!-- TEST DEPENDENCIES -->
-		
-		<dependency>
-            <groupId>com.jayway.android.robotium</groupId>
-            <artifactId>robotium-solo</artifactId>
-            <version>5.0.1</version>
-            <scope>test</scope>
-        </dependency>
-		<dependency>
-			<groupId>org.robolectric</groupId>
-			<artifactId>robolectric</artifactId>
-			<version>2.2</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-all</artifactId>
-			<version>1.9.5</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.mock-server</groupId>
-			<artifactId>mockserver-netty</artifactId>
-			<version>2.8</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.jbehave</groupId>
-			<artifactId>jbehave-core</artifactId>
-			<version>4.0-beta-3</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.11</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpclient</artifactId>
-			<version>4.3.2</version>
-			<scope>test</scope>
-		</dependency>
-
-		<!-- PROVIDED DEPENDENCIES -->
-
-		<dependency>
-			<groupId>com.google.android</groupId>
-			<artifactId>android</artifactId>
-			<version>${platform.version}</version>
-			<scope>provided</scope>
-		</dependency>
-	</dependencies>
+	<modules>
+		<module>mobilefood-app</module>
+		<!-- module>mobilefood-test</module -->
+	</modules>
 
 	<build>
 
@@ -175,20 +57,20 @@
 				</configuration>
 			</plugin>
 
-			<!-- unit tests -->
+			<!-- unit tests
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>2.16</version>
 				<configuration>
 					<skipTests>${skip.unit.tests}</skipTests>
-					<!-- Excludes integration tests -->
+					<!- Excludes integration tests
 					<excludes>
 						<exclude>**/IT*.java</exclude>
 					</excludes>
 				</configuration>
 			</plugin>
-			<!-- Integration tests -->
+			<!- Integration tests
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-failsafe-plugin</artifactId>
@@ -205,7 +87,7 @@
 						</configuration>
 					</execution>
 				</executions>
-			</plugin>
+			</plugin -->
 
 		</plugins>
 	</build>
