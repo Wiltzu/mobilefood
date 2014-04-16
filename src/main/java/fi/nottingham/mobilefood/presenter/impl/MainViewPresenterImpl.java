@@ -95,8 +95,7 @@ public class MainViewPresenterImpl implements IMainViewPresenter, ViewIsReadyLis
 				foods = currentFoodsFuture.get();				
 			}
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("Unexpected exception", e);
 		} catch (ExecutionException e) {
 			if(e.getCause() instanceof FoodServiceException) {
 				logger.debug("Food service is down or foods are unavailable.");

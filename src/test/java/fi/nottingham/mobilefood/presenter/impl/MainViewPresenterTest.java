@@ -95,17 +95,6 @@ public class MainViewPresenterTest {
 		mainViewPresenter.onViewCreation(mainView, null);
 		verify(mainView).showLoadingIcon();
 	}
-
-	@Test
-	public void onViewCreation_ifFoodsHaveBeenLoadedEarlier_thoseAreSetRightAway() {
-		currentFoods = Lists.newArrayList(new RestaurantDay("restName",
-				new ArrayList<Food>()));
-		MockitoAnnotations.initMocks(this); // inits currentFoods
-
-		mainViewPresenter.onViewCreation(mainView, null);
-
-		verify(mainView).setFoods(currentFoods);
-	}
 	
 	@Test
 	public void onViewCreation_setsAvailableWeekDaysForView() {
@@ -182,20 +171,13 @@ public class MainViewPresenterTest {
 
 	@Test
 	public void updateUI_setsFoodsCurrentFoodsIfHasThem() {
-		currentFoods = Lists.newArrayList(new RestaurantDay("restName",
-				new ArrayList<Food>()));
-		MockitoAnnotations.initMocks(this); // inits currentFoods
-		
 		((MainViewPresenterImpl) mainViewPresenter).updateUI(mainView);
 
 		verify(mainView).setFoods(currentFoods);
 	}
 	
 	@Test
-	public void updateUI_doesnotSetFoodsCurrentFoodsIfItdoesnotHaveThem() {
-		currentFoods = Lists.newArrayList(new RestaurantDay("restName",
-				new ArrayList<Food>()));
-		MockitoAnnotations.initMocks(this); // inits currentFoods
+	public void updateUI_doesnotSetFoodsCurrentFoodsIfItdoesnotHaveThem()  {
 		
 		((MainViewPresenterImpl) mainViewPresenter).updateUI(mainView);
 
