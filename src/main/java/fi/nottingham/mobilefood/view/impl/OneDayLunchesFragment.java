@@ -39,7 +39,7 @@ public class OneDayLunchesFragment extends DaggerBaseFragment{
 			Bundle savedInstanceState) {
 		View rootView = inflater.inflate(R.layout.activity_main, container,
 				false);
-		mFoodsListView = (ListView) rootView.findViewById(R.id.listview_foods);
+		mFoodsListView = checkNotNull((ListView) rootView.findViewById(R.id.listview_foods), "Somehow ListView is happened to be null...");
 		return rootView;
 	}
 	
@@ -60,6 +60,10 @@ public class OneDayLunchesFragment extends DaggerBaseFragment{
 			Log.d(TAG, "Fragment is added to activity");
 			if (!foodsByRestaurant.isEmpty()) {
 				Log.d(TAG, "Foods set to listView of the fragment");
+				if(mFoodsListView == null)  {
+					//ListView might just null but don't know why
+					mFoodsListView = (ListView) getActivity().findViewById(R.id.listview_foods);
+				}
 				mFoodsListView.setAdapter(new RestaurantDayViewAdapter(
 						getActivity(), foodsByRestaurant));
 			} else {
@@ -89,6 +93,14 @@ public class OneDayLunchesFragment extends DaggerBaseFragment{
 			LayoutInflater inflater = getActivity().getLayoutInflater();
 			View restaurantDayView = inflater.inflate(R.layout.restaurant_item,
 					parent, false);
+			
+			if(position == 0) {
+				//top margin for first item to make it look good
+				LinearLayout restaurantItemLayout = (LinearLayout) restaurantDayView
+						.findViewById(R.id.restaurant_item_layout);
+				LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) restaurantItemLayout.getLayoutParams();
+				layoutParams.topMargin = layoutParams.bottomMargin;
+			}
 
 			ImageView chainLogo = (ImageView) restaurantDayView
 					.findViewById(R.id.restaurant_item_chain_logo);
