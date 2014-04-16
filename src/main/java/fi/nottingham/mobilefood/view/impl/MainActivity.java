@@ -135,6 +135,8 @@ public class MainActivity extends DaggerBaseActivity implements IMainView,
 					public void onPageScrollStateChanged(int arg0) {
 					}
 				});
+		//just cache all days
+		mViewPager.setOffscreenPageLimit(7);
 
 	}
 
