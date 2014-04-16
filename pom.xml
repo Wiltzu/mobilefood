@@ -17,7 +17,7 @@
 
 	<modules>
 		<module>mobilefood-app</module>
-		<!-- module>mobilefood-test</module -->
+		<module>mobilefood-test</module>
 	</modules>
 
 	<build>

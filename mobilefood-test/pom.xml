@@ -3,17 +3,10 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>fi.nottingham</groupId>
-	<artifactId>mobilefood-app</artifactId>
+	<artifactId>mobilefood-test</artifactId>
 	<version>0.3.6</version>
 	<packaging>apk</packaging>
 	<name>mobilefood-test</name>
-
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<platform.version>2.3.3</platform.version>
-		<android.plugin.version>3.8.0</android.plugin.version>
-		<java.version>1.6</java.version>
-	</properties>
 	
 	<parent>
         <groupId>fi.nottingham</groupId>
@@ -22,6 +15,34 @@
     </parent>
 
 	<dependencies>
+		 <dependency>
+            <!-- the target apk, which we will test. will automatically be deployed to device in pre-integration-test
+            phase. -->
+            <groupId>fi.nottingham</groupId>
+            <artifactId>mobilefood-app</artifactId>
+            <version>0.3.6</version>
+            <type>apk</type>
+			<exclusions>
+				<exclusion>
+					<groupId>android.support</groupId>
+					<artifactId>compatibility-v7-appcompat</artifactId>
+				</exclusion>
+			</exclusions>
+        </dependency>
+		<dependency>
+            <!-- optional: compile time dependency, in this case so that we can read from the R.java for example. -->
+            <groupId>fi.nottingham</groupId>
+            <artifactId>mobilefood-app</artifactId>
+            <version>0.3.6</version>
+			<scope>provided</scope>
+            <type>jar</type>
+			<exclusions>
+				<exclusion>
+					<groupId>android.support</groupId>
+					<artifactId>compatibility-v7-appcompat</artifactId>
+				</exclusion>
+			</exclusions>
+        </dependency>
 		
 		<dependency>
             <groupId>com.jayway.android.robotium</groupId>
@@ -60,7 +81,7 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!-- PROVIDED DEPENDENCIES -->
+		<!-- PROVIDED ANDROID DEPENDENCIES -->
 
 		<dependency>
 			<groupId>com.google.android</groupId>
