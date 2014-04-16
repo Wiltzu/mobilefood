@@ -46,9 +46,14 @@ before_install:
 install: mvn install -Dskip.unit.tests=true -Dskip.integration.tests=true -B -V
 
 before_script:
+#start node service
 - cd script
 - npm install
 - npm start &
 - cd ..
+#copy configurations
+- cd src/main/resources
+- cp default-application.conf application.conf
+- cd ../../..
 
 script: mvn verify -B -Denvironment.is.travis  
