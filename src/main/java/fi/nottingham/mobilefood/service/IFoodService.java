@@ -13,15 +13,19 @@ public interface IFoodService {
 	 * @param weekNumber
 	 * @param dayOfTheWeek
 	 * @return foods for week's day
-	 * @throws {@link FoodServiceException} if no foods are available requested week or service is down
-	 * @throws {@link NoInternetConnectionException} if device has no Internet connection
+	 * @throws {@link FoodServiceException} if no foods are available requested
+	 *         week or service is down
+	 * @throws {@link NoInternetConnectionException} if device has no Internet
+	 *         connection
 	 */
 	Future<List<RestaurantDay>> getFoodsBy(int weekNumber, int dayOfTheWeek);
 
 	/**
 	 * @param weekNumber
 	 * @param dayOfTheWeek
-	 * @return foods for specific day or null if there are no foods in internal storage
+	 * @return foods for specific day or null if there are no foods in internal
+	 *         storage
 	 */
-	Future<List<RestaurantDay>> getFoodsFromInternalStorageBy(int weekNumber, int dayOfTheWeek);
+	List<RestaurantDay> getFoodsFromInternalStorageBy(int weekNumber,
+			int dayOfTheWeek);
 }

@@ -45,7 +45,7 @@ public class FoodServiceImpl implements IFoodService {
 
 	private final String serviceLocation;
 	private int connectTimeout;
-	
+
 	private final IFileSystemService fileSystemService;
 	private final INetworkStatusService networkStatusService;
 
@@ -56,52 +56,47 @@ public class FoodServiceImpl implements IFoodService {
 
 	@Inject
 	public FoodServiceImpl(String serviceLocation,
-			IFileSystemService fileSystemService, INetworkStatusService networkStatusService) {
+			IFileSystemService fileSystemService,
+			INetworkStatusService networkStatusService) {
 		this.serviceLocation = checkNotNull(serviceLocation,
 				"serviceLocation cannot be null");
 		this.fileSystemService = checkNotNull(fileSystemService,
 				"fileSystemService cannot be null");
-		this.networkStatusService = checkNotNull(networkStatusService, "networkStatusService cannot be null");
+		this.networkStatusService = checkNotNull(networkStatusService,
+				"networkStatusService cannot be null");
 		connectTimeout = ConfigFactory.load().getInt(
 				"mobilefood.foodservice.timeout.connect");
 	}
 
 	@Override
-	public synchronized Future<List<RestaurantDay>> getFoodsFromInternalStorageBy(
+	public synchronized List<RestaurantDay> getFoodsFromInternalStorageBy(
 			final int weekNumber, final int dayOfTheWeek) {
 		checkArgument(weekNumber >= 1, "week number must be at least one");
-		return pool.submit(new Callable<List<RestaurantDay>>() {
 
-			@Override
-			public List<RestaurantDay> call() throws Exception {
-				String fileName = getFileNameFor(YEAR, weekNumber, CHAIN_NAME);
-				String responseFromFile = null;
+		String fileName = getFileNameFor(YEAR, weekNumber, CHAIN_NAME);
+		String responseFromFile = null;
 
-				try {
-					InputStream weekInputFile = fileSystemService
-							.openInputFile(fileName);
+		try {
+			InputStream weekInputFile = fileSystemService
+					.openInputFile(fileName);
 
-					responseFromFile = IOUtils.toString(weekInputFile);
-					weekInputFile.close();
-				} catch (IOException e) {
-					logger.debug("No food file in internal storage", e);
-					return null;
-				}
+			responseFromFile = IOUtils.toString(weekInputFile);
+			weekInputFile.close();
+		} catch (IOException e) {
+			logger.debug("No food file in internal storage", e);
+			return null;
+		}
 
-				if (!isNullOrEmpty(responseFromFile)) {
-					return parseFoods(dayOfTheWeek, responseFromFile);
-				} else {
-					return null;
-				}
-			}
-			
-		});
-		
+		if (!isNullOrEmpty(responseFromFile)) {
+			return parseFoods(dayOfTheWeek, responseFromFile);
+		} else {
+			return null;
+		}
 	}
 
 	@Override
-	public synchronized Future<List<RestaurantDay>> getFoodsBy(final int weekNumber,
-			final int dayOfTheWeek) {
+	public synchronized Future<List<RestaurantDay>> getFoodsBy(
+			final int weekNumber, final int dayOfTheWeek) {
 		checkArgument(weekNumber >= 1, "week number must be at least one");
 		return pool.submit(new Callable<List<RestaurantDay>>() {
 
@@ -181,10 +176,10 @@ public class FoodServiceImpl implements IFoodService {
 	 */
 	private String downloadDataFromService(int weekNumber)
 			throws FoodServiceException, NoInternetConnectionException {
-		if(!networkStatusService.isConnectedToInternet()) {
+		if (!networkStatusService.isConnectedToInternet()) {
 			throw new NoInternetConnectionException();
 		}
-		
+
 		try {
 			HttpURLConnection connection = (HttpURLConnection) new URL(
 					getRequestURL(weekNumber)).openConnection();

@@ -140,7 +140,7 @@ public class FoodServiceTest {
 				jsonFoodFile);
 
 		assertNotNull(foodService.getFoodsFromInternalStorageBy(weekNumber,
-				dayOfTheWeek).get());
+				dayOfTheWeek));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -153,7 +153,7 @@ public class FoodServiceTest {
 				FileNotFoundException.class);
 
 		assertNull(foodService.getFoodsFromInternalStorageBy(weekNumber,
-				dayOfTheWeek).get());
+				dayOfTheWeek));
 	}
 
 	private static InputStream getTestFileAsInputStream()

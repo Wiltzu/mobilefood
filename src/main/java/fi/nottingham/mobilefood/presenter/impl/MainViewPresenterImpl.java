@@ -36,6 +36,7 @@ public class MainViewPresenterImpl implements IMainViewPresenter,
 	private Provider<Date> timeNow;
 	private Date selectedDate;
 	private Future<List<RestaurantDay>> currentFoodsFuture;
+	private List<RestaurantDay> foodsFromInternalStorage;
 
 	private boolean hasInternetConnection = true;
 
@@ -65,30 +66,36 @@ public class MainViewPresenterImpl implements IMainViewPresenter,
 		}
 
 		mainView.showLoadingIcon();
-		currentFoodsFuture = getFoodsFromService();
+		getInitialFoodsFromService();
 	}
 
-	protected Future<List<RestaurantDay>> getFoodsFromService() {
+	protected void getInitialFoodsFromService() {
 		int dayOfTheWeek = DateUtils.getDayOfTheWeek(selectedDate);
 		int weekNumber = DateUtils.getWeekOfYear(selectedDate);
 
-		Future<List<RestaurantDay>> foods = foodService
-				.getFoodsFromInternalStorageBy(weekNumber, dayOfTheWeek);
+		foodsFromInternalStorage = foodService.getFoodsFromInternalStorageBy(weekNumber,
+				dayOfTheWeek);
 
-		if (foods == null) {
-			foods = foodService.getFoodsBy(weekNumber, dayOfTheWeek);
+		if (foodsFromInternalStorage == null) {
+			currentFoodsFuture = foodService.getFoodsBy(weekNumber,
+					dayOfTheWeek);
 		}
-		return foods;
 	}
 
-	protected void updateUI(final IMainView mainView) {
-		// TODO: Refactor this!!
+	protected void updateUI(final IMainView mainView, List<RestaurantDay> foods) {
+			mainView.hideLoadingIcon();
+			if (foods != null) {
+				mainView.setFoods(foods);
+			} else {
+				mainView.setFoods(new ArrayList<RestaurantDay>());
+			}
+	}
+
+	private void updateUIFromWebService(final IMainView mainView) {
 		List<RestaurantDay> foods = null;
 		try {
-			if (currentFoodsFuture != null) {
-				logger.debug("Getting foods from FoodService...");
-				foods = currentFoodsFuture.get();
-			}
+			logger.debug("Setting foods from WebService...");
+			foods = currentFoodsFuture.get();
 		} catch (InterruptedException e) {
 			logger.error("Unexpected exception", e);
 		} catch (ExecutionException e) {
@@ -96,22 +103,16 @@ public class MainViewPresenterImpl implements IMainViewPresenter,
 				logger.debug("Food service is down or foods are unavailable.");
 				mainView.notifyThatFoodsAreCurrentlyUnavailable();
 				mainView.showRefreshButton();
-			} else if(e.getCause() instanceof NoInternetConnectionException) {
+			} else if (e.getCause() instanceof NoInternetConnectionException) {
 				logger.debug("Device doesn't got Internet connection.");
 				mainView.notifyThatDeviceHasNoInternetConnection();
 				mainView.showRefreshButton();
 			} else {
 				logger.error("Unexpected error", e);
 			}
+		} finally {
+			updateUI(mainView, foods);
 		}
-
-		mainView.hideLoadingIcon();
-		if (foods != null) {
-			mainView.setFoods(foods);
-		} else {
-			mainView.setFoods(new ArrayList<RestaurantDay>());
-		}
-
 	}
 
 	protected boolean hasInternetConnection() {
@@ -129,23 +130,30 @@ public class MainViewPresenterImpl implements IMainViewPresenter,
 
 	@Override
 	public void onDateChanged(IMainView mainView, int selectedWeekDay) {
-		mainView.showLoadingIcon();
+		currentFoodsFuture = null;
 		selectedDate = DateUtils.getDateInThisWeekBy(selectedDate,
-				selectedWeekDay);
-		currentFoodsFuture = getFoodsFromService();
-		updateUI(mainView);
+				selectedWeekDay);		
+		foodsFromInternalStorage = foodService.getFoodsFromInternalStorageBy(
+				DateUtils.getWeekOfYear(selectedDate),
+				DateUtils.getDayOfTheWeek(selectedDate));
+		
+		updateUI(mainView, foodsFromInternalStorage);
 	}
 
 	@Override
 	public void viewIsReady() {
-		updateUI(mainView);
+		if(foodsFromInternalStorage == null) {
+			updateUIFromWebService(mainView);
+		} else {			
+			updateUI(mainView, foodsFromInternalStorage);
+		}
 	}
 
 	@Override
 	public void refreshFoods(IMainView mainView) {
 		mainView.showLoadingIcon();
-		currentFoodsFuture = getFoodsFromService();
-		updateUI(mainView);
+		getInitialFoodsFromService();
+		updateUIFromWebService(mainView);
 	}
 
 }

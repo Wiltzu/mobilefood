@@ -24,6 +24,7 @@ import org.mockito.MockitoAnnotations;
 
 import com.google.common.collect.Lists;
 
+import edu.emory.mathcs.backport.java.util.Collections;
 import fi.nottingham.mobilefood.model.Food;
 import fi.nottingham.mobilefood.model.RestaurantDay;
 import fi.nottingham.mobilefood.presenter.IMainViewPresenter;
@@ -33,6 +34,7 @@ import fi.nottingham.mobilefood.service.exceptions.FoodServiceException;
 import fi.nottingham.mobilefood.service.exceptions.NoInternetConnectionException;
 import fi.nottingham.mobilefood.util.DateUtils;
 import fi.nottingham.mobilefood.view.IMainView;
+import fi.nottingham.mobilefood.view.ViewIsReadyListener;
 
 public class MainViewPresenterTest {
 	@InjectMocks
@@ -64,25 +66,19 @@ public class MainViewPresenterTest {
 		assertEquals(foodService, mainViewPresenter.getFoodService());
 	}
 
-	// @Test
-	public void OnViewCreation_setsViewsFoodsFromFoodService() throws Exception{
-		List<RestaurantDay> foods = Lists.newArrayList();
-		
-		Future<List<RestaurantDay>> foodFuture = mock(Future.class);
-		when(foodFuture.get()).thenReturn(foods);
-		
-		when(foodService.getFoodsBy(Mockito.anyInt(), Mockito.anyInt()))
-				.thenReturn(foodFuture);
+	@Test
+	public void OnViewCreation_ifFoodsAreNotAlreadyInInternalStorage_thenFoodsAreFetchedFromWebService() throws Exception{
+		when(foodService.getFoodsFromInternalStorageBy(Mockito.anyInt(), Mockito.anyInt())).thenReturn(null);
 
 		mainViewPresenter.onViewCreation(mainView, null);
-
-		verify(mainView).setFoods(foods);
+		
+		verify(foodService).getFoodsBy(Mockito.anyInt(), Mockito.anyInt());
 	}
 	
 	@Test
-	public void onViewCreation_showLoadingIconAndFetchesFoodsFromService() {
-		((MainViewPresenterImpl) mainViewPresenter).onViewCreation(mainView, null);
-		verify(mainView).showLoadingIcon();
+	public void onViewCreation_fetchesFoodsFromInternalStorage() {
+		mainViewPresenter.onViewCreation(mainView, null);		
+		verify(foodService).getFoodsFromInternalStorageBy(Mockito.anyInt(), Mockito.anyInt());
 	}
 	
 	@Test
@@ -114,95 +110,106 @@ public class MainViewPresenterTest {
 	}
 	
 	@Test
-	public void onDateChanged_setsFoodsCorrespondingTheDay() {
+	public void onDateChanged_setsFoodsForSelectedDate() {
 		int selectedWeekDay = 3;
 		mainViewPresenter.onDateChanged(mainView, selectedWeekDay);
 		
-		verify(mainView).showLoadingIcon();
-		//verify(foodService).getFoodsFromInternalStorageBy(Mockito.anyInt(), selectedWeekDay);
+		verify(foodService).getFoodsFromInternalStorageBy(Mockito.anyInt(), Mockito.eq(selectedWeekDay));
 	}
 
 	@Test
-	public void getFoodsFromService_withNoInternetConnection_triesTogetFoodsFromInternalStorage()
+	public void getInitialFoodsFromService_withNoInternetConnection_triesToGetFoodsFromInternalStorage()
 			throws FoodServiceException, InterruptedException, ExecutionException {
 
 		when(networkStatusService.isConnectedToInternet()).thenReturn(false);
 
-		Future<List<RestaurantDay>> foodsFromService = ((MainViewPresenterImpl) mainViewPresenter).getFoodsFromService();
-		foodsFromService.get();
+		((MainViewPresenterImpl) mainViewPresenter).getInitialFoodsFromService();
 
 		verify(foodService).getFoodsFromInternalStorageBy(Mockito.anyInt(),
 				Mockito.anyInt());
-		verify(foodService, Mockito.never()).getFoodsBy(Mockito.anyInt(),Mockito.anyInt());
 	}
 
 	@Test
-	public void getFoodsFromService_withInternetButServiceHasNoFoodsForWeek_exceptionIsCacthed()
+	public void viewIsReady_withInternetButServiceHasNoFoodsForWeek_notificationInUIIsShown()
 			throws FoodServiceException, InterruptedException, ExecutionException {
 		when(networkStatusService.isConnectedToInternet()).thenReturn(true);
 		when(foodService.getFoodsFromInternalStorageBy(Mockito.anyInt(), Mockito.anyInt())).thenReturn(null);
-		when(foodService.getFoodsBy(Mockito.anyInt(), Mockito.anyInt()))
-				.thenThrow(
-						new FoodServiceException(
-								FoodServiceException.SERVICE_DOWN));
+		
+		@SuppressWarnings("unchecked")
+		Future<List<RestaurantDay>> foodsFuture = mock(Future.class);
+		when(foodsFuture.get()).thenThrow(new ExecutionException(new FoodServiceException(FoodServiceException.SERVICE_DOWN)));
+		when(foodService.getFoodsBy(Mockito.anyInt(), Mockito.anyInt())).thenReturn(foodsFuture);
 
-		Future<List<RestaurantDay>> foodsFromService = ((MainViewPresenterImpl) mainViewPresenter).getFoodsFromService();
-		foodsFromService.get();
+		mainViewPresenter.onViewCreation(mainView, null);
+		((ViewIsReadyListener) mainViewPresenter).viewIsReady();
 
 		verify(foodService).getFoodsBy(Mockito.anyInt(), Mockito.anyInt());
+		verify(mainView).notifyThatFoodsAreCurrentlyUnavailable();
 	}
 	
 	@Test
-	public void updateUI_withInternetButServiceHasNoFoodsForWeek_userIsNotifyThatThereAreNoFoodsAndRefreshButtonIsShown()
-			throws FoodServiceException {
+	public void viewIsReady_withInternetButServiceHasNoFoodsForWeek_userIsNotifyThatThereAreNoFoodsAndRefreshButtonIsShown()
+			throws Exception {
 		when(networkStatusService.isConnectedToInternet()).thenReturn(true);
 		when(foodService.getFoodsFromInternalStorageBy(Mockito.anyInt(), Mockito.anyInt())).thenReturn(null);
-		when(foodService.getFoodsBy(Mockito.anyInt(), Mockito.anyInt()))
-				.thenThrow(
-						new FoodServiceException(
-								FoodServiceException.SERVICE_DOWN));
 
-		((MainViewPresenterImpl) mainViewPresenter).getFoodsFromService();
-		((MainViewPresenterImpl) mainViewPresenter).updateUI(mainView);
+		@SuppressWarnings("unchecked")
+		Future<List<RestaurantDay>> foodsFuture = mock(Future.class);
+		when(foodsFuture.get()).thenThrow(new ExecutionException(new FoodServiceException(FoodServiceException.NO_FOOD_FOR_WEEK)));
+		when(foodService.getFoodsBy(Mockito.anyInt(), Mockito.anyInt())).thenReturn(foodsFuture);
+
+
+		mainViewPresenter.onViewCreation(mainView, null);
+		((ViewIsReadyListener) mainViewPresenter).viewIsReady();
 
 		verify(foodService).getFoodsBy(Mockito.anyInt(), Mockito.anyInt());
 		
 		verify(mainView).notifyThatFoodsAreCurrentlyUnavailable();
 		verify(mainView).showRefreshButton();
 	}
+	
+	@Test
+	public void viewIsReady_withNoInternet_userIsShownANotificationThatHeShouldEnableInternetAndrefreshButton()
+			throws Exception {
+		when(networkStatusService.isConnectedToInternet()).thenReturn(true);
+		when(foodService.getFoodsFromInternalStorageBy(Mockito.anyInt(), Mockito.anyInt())).thenReturn(null);
+
+		@SuppressWarnings("unchecked")
+		Future<List<RestaurantDay>> foodsFuture = mock(Future.class);
+		when(foodsFuture.get()).thenThrow(new ExecutionException(new NoInternetConnectionException()));
+		when(foodService.getFoodsBy(Mockito.anyInt(), Mockito.anyInt())).thenReturn(foodsFuture);
+
+
+		mainViewPresenter.onViewCreation(mainView, null);
+		((ViewIsReadyListener) mainViewPresenter).viewIsReady();
+
+		verify(foodService).getFoodsBy(Mockito.anyInt(), Mockito.anyInt());
+		
+		verify(mainView).notifyThatDeviceHasNoInternetConnection();
+		verify(mainView).showRefreshButton();
+	}
 
 	@Test
-	public void updateUI_setsFoodsCurrentFoodsIfHasThem() {
-		((MainViewPresenterImpl) mainViewPresenter).updateUI(mainView);
+	public void updateUI_ifHasFoods_setsFoods() {
+		@SuppressWarnings("unchecked")
+		List<RestaurantDay> foods = Collections.emptyList();
+		((MainViewPresenterImpl) mainViewPresenter).updateUI(mainView, foods);
 
-		verify(mainView).setFoods(currentFoods);
+		verify(mainView).setFoods(foods);
 	}
 	
 	@Test
-	public void updateUI_doesnotSetFoodsCurrentFoodsIfItdoesnotHaveThem()  {
-		
-		((MainViewPresenterImpl) mainViewPresenter).updateUI(mainView);
+	public void updateUI_ifFoodsAreNull_setsFoods() {
+		((MainViewPresenterImpl) mainViewPresenter).updateUI(mainView, null);
 
-		verify(mainView, Mockito.never()).setFoods(currentFoods);
-	}
-
-	@Test
-	public void updateUI_ifHasNoInternetConnection_notifiesUserAndCreatesRefreshButton() {
-		((MainViewPresenterImpl) mainViewPresenter)
-				.setHasInternetConnection(false);
-
-		((MainViewPresenterImpl) mainViewPresenter).updateUI(mainView);
-
-		verify(mainView).notifyThatDeviceHasNoInternetConnection();
-		verify(mainView).showRefreshButton();
+		verify(mainView).setFoods(Mockito.anyList());
 	}
 	
 	@Test
 	public void updateUI_hidesLoadingIcon() {
-		((MainViewPresenterImpl) mainViewPresenter).updateUI(mainView);
+		((MainViewPresenterImpl) mainViewPresenter).updateUI(mainView, null);
 
 		verify(mainView).hideLoadingIcon();
 	}
 	
-
 }
