@@ -31,10 +31,10 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="right"
-        android:layout_weight="1.5"
+        android:layout_weight="1.4"
         android:gravity="right"
         android:padding="1dp"
-        android:text="2,60 / 4,60 / 7,50"
+        android:text="2,60 / 4,60 / 7,50 €"
         android:textSize="12sp" />
 
 </LinearLayout>

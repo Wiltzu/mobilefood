@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>fi.nottingham</groupId>
 	<artifactId>mobilefood</artifactId>
-	<version>0.3.0</version>
+	<version>0.3.5</version>
 	<packaging>apk</packaging>
 	<name>mobilefood</name>
 

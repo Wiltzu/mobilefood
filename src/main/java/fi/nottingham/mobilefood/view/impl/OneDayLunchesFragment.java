@@ -121,8 +121,14 @@ public class OneDayLunchesFragment extends DaggerBaseFragment{
 						.setText(lunch.getFoodName());
 				((TextView) lunchlayoutItem.findViewById(R.id.food_item_diets))
 						.setText(lunch.getDiets());
-				((TextView) lunchlayoutItem.findViewById(R.id.food_item_prices))
-						.setText(Joiner.on(" / ").join(lunch.getPrices()));
+				
+				TextView pricesTV = (TextView) lunchlayoutItem.findViewById(R.id.food_item_prices);
+				pricesTV.setText(Joiner.on(" / ").join(lunch.getPrices()));
+				if(!lunch.getPrices().isEmpty()) {
+					//add Euro sign if there are prices
+					pricesTV.setText(pricesTV.getText() + " €");
+				}
+				
 				lunchLayout.addView(lunchlayoutItem);
 			}
 
