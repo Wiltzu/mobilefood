@@ -121,6 +121,8 @@
 						<platform>19</platform>
 					</sdk>
 					<extractDuplicates>true</extractDuplicates>
+					<test>
+					</test>
 				</configuration>
 			</plugin>
 

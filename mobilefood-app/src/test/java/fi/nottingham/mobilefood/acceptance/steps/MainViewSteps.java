@@ -98,7 +98,7 @@ public class MainViewSteps {
 			restaurantNameToLunches.get(restaurantName).add(new Food(foodName, prices, diets));
 		}
 		for(String restaurantName :restaurantNameToLunches.keySet()) {			
-			foodList.add(new RestaurantDay(restaurantName, restaurantNameToLunches.get(restaurantName)));
+			foodList.add(new RestaurantDay(restaurantName, restaurantNameToLunches.get(restaurantName), null));
 		}
 		return foodList;
 	}

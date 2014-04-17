@@ -41,7 +41,19 @@
                 android:paddingTop="1dp"
                 android:text="Assarin Ullakko"
                 android:textSize="18sp" />
+        
         </LinearLayout>
+        
+        <TextView 
+                android:id="@+id/restaurant_item_alert"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="5dp"
+                android:padding="3dp"
+                android:background="#FF9797"
+                android:textColor="#6E0000"
+                android:text="Suljemme tänään klo: 14.00. Hyvää Pääsiäistä :)"/>
 
         <LinearLayout
             android:id="@+id/restaurant_item_food_layout"

@@ -1,6 +1,7 @@
 package fi.nottingham.mobilefood.view.impl;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Strings.isNullOrEmpty;
 
 import java.util.List;
 
@@ -104,15 +105,23 @@ public class OneDayLunchesFragment extends DaggerBaseFragment{
 
 			ImageView chainLogo = (ImageView) restaurantDayView
 					.findViewById(R.id.restaurant_item_chain_logo);
-			TextView textView = (TextView) restaurantDayView
+			TextView restaurantNameTV = (TextView) restaurantDayView
 					.findViewById(R.id.restaurant_item_restaurant_name);
 			LinearLayout lunchLayout = (LinearLayout) restaurantDayView
 					.findViewById(R.id.restaurant_item_food_layout);
-
+			TextView alertTV = (TextView) restaurantDayView.findViewById(R.id.restaurant_item_alert);
+			
 			RestaurantDay restaurantDay = getItem(position);
+			
+			String alert = restaurantDay.getAlert();
+			if(!isNullOrEmpty(alert)) {
+				alertTV.setText(alert);
+			} else {
+				alertTV.setVisibility(View.GONE);
+			}
 
 			chainLogo.setImageResource(R.drawable.unica_logo);
-			textView.setText(restaurantDay.getRestaurantName());
+			restaurantNameTV.setText(restaurantDay.getRestaurantName());
 
 			for (Food lunch : restaurantDay.getLunches()) {
 				View lunchlayoutItem = inflater.inflate(R.layout.food_item,

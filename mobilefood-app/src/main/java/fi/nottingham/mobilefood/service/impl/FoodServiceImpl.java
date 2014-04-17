@@ -153,8 +153,9 @@ public class FoodServiceImpl implements IFoodService {
 					}
 					String restaurantName = restaurant
 							.getString("restaurant_name");
+					String alert = restaurant.getString("alert");
 					foodsOfTheDay.add(new RestaurantDay(restaurantName,
-							foodsOfTheRestaurant));
+							foodsOfTheRestaurant, alert != "" ? alert : null));
 
 				}
 
