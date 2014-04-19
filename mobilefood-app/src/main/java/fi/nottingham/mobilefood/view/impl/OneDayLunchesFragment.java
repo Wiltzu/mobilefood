@@ -121,34 +121,43 @@ public class OneDayLunchesFragment extends DaggerBaseFragment{
 			restaurantNameTV.setText(restaurantDay.getRestaurantName());
 
 			for (Food lunch : restaurantDay.getLunches()) {
-				View lunchlayoutItem = inflater.inflate(R.layout.food_item,
-						parent, false);
-				((TextView) lunchlayoutItem.findViewById(R.id.food_item_name))
-						.setText(lunch.getFoodName());
-				((TextView) lunchlayoutItem.findViewById(R.id.food_item_diets))
-						.setText(lunch.getDiets());
-				
-				TextView pricesTV = (TextView) lunchlayoutItem.findViewById(R.id.food_item_prices);
-				pricesTV.setText(Joiner.on(" / ").join(lunch.getPrices()));
-				if(!lunch.getPrices().isEmpty()) {
-					//add Euro sign if there are prices
-					pricesTV.setText(pricesTV.getText() + " €");
-				}
-				
-				lunchLayout.addView(lunchlayoutItem);
+				lunchLayout.addView(createLunchLayout(parent, inflater,
+						lunch));
 			}
 
 			Log.d(TAG, "Restaurant added to ui:" + restaurantDay);
 			return restaurantDayView;
-
 		}
-
+		
 		private void addTopMarginForItem(View restaurantDayView) {
 			LinearLayout restaurantItemLayout = (LinearLayout) restaurantDayView
 					.findViewById(R.id.restaurant_item_layout);
 			LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) restaurantItemLayout.getLayoutParams();
 			layoutParams.topMargin = layoutParams.bottomMargin;
 		}
+
+		private View createLunchLayout(ViewGroup parent,
+				LayoutInflater inflater, Food lunch) {
+			View lunchlayoutItem = inflater.inflate(R.layout.food_item,
+					parent, false);
+			((TextView) lunchlayoutItem.findViewById(R.id.food_item_name))
+					.setText(lunch.getFoodName());
+			((TextView) lunchlayoutItem.findViewById(R.id.food_item_diets))
+					.setText(lunch.getDiets());
+			
+			TextView pricesTV = (TextView) lunchlayoutItem.findViewById(R.id.food_item_prices);
+			setPrices(lunch.getPrices(), pricesTV);
+			return lunchlayoutItem;
+		}
+
+		private void setPrices(List<String> prices, TextView pricesTV) {
+			pricesTV.setText(Joiner.on(" / ").join(prices));
+			if(!prices.isEmpty()) {
+				//add Euro sign if there are prices
+				pricesTV.setText(pricesTV.getText() + " €");
+			}
+		}
+
 
 		@Override
 		public boolean isEnabled(int position) {
