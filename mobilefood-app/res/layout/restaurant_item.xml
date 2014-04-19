@@ -4,16 +4,15 @@
     android:layout_height="wrap_content"
     android:orientation="vertical" >
 
-   <LinearLayout
+    <LinearLayout
         android:id="@+id/restaurant_item_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="7dp"
         android:layout_marginLeft="7dp"
         android:layout_marginRight="7dp"
-        android:orientation="vertical"
-        android:background="@drawable/restaurantbg" >
-
+        android:background="@drawable/restaurantbg"
+        android:orientation="vertical" >
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -22,49 +21,60 @@
 
             <ImageView
                 android:id="@+id/restaurant_item_chain_logo"
-                android:src="@drawable/unica_logo" 
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:adjustViewBounds="true"
-                android:maxHeight="25sp"
-                android:layout_marginLeft="5dp"
                 android:layout_margin="5dp"
+                android:layout_marginLeft="5dp"
+                android:adjustViewBounds="true"
                 android:contentDescription="chain logo"
-                />
+                android:maxHeight="25sp"
+                android:src="@drawable/unica_logo" />
 
             <TextView
                 android:id="@+id/restaurant_item_restaurant_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="7dp"
                 android:layout_margin="5dp"
+                android:layout_marginLeft="7dp"
                 android:paddingTop="1dp"
                 android:text="Assarin Ullakko"
                 android:textSize="18sp" />
-        
         </LinearLayout>
-        
-        <TextView 
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" 
+            android:background="#CC0000"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp">
+            
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_alert" 
+                android:layout_gravity="center_vertical"/>
+
+            <TextView
                 android:id="@+id/restaurant_item_alert"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="5dp"
-                android:layout_marginRight="5dp"
                 android:padding="3dp"
-                android:background="#FF9797"
-                android:textColor="#6E0000"
-                android:text="Suljemme tänään klo: 14.00. Hyvää Pääsiäistä :)"/>
+                android:text="Suljemme tänään klo: 14.00. Hyvää Pääsiäistä :)"
+                android:layout_gravity="center_vertical"
+                android:textColor="#FFFFFF" />
+
+        </LinearLayout>
 
         <LinearLayout
             android:id="@+id/restaurant_item_food_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical" 
+            android:layout_marginBottom="5dp"
             android:layout_marginLeft="5dp"
             android:layout_marginRight="5dp"
-            android:layout_marginBottom="5dp"
-            android:minHeight="50dp"/>
-        
+            android:minHeight="50dp"
+            android:orientation="vertical" />
     </LinearLayout>
 
 </LinearLayout>
