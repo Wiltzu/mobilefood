@@ -18,7 +18,8 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal" >
+            android:orientation="horizontal" 
+            android:layout_marginBottom="2dp">
 
             <ImageView
                 android:id="@+id/restaurant_item_chain_logo"
@@ -28,19 +29,52 @@
                 android:layout_marginLeft="5dp"
                 android:adjustViewBounds="true"
                 android:contentDescription="chain logo"
-                android:maxHeight="25sp"
+                android:maxHeight="40sp"
                 android:src="@drawable/unica_logo" />
+            
+            <LinearLayout 
+                android:layout_width="wrap_content"
+            	android:layout_height="wrap_content"
+            	android:orientation="vertical"
+                android:layout_marginLeft="7dp">
+                
+                <TextView
+                	android:id="@+id/restaurant_item_restaurant_name"
+	                android:layout_width="wrap_content"
+	                android:layout_height="wrap_content"
+	                android:paddingTop="1dp"
+	                android:text="Assarin Ullakko"
+	                android:textSize="20sp" />
+                
+                <TextView
+                	android:id="@+id/restaurant_item_restaurant_street_address"
+	                android:layout_width="wrap_content"
+	                android:layout_height="wrap_content"
+	                android:text="Rehtorinpellonkatu 4 A"
+	                android:textSize="12sp" />
+                
+            </LinearLayout>
 
-            <TextView
-                android:id="@+id/restaurant_item_restaurant_name"
+           
+            <!-- Buttons -->
+            <RelativeLayout 
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent">
+                
+                <ImageButton
+                android:id="@+id/restaurant_item_restaurant_info"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_margin="5dp"
-                android:layout_marginLeft="7dp"
-                android:paddingTop="1dp"
-                android:text="Assarin Ullakko"
-                android:textSize="18sp" />
+                android:background="@null"
+                android:src="@drawable/ic_info" 
+                android:adjustViewBounds="true"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:maxHeight="50sp"/>
+            </RelativeLayout>
+
         </LinearLayout>
+        
 		<!--  Optional alert layout -->
         <LinearLayout
             android:id="@+id/restaurant_item_alert_layout"
