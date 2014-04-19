@@ -90,17 +90,13 @@ public class OneDayLunchesFragment extends DaggerBaseFragment{
 
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
-			//TODO: Problem is probably here somewhere
 			LayoutInflater inflater = getActivity().getLayoutInflater();
 			View restaurantDayView = inflater.inflate(R.layout.restaurant_item,
 					parent, false);
 			
 			if(position == 0) {
 				//top margin for first item to make it look good
-				LinearLayout restaurantItemLayout = (LinearLayout) restaurantDayView
-						.findViewById(R.id.restaurant_item_layout);
-				LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) restaurantItemLayout.getLayoutParams();
-				layoutParams.topMargin = layoutParams.bottomMargin;
+				addTopMarginForItem(restaurantDayView);
 			}
 
 			ImageView chainLogo = (ImageView) restaurantDayView
@@ -109,7 +105,8 @@ public class OneDayLunchesFragment extends DaggerBaseFragment{
 					.findViewById(R.id.restaurant_item_restaurant_name);
 			LinearLayout lunchLayout = (LinearLayout) restaurantDayView
 					.findViewById(R.id.restaurant_item_food_layout);
-			TextView alertTV = (TextView) restaurantDayView.findViewById(R.id.restaurant_item_alert);
+			TextView alertTV = (TextView) restaurantDayView.findViewById(R.id.restaurant_item_alert_textview);
+			LinearLayout alertLayout = (LinearLayout) restaurantDayView.findViewById(R.id.restaurant_item_alert_layout);
 			
 			RestaurantDay restaurantDay = getItem(position);
 			
@@ -117,7 +114,7 @@ public class OneDayLunchesFragment extends DaggerBaseFragment{
 			if(!isNullOrEmpty(alert)) {
 				alertTV.setText(alert);
 			} else {
-				alertTV.setVisibility(View.GONE);
+				alertLayout.setVisibility(View.GONE);
 			}
 
 			chainLogo.setImageResource(R.drawable.unica_logo);
@@ -144,6 +141,13 @@ public class OneDayLunchesFragment extends DaggerBaseFragment{
 			Log.d(TAG, "Restaurant added to ui:" + restaurantDay);
 			return restaurantDayView;
 
+		}
+
+		private void addTopMarginForItem(View restaurantDayView) {
+			LinearLayout restaurantItemLayout = (LinearLayout) restaurantDayView
+					.findViewById(R.id.restaurant_item_layout);
+			LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) restaurantItemLayout.getLayoutParams();
+			layoutParams.topMargin = layoutParams.bottomMargin;
 		}
 
 		@Override
