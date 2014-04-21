@@ -21,13 +21,8 @@
             <groupId>fi.nottingham</groupId>
             <artifactId>mobilefood-app</artifactId>
             <version>0.3.6</version>
+            <scope>provided</scope>
             <type>apk</type>
-			<exclusions>
-				<exclusion>
-					<groupId>android.support</groupId>
-					<artifactId>compatibility-v7-appcompat</artifactId>
-				</exclusion>
-			</exclusions>
         </dependency>
 		<dependency>
             <!-- optional: compile time dependency, in this case so that we can read from the R.java for example. -->
@@ -36,19 +31,12 @@
             <version>0.3.6</version>
 			<scope>provided</scope>
             <type>jar</type>
-			<exclusions>
-				<exclusion>
-					<groupId>android.support</groupId>
-					<artifactId>compatibility-v7-appcompat</artifactId>
-				</exclusion>
-			</exclusions>
         </dependency>
 		
 		<dependency>
             <groupId>com.jayway.android.robotium</groupId>
             <artifactId>robotium-solo</artifactId>
             <version>5.0.1</version>
-            <scope>test</scope>
         </dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
@@ -72,7 +60,7 @@
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.11</version>
-			<scope>test</scope>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
