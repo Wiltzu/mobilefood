@@ -189,8 +189,8 @@ public class FoodServiceImpl implements IFoodService {
 
 			String response = IOUtils.toString(connection.getInputStream(),
 					"UTF-8");
-
-			if (isNullOrEmpty(response) || response.contains("ERROR")) {
+			//TODO: fix this hack and make separate parser class!!
+			if (isNullOrEmpty(response) || response.contains("error")) {
 				logger.error(String.format(
 						"Unable to get foods from service. Response was: '%s'",
 						response));
