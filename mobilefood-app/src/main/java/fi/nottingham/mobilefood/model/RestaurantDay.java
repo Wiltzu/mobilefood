@@ -22,6 +22,7 @@ public class RestaurantDay {
 	private final String restaurantName;
 	private final List<Food> lunches;
 	private final String alert;
+	private transient Restaurant restaurant;
 
 	public RestaurantDay(String restaurantName, List<Food> lunches, @Nullable String alert) {
 		this.restaurantName = checkNotNull(restaurantName,
@@ -43,6 +44,14 @@ public class RestaurantDay {
 
 	public String getAlert() {
 		return alert;
+	}
+
+	public Restaurant getRestaurant() {
+		return restaurant;
+	}
+
+	public void setRestaurant(Restaurant restaurant) {
+		this.restaurant = restaurant;
 	}
 
 	@Override

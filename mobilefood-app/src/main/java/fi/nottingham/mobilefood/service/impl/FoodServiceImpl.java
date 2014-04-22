@@ -31,12 +31,14 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.typesafe.config.ConfigFactory;
 
 import fi.nottingham.mobilefood.model.Food;
+import fi.nottingham.mobilefood.model.Restaurant;
 import fi.nottingham.mobilefood.model.RestaurantDay;
 import fi.nottingham.mobilefood.service.IFileSystemService;
 import fi.nottingham.mobilefood.service.IFoodService;
 import fi.nottingham.mobilefood.service.INetworkStatusService;
 import fi.nottingham.mobilefood.service.exceptions.FoodServiceException;
 import fi.nottingham.mobilefood.service.exceptions.NoInternetConnectionException;
+import fi.nottingham.mobilefood.service.impl.FoodParser.FoodParserException;
 
 public class FoodServiceImpl implements IFoodService {
 	private static final String CHAIN_NAME = "unica";
@@ -45,6 +47,7 @@ public class FoodServiceImpl implements IFoodService {
 
 	private final String serviceLocation;
 	private int connectTimeout;
+	private List<Restaurant> restaurants;
 
 	private final IFileSystemService fileSystemService;
 	private final INetworkStatusService networkStatusService;
@@ -88,7 +91,12 @@ public class FoodServiceImpl implements IFoodService {
 		}
 
 		if (!isNullOrEmpty(responseFromFile)) {
-			return parseFoods(dayOfTheWeek, responseFromFile);
+			try {
+				return new FoodParser("0.9").parseFoods(responseFromFile, dayOfTheWeek);
+			} catch (FoodParserException e) {
+				logger.fatal("parsing failed", e);
+				return null;
+			}
 		} else {
 			return null;
 		}
@@ -104,67 +112,33 @@ public class FoodServiceImpl implements IFoodService {
 			public List<RestaurantDay> call() throws Exception {
 				final List<RestaurantDay> foodsOfTheDay = Lists.newArrayList();
 
-				String foodJSON = downloadDataFromService(weekNumber);
+				String dataJSON = downloadDataFromService(weekNumber);
 
-				if (foodJSON != null) {
-					foodsOfTheDay.addAll(parseFoods(dayOfTheWeek, foodJSON));
+				if (dataJSON != null) {
+					FoodParser parser = new FoodParser("0.9");
+					try {
+						foodsOfTheDay.addAll(parser.parseFoods(dataJSON, dayOfTheWeek));
+						if(restaurants == null) {
+							restaurants = Lists.newArrayList();
+							restaurants.addAll(parser.parseRestaurants(dataJSON));
+						}
+						writeJsonToFile(weekNumber, dataJSON);
+					
+					} catch(FoodParserException e) {
+						logger.error(String.format(
+								"Unable to get foods from service. Response was: '%s'",
+								dataJSON));
+						throw new FoodServiceException(
+								FoodServiceException.NO_FOOD_FOR_WEEK);
+					} catch (IOException e) {
+						//TODO: improve this exception handling!
+						logger.fatal("Writing to file failed", e);
+					}
 				}
 
 				return foodsOfTheDay;
 			}
 		});
-	}
-
-	private List<RestaurantDay> parseFoods(int dayOfTheWeek, String foodJSON) {
-		final List<RestaurantDay> foodsOfTheDay = Lists.newArrayList();
-		try {
-			// TODO: JSON versioning so that version compatibility is easily
-			// detected
-			// TODO: move parsing to its own class
-			JSONArray foodsByDay = (JSONArray) new JSONTokener(foodJSON)
-					.nextValue();
-
-			JSONObject requestedWeekDay = foodsByDay
-					.optJSONObject(dayOfTheWeek);
-
-			if (requestedWeekDay != null) {
-
-				JSONArray foodsByRestaurant = requestedWeekDay
-						.getJSONArray("foods_by_restaurant");
-
-				for (int i = 0; i < foodsByRestaurant.length(); i++) {
-					JSONObject restaurant = foodsByRestaurant.getJSONObject(i);
-					JSONArray itsFoods = restaurant.getJSONArray("foods");
-
-					List<Food> foodsOfTheRestaurant = Lists.newArrayList();
-					for (int foodIndex = 0; foodIndex < itsFoods.length(); foodIndex++) {
-						JSONObject food = itsFoods.getJSONObject(foodIndex);
-
-						JSONArray foodPrices = food.getJSONArray("prices");
-						List<String> prices = Lists.newArrayList();
-
-						for (int j = 0; j < foodPrices.length(); j++) {
-							prices.add(foodPrices.getString(j));
-						}
-
-						foodsOfTheRestaurant.add(new Food(food
-								.getString("name"), prices, food
-								.optString("diets")));
-					}
-					String restaurantName = restaurant
-							.getString("restaurant_name");
-					String alert = restaurant.getString("alert");
-					foodsOfTheDay.add(new RestaurantDay(restaurantName,
-							foodsOfTheRestaurant, alert != "" ? alert : null));
-
-				}
-
-			}
-
-		} catch (JSONException e) {
-			logger.fatal("Failed to parse foods from JSON", e);
-		}
-		return foodsOfTheDay;
 	}
 
 	/**
@@ -189,20 +163,6 @@ public class FoodServiceImpl implements IFoodService {
 
 			String response = IOUtils.toString(connection.getInputStream(),
 					"UTF-8");
-			//TODO: fix this hack and make separate parser class!!
-			if (isNullOrEmpty(response) || response.contains("error")) {
-				logger.error(String.format(
-						"Unable to get foods from service. Response was: '%s'",
-						response));
-				throw new FoodServiceException(
-						FoodServiceException.NO_FOOD_FOR_WEEK);
-			}
-
-			OutputStream weekOutputFile = fileSystemService
-					.openOutputFile(getFileNameFor(YEAR, weekNumber, CHAIN_NAME));
-			weekOutputFile.write(response.getBytes());
-			weekOutputFile.flush();
-			weekOutputFile.close();
 
 			return response;
 		} catch (SocketTimeoutException e) {
@@ -217,6 +177,15 @@ public class FoodServiceImpl implements IFoodService {
 			logger.fatal("Can't read data from service!", e);
 			throw new FoodServiceException(FoodServiceException.SERVICE_DOWN);
 		}
+	}
+
+	private void writeJsonToFile(int weekNumber, String json)
+			throws IOException {
+		OutputStream weekOutputFile = fileSystemService
+				.openOutputFile(getFileNameFor(YEAR, weekNumber, CHAIN_NAME));
+		weekOutputFile.write(json.getBytes());
+		weekOutputFile.flush();
+		weekOutputFile.close();
 	}
 
 	private String getFileNameFor(int year, int weekNumber, String chainName) {

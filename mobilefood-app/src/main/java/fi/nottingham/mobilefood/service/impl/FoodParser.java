@@ -36,7 +36,7 @@ public class FoodParser {
 		return parserVersion;
 	}
 
-	public List<RestaurantDay> parse(String foodJSON, int dayOfTheWeek)
+	public List<RestaurantDay> parseFoods(String foodJSON, int dayOfTheWeek)
 			throws FoodParserException {
 		try {
 			JSONObject rootElement = (JSONObject) new JSONTokener(foodJSON)

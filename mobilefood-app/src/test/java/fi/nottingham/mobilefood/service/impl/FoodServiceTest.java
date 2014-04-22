@@ -38,6 +38,7 @@ import fi.nottingham.mobilefood.service.exceptions.NoInternetConnectionException
 
 public class FoodServiceTest {
 
+	private static final int TEST_FILE_WEEK_NUMBER = 17;
 	private IFoodService foodService;
 	private IFileSystemService fileSystemService;
 	private INetworkStatusService networkStatusService;
@@ -94,7 +95,7 @@ public class FoodServiceTest {
 					.respond(
 							new HttpResponse()
 									.withBody(
-											IOUtils.toString(FoodServiceTestHelper.getFoodTestJSONFileAsInputStream(10)))
+											IOUtils.toString(FoodServiceTestHelper.getFoodTestJSONFileAsInputStream(TEST_FILE_WEEK_NUMBER)))
 									.withHeader(
 											new Header("Content-Type",
 													"application/json; charset=utf-8")));
@@ -104,7 +105,7 @@ public class FoodServiceTest {
 							.withMethod("GET")
 							.withQueryStringParameter(
 									new Parameter("week", "2"))).respond(
-					new HttpResponse().withBody("ERROR").withHeader(
+					new HttpResponse().withBody("{\"status\": \"error\"}").withHeader(
 							new Header("Content-Type",
 									"text/plain; charset=utf-8")));
 
@@ -132,7 +133,7 @@ public class FoodServiceTest {
 	@Test
 	public void getFoodsFromInternalStorageBy_withCachedFileForCurrentWeek_returnsUnemptyList()
 			throws Exception {
-		int dayOfTheWeek = 0, weekNumber = 10;
+		int dayOfTheWeek = 0, weekNumber = 17;
 
 		InputStream jsonFoodFile = FoodServiceTestHelper.getFoodTestJSONFileAsInputStream(weekNumber);
 
