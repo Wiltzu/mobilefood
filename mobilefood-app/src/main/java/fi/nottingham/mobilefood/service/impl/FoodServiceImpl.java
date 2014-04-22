@@ -11,7 +11,9 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -27,6 +29,7 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.typesafe.config.ConfigFactory;
 
@@ -47,10 +50,11 @@ public class FoodServiceImpl implements IFoodService {
 
 	private final String serviceLocation;
 	private int connectTimeout;
-	private List<Restaurant> restaurants;
+	private Map<String, Restaurant> restaurants;
 
 	private final IFileSystemService fileSystemService;
 	private final INetworkStatusService networkStatusService;
+	private FoodParser parser;
 
 	private final ExecutorService pool = Executors.newFixedThreadPool(
 			2,
@@ -92,7 +96,16 @@ public class FoodServiceImpl implements IFoodService {
 
 		if (!isNullOrEmpty(responseFromFile)) {
 			try {
-				return new FoodParser("0.9").parseFoods(responseFromFile, dayOfTheWeek);
+				parser = new FoodParser("0.9");
+				List<RestaurantDay> parsedFoods = parser.parseFoods(responseFromFile,
+						dayOfTheWeek);
+				//TODO: fix this!!!!!!
+				Map<String, Restaurant> restaurantMap = getRestaurants(responseFromFile);
+				for (RestaurantDay restaurantDay : parsedFoods) {
+					Restaurant restaurant = restaurantMap.get(restaurantDay.getRestaurantName());
+					restaurantDay.setRestaurant(restaurant);
+				}
+				return parsedFoods;
 			} catch (FoodParserException e) {
 				logger.fatal("parsing failed", e);
 				return null;
@@ -115,23 +128,27 @@ public class FoodServiceImpl implements IFoodService {
 				String dataJSON = downloadDataFromService(weekNumber);
 
 				if (dataJSON != null) {
-					FoodParser parser = new FoodParser("0.9");
+					parser = new FoodParser("0.9");
 					try {
-						foodsOfTheDay.addAll(parser.parseFoods(dataJSON, dayOfTheWeek));
-						if(restaurants == null) {
-							restaurants = Lists.newArrayList();
-							restaurants.addAll(parser.parseRestaurants(dataJSON));
+						foodsOfTheDay.addAll(parser.parseFoods(dataJSON,
+								dayOfTheWeek));
+						//TODO: fix this!!!!!!
+						Map<String, Restaurant> restaurantMap = getRestaurants(dataJSON);
+						for (RestaurantDay restaurantDay : foodsOfTheDay) {
+							Restaurant restaurant = restaurantMap.get(restaurantDay.getRestaurantName());
+							restaurantDay.setRestaurant(restaurant);
 						}
+						
 						writeJsonToFile(weekNumber, dataJSON);
-					
-					} catch(FoodParserException e) {
-						logger.error(String.format(
-								"Unable to get foods from service. Response was: '%s'",
-								dataJSON));
+
+					} catch (FoodParserException e) {
+						logger.error(String
+								.format("Unable to get foods from service. Response was: '%s'",
+										dataJSON));
 						throw new FoodServiceException(
 								FoodServiceException.NO_FOOD_FOR_WEEK);
 					} catch (IOException e) {
-						//TODO: improve this exception handling!
+						// TODO: improve this exception handling!
 						logger.fatal("Writing to file failed", e);
 					}
 				}
@@ -139,6 +156,15 @@ public class FoodServiceImpl implements IFoodService {
 				return foodsOfTheDay;
 			}
 		});
+	}
+
+	protected Map<String, Restaurant> covertRestaurantsListToMap(
+			List<Restaurant> parsedRestaurants) {
+		HashMap<String, Restaurant> convertedRestaurants = Maps.newHashMap();
+		for (Restaurant restaurant : parsedRestaurants) {
+			convertedRestaurants.put(restaurant.getName(), restaurant);
+		}
+		return convertedRestaurants;
 	}
 
 	/**
@@ -195,5 +221,16 @@ public class FoodServiceImpl implements IFoodService {
 	private String getRequestURL(int weekNumber) {
 		return String.format("%s?restaurant=%s&year=%s&week=%s",
 				serviceLocation, "unica", 2014, weekNumber);
+	}
+
+	private Map<String, Restaurant> getRestaurants(String dataJSON) throws FoodParserException {
+		if (restaurants == null) {
+			restaurants = Maps.newHashMap();
+			restaurants
+					.putAll(covertRestaurantsListToMap(parser
+							.parseRestaurants(dataJSON)));
+		}
+		
+		return restaurants;
 	}
 }

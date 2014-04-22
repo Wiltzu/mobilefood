@@ -1,6 +1,5 @@
 package fi.nottingham.mobilefood.service.impl;
 
-import java.io.StringReader;
 import java.lang.reflect.Type;
 import java.util.List;
 
@@ -13,7 +12,6 @@ import org.json.JSONTokener;
 import com.google.common.collect.Lists;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
-import com.google.gson.stream.JsonReader;
 
 import fi.nottingham.mobilefood.model.Restaurant;
 import fi.nottingham.mobilefood.model.RestaurantDay;

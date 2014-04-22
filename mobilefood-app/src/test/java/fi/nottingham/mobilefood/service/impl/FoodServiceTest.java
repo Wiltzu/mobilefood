@@ -12,6 +12,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import org.apache.commons.io.IOUtils;
@@ -28,8 +30,10 @@ import org.mockserver.model.HttpRequest;
 import org.mockserver.model.HttpResponse;
 import org.mockserver.model.Parameter;
 
+import com.google.common.collect.Lists;
 import com.typesafe.config.ConfigFactory;
 
+import fi.nottingham.mobilefood.model.Restaurant;
 import fi.nottingham.mobilefood.service.IFileSystemService;
 import fi.nottingham.mobilefood.service.IFoodService;
 import fi.nottingham.mobilefood.service.INetworkStatusService;
@@ -252,5 +256,15 @@ public class FoodServiceTest {
 		} catch (ExecutionException e) {
 			throw e.getCause();
 		}
+	}
+	
+	@Test
+	public void convertRestaurantsListToMap_worksCorrectly() {
+		Restaurant expectedRestaurant =  new Restaurant("tottis", null, null, null, null, null);
+		List<Restaurant> testRestaurants = Lists.newArrayList(expectedRestaurant);
+		
+		Map<String, Restaurant> covertedRestaurants = ((FoodServiceImpl) foodService).covertRestaurantsListToMap(testRestaurants);
+		
+		assertThat(covertedRestaurants, Matchers.hasEntry("tottis", expectedRestaurant));
 	}
 }
