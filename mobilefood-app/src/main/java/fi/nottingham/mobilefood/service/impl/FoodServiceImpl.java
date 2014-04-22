@@ -54,7 +54,7 @@ public class FoodServiceImpl implements IFoodService {
 
 	private final IFileSystemService fileSystemService;
 	private final INetworkStatusService networkStatusService;
-	private FoodParser parser;
+	private final FoodParser parser;
 
 	private final ExecutorService pool = Executors.newFixedThreadPool(
 			2,
@@ -64,13 +64,14 @@ public class FoodServiceImpl implements IFoodService {
 	@Inject
 	public FoodServiceImpl(String serviceLocation,
 			IFileSystemService fileSystemService,
-			INetworkStatusService networkStatusService) {
+			INetworkStatusService networkStatusService, FoodParser foodParser) {
 		this.serviceLocation = checkNotNull(serviceLocation,
 				"serviceLocation cannot be null");
 		this.fileSystemService = checkNotNull(fileSystemService,
 				"fileSystemService cannot be null");
 		this.networkStatusService = checkNotNull(networkStatusService,
 				"networkStatusService cannot be null");
+		this.parser = checkNotNull(foodParser, "foodParser cannot be null");
 		connectTimeout = ConfigFactory.load().getInt(
 				"mobilefood.foodservice.timeout.connect");
 	}
@@ -96,7 +97,6 @@ public class FoodServiceImpl implements IFoodService {
 
 		if (!isNullOrEmpty(responseFromFile)) {
 			try {
-				parser = new FoodParser("0.9");
 				List<RestaurantDay> parsedFoods = parser.parseFoods(responseFromFile,
 						dayOfTheWeek);
 				//TODO: fix this!!!!!!
@@ -128,7 +128,6 @@ public class FoodServiceImpl implements IFoodService {
 				String dataJSON = downloadDataFromService(weekNumber);
 
 				if (dataJSON != null) {
-					parser = new FoodParser("0.9");
 					try {
 						foodsOfTheDay.addAll(parser.parseFoods(dataJSON,
 								dayOfTheWeek));

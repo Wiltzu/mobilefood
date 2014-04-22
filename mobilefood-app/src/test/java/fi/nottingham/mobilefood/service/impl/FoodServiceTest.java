@@ -39,6 +39,7 @@ import fi.nottingham.mobilefood.service.IFoodService;
 import fi.nottingham.mobilefood.service.INetworkStatusService;
 import fi.nottingham.mobilefood.service.exceptions.FoodServiceException;
 import fi.nottingham.mobilefood.service.exceptions.NoInternetConnectionException;
+import fi.nottingham.mobilefood.service.impl.FoodParser.FoodParserException;
 
 public class FoodServiceTest {
 
@@ -46,6 +47,7 @@ public class FoodServiceTest {
 	private IFoodService foodService;
 	private IFileSystemService fileSystemService;
 	private INetworkStatusService networkStatusService;
+	private FoodParser foodParser;
 
 	private static int port = 4731;
 	private static String host = "localhost";
@@ -82,10 +84,11 @@ public class FoodServiceTest {
 			URISyntaxException {
 		fileSystemService = mock(IFileSystemService.class);
 		networkStatusService = mock(INetworkStatusService.class);
+		foodParser = mock(FoodParser.class);
 
 		String serviceLocation = getServiceLocation();
 
-		foodService = new FoodServiceImpl(serviceLocation, fileSystemService, networkStatusService);
+		foodService = new FoodServiceImpl(serviceLocation, fileSystemService, networkStatusService, foodParser);
 
 		if (!environmentIsTravis) {
 			System.out.println("Start listening: " + serviceLocation);
@@ -207,7 +210,7 @@ public class FoodServiceTest {
 				FileNotFoundException.class);
 
 		foodService = new FoodServiceImpl(
-				getServiceLocation() + "serviceNotOn", fileSystemService, networkStatusService);
+				getServiceLocation() + "serviceNotOn", fileSystemService, networkStatusService, foodParser);
 
 		try {
 			foodService.getFoodsBy(weekNumber, dayOfTheWeek).get();
@@ -226,12 +229,13 @@ public class FoodServiceTest {
 	@Test(expected = FoodServiceException.class)
 	public void getFoodsBy_withServiceOnButItHasNoFileForWeek_throwsException()
 			throws FileNotFoundException, NoInternetConnectionException,
-			FoodServiceException {
+			FoodServiceException, FoodParserException {
 		// "ERROR" String is returned for week 2
 		int dayOfTheWeek = 0, weekNumber = 2;
 		when(networkStatusService.isConnectedToInternet()).thenReturn(true);
 		when(fileSystemService.openInputFile(Mockito.anyString())).thenThrow(
 				FileNotFoundException.class);
+		when(foodParser.parseFoods(Mockito.anyString(), Mockito.anyInt())).thenThrow(FoodParserException.class);
 
 		try {
 			foodService.getFoodsBy(weekNumber, dayOfTheWeek).get();
