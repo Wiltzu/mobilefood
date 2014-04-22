@@ -1,14 +1,17 @@
 package fi.nottingham.mobilefood.service.impl;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.io.IOUtils;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,6 +20,7 @@ import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 
 import fi.nottingham.mobilefood.model.Food;
+import fi.nottingham.mobilefood.model.Restaurant;
 import fi.nottingham.mobilefood.model.RestaurantDay;
 import fi.nottingham.mobilefood.service.impl.FoodParser.FoodParserException;
 
@@ -59,13 +63,36 @@ public class FoodParserTest {
 		List<RestaurantDay> restaurantDays = Lists.newArrayList(expectedRestaurantDay);
 		
 		parser = new FoodParser(parserVersion);
-		List<RestaurantDay> foodList = parser.parse(getOKMessageWith(getLunchDayAsJSON(dayOfTheWeek, restaurantDays), ""), dayOfTheWeek);
+		List<RestaurantDay> foodList = parser.parse(getOKMessageWith(getLunchDayAsJSON(dayOfTheWeek, restaurantDays), "[]"), dayOfTheWeek);
 		
 		assertThat(foodList, Matchers.hasItem(expectedRestaurantDay));
 	}
 	
-	private String getOKMessageWith(String foodsByDay, String restaurants) {
-		return String.format("{\"status\": \"OK\", \"version\": \"" + parserVersion + "\", \"foodsByDay\": [%s], \"restaurants\": [%s]}", foodsByDay, restaurants);	
+	@Test
+	public void parseRestaurants_returnsCorrectData() throws FoodParserException {
+		Restaurant restaurant = new Restaurant("Tottis", "osoite", "20500", "Turku", "22.222", "23.111");
+		List<Restaurant> expectedRestaurants = Lists.newArrayList(restaurant);
+		String json = getOKMessageWith("", new Gson().toJson(expectedRestaurants));
+		List<Restaurant> actualRestaurants = parser.parseRestaurants(json);
+		
+		assertEquals(expectedRestaurants, actualRestaurants);
+	}
+	
+	@Test
+	public void testParser_withRealData() throws FoodParserException, FileNotFoundException, IOException, URISyntaxException {
+		String dataJSON = IOUtils.toString(FoodServiceTestHelper.getFoodTestJSONFileAsInputStream(weekNumber));
+		
+		List<RestaurantDay> foods = parser.parse(dataJSON, 1);
+		assertFalse(foods.isEmpty());
+		List<Restaurant> restaurants = parser.parseRestaurants(dataJSON);
+		assertFalse(restaurants.isEmpty());
+		
+		System.out.println(foods);
+		System.out.println(restaurants);
+	}
+	
+	private String getOKMessageWith(String foodsByDay, String restaurantArray) {
+		return String.format("{\"status\": \"OK\", \"version\": \"" + parserVersion + "\", \"foodsByDay\": [%s], \"restaurants\": %s}", foodsByDay, restaurantArray);	
 	}
 	
 	private String getLunchDayAsJSON(int dayOfTheWeek, List<RestaurantDay> restaurantDays) {
