@@ -27,7 +27,7 @@ public class RestaurantDay {
 	public RestaurantDay(String restaurantName, List<Food> lunches, @Nullable String alert) {
 		this.restaurantName = checkNotNull(restaurantName,
 				"restaurantName cannot be null");
-		this.lunches = ImmutableList.copyOf(lunches);
+		this.lunches = ImmutableList.copyOf(checkNotNull(lunches, "lunches cannot be null"));
 		this.alert = alert;
 	}
 

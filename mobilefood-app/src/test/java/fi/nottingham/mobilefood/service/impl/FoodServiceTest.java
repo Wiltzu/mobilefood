@@ -12,9 +12,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import org.apache.commons.io.IOUtils;
 import org.hamcrest.Matchers;
@@ -33,7 +35,9 @@ import org.mockserver.model.Parameter;
 import com.google.common.collect.Lists;
 import com.typesafe.config.ConfigFactory;
 
+import fi.nottingham.mobilefood.model.Food;
 import fi.nottingham.mobilefood.model.Restaurant;
+import fi.nottingham.mobilefood.model.RestaurantDay;
 import fi.nottingham.mobilefood.service.IFileSystemService;
 import fi.nottingham.mobilefood.service.IFoodService;
 import fi.nottingham.mobilefood.service.INetworkStatusService;
@@ -270,5 +274,45 @@ public class FoodServiceTest {
 		Map<String, Restaurant> covertedRestaurants = ((FoodServiceImpl) foodService).covertRestaurantsListToMap(testRestaurants);
 		
 		assertThat(covertedRestaurants, Matchers.hasEntry("tottis", expectedRestaurant));
+	}
+	
+	@Test
+	public void getFoodsFromInternalStorage_inSuccesfulAttempt_includesRestaurants() throws FileNotFoundException, FoodParserException {
+		int dayOfTheWeek = 0, weekNumber = 1;
+		Restaurant expectedRestaurant =  new Restaurant("tottis", null, null, null, null, null);
+		List<Restaurant> testRestaurants = Lists.newArrayList(expectedRestaurant);
+		
+		RestaurantDay restaurantDay = new RestaurantDay("tottis", new ArrayList<Food>(), null);
+		List<RestaurantDay> testRestaurantDays = Lists.newArrayList(restaurantDay);
+		
+		when(fileSystemService.openInputFile(Mockito.anyString())).thenReturn(IOUtils.toInputStream("some test string"));
+		when(foodParser.parseFoods(Mockito.anyString(), Mockito.anyInt())).thenReturn(testRestaurantDays);
+		when(foodParser.parseRestaurants(Mockito.anyString())).thenReturn(testRestaurants);
+		
+		List<RestaurantDay> actualRestaurantDays = foodService.getFoodsFromInternalStorageBy(weekNumber, dayOfTheWeek);
+		
+		assertThat(actualRestaurantDays, Matchers.hasItem(restaurantDay));
+		assertThat(restaurantDay.getRestaurant(), Matchers.equalTo(expectedRestaurant));
+	}
+	
+	@Test
+	public void getFoodsBy_inSuccesfulAttempt_includesRestaurants() throws FileNotFoundException, FoodParserException, InterruptedException, ExecutionException {
+		int dayOfTheWeek = 0, weekNumber = 1;
+		Restaurant expectedRestaurant =  new Restaurant("tottis", null, null, null, null, null);
+		List<Restaurant> testRestaurants = Lists.newArrayList(expectedRestaurant);
+		
+		RestaurantDay restaurantDay = new RestaurantDay("tottis", new ArrayList<Food>(), null);
+		List<RestaurantDay> testRestaurantDays = Lists.newArrayList(restaurantDay);
+		
+		when(networkStatusService.isConnectedToInternet()).thenReturn(true);
+		when(fileSystemService.openInputFile(Mockito.anyString())).thenReturn(IOUtils.toInputStream("some test string"));
+		when(fileSystemService.openOutputFile(Mockito.anyString())).thenReturn(mock(OutputStream.class));
+		when(foodParser.parseFoods(Mockito.anyString(), Mockito.anyInt())).thenReturn(testRestaurantDays);
+		when(foodParser.parseRestaurants(Mockito.anyString())).thenReturn(testRestaurants);
+		
+		Future<List<RestaurantDay>> actualRestaurantDays = foodService.getFoodsBy(weekNumber, dayOfTheWeek);
+		
+		assertThat(actualRestaurantDays.get(), Matchers.hasItem(restaurantDay));
+		assertThat(restaurantDay.getRestaurant(), Matchers.equalTo(expectedRestaurant));
 	}
 }
