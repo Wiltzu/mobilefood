@@ -94,7 +94,7 @@ public class FoodServiceTest {
 					.respond(
 							new HttpResponse()
 									.withBody(
-											IOUtils.toString(getTestFileAsInputStream()))
+											IOUtils.toString(FoodServiceTestHelper.getFoodTestJSONFileAsInputStream(10)))
 									.withHeader(
 											new Header("Content-Type",
 													"application/json; charset=utf-8")));
@@ -134,7 +134,7 @@ public class FoodServiceTest {
 			throws Exception {
 		int dayOfTheWeek = 0, weekNumber = 10;
 
-		InputStream jsonFoodFile = getTestFileAsInputStream();
+		InputStream jsonFoodFile = FoodServiceTestHelper.getFoodTestJSONFileAsInputStream(weekNumber);
 
 		when(fileSystemService.openInputFile(Mockito.anyString())).thenReturn(
 				jsonFoodFile);
@@ -154,14 +154,6 @@ public class FoodServiceTest {
 
 		assertNull(foodService.getFoodsFromInternalStorageBy(weekNumber,
 				dayOfTheWeek));
-	}
-
-	private static InputStream getTestFileAsInputStream()
-			throws FileNotFoundException, URISyntaxException {
-		int weekNumber = 10;
-
-		return FoodServiceTest.class.getResourceAsStream(String.format(
-				"2014_w%s_unica.json", weekNumber));
 	}
 
 	@SuppressWarnings("unchecked")

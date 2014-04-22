@@ -7,12 +7,12 @@
 	<version>0.3.6</version>
 	<packaging>apk</packaging>
 	<name>mobilefood-app</name>
-	
+
 	<parent>
-        <groupId>fi.nottingham</groupId>
-        <artifactId>mobilefood</artifactId>
-        <version>0.3.6</version>
-    </parent>
+		<groupId>fi.nottingham</groupId>
+		<artifactId>mobilefood</artifactId>
+		<version>0.3.6</version>
+	</parent>
 
 	<dependencies>
 
@@ -44,6 +44,12 @@
 			<artifactId>commons-io</artifactId>
 			<version>2.4</version>
 		</dependency>
+		<dependency>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+			<version>2.2.4</version>
+		</dependency>
+
 
 		<!-- Android compability dependencies -->
 
@@ -83,13 +89,6 @@
 
 
 		<!-- TEST DEPENDENCIES -->
-		
-		<dependency>
-            <groupId>com.jayway.android.robotium</groupId>
-            <artifactId>robotium-solo</artifactId>
-            <version>5.0.1</version>
-            <scope>test</scope>
-        </dependency>
 		<dependency>
 			<groupId>org.robolectric</groupId>
 			<artifactId>robolectric</artifactId>
@@ -187,24 +186,11 @@
 					</excludes>
 				</configuration>
 			</plugin>
-			<!-- Integration tests
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-failsafe-plugin</artifactId>
-				<version>2.16</version>
-				<executions>
-					<execution>
-						<id>integration-tests</id>
-						<goals>
-							<goal>integration-test</goal>
-							<goal>verify</goal>
-						</goals>
-						<configuration>
-							<skipTests>${skip.integration.tests}</skipTests>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin -->
+			<!-- Integration tests <plugin> <groupId>org.apache.maven.plugins</groupId> 
+				<artifactId>maven-failsafe-plugin</artifactId> <version>2.16</version> <executions> 
+				<execution> <id>integration-tests</id> <goals> <goal>integration-test</goal> 
+				<goal>verify</goal> </goals> <configuration> <skipTests>${skip.integration.tests}</skipTests> 
+				</configuration> </execution> </executions> </plugin -->
 
 		</plugins>
 	</build>

@@ -13,23 +13,23 @@ import com.google.common.base.Objects;
  * Represents foods in the application.
  * 
  * @author Ville Ahti
- *
+ * 
  */
 @Immutable
 public class Food {
 
-	private final String foodName;
+	private final String name;
 	private final List<String> prices;
-	private final String diet;
+	private final String diets;
 
 	public Food(String foodName, List<String> prices, @Nullable String diet) {
-		this.foodName = checkNotNull(foodName, "foodName cannot be null");
+		this.name = checkNotNull(foodName, "foodName cannot be null");
 		this.prices = checkNotNull(prices, "price cannot be null");
-		this.diet = diet;
+		this.diets = diet;
 	}
 
 	public String getFoodName() {
-		return foodName;
+		return name;
 	}
 
 	public List<String> getPrices() {
@@ -40,13 +40,29 @@ public class Food {
 	 * @return <code>null</code> if there are no diets
 	 */
 	public String getDiets() {
-		return diet;
+		return diets;
 	}
 
 	@Override
 	public String toString() {
-		return Objects.toStringHelper((Object) this).add("foodName", foodName)
-				.add("price", prices).add("diet", diet).toString();
+		return Objects.toStringHelper((Object) this).add("foodName", name)
+				.add("price", prices).add("diet", diets).toString();
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hashCode(getFoodName(), getPrices(), getDiets());
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (o instanceof Food) {
+			Food other = (Food) o;
+			return Objects.equal(name, other.name)
+					&& Objects.equal(prices, other.prices)
+					&& Objects.equal(diets, other.diets);
+		}
+		return false;
 	}
 
 }

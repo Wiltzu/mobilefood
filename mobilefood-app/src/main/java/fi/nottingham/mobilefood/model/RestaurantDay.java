@@ -41,14 +41,30 @@ public class RestaurantDay {
 		return restaurantName;
 	}
 
+	public String getAlert() {
+		return alert;
+	}
+
 	@Override
 	public String toString() {
 		return Objects.toStringHelper(this)
 				.add("restaurantName", restaurantName).add("lunches", lunches).add("alert", alert)
 				.toString();
 	}
-
-	public String getAlert() {
-		return alert;
+	
+	@Override
+	public int hashCode() {
+		return Objects.hashCode(getRestaurantName(), getLunches(), getAlert());
+	}
+	
+	@Override
+	public boolean equals(Object o) {
+		 if (o instanceof RestaurantDay) {
+	         RestaurantDay other = (RestaurantDay) o;
+	         return Objects.equal(restaurantName, other.restaurantName)
+	             && Objects.equal(lunches, other.lunches)
+	             && Objects.equal(alert, other.alert);
+	      }
+		 return false;
 	}
 }
