@@ -112,7 +112,7 @@ public class OneDayLunchesFragment extends DaggerBaseFragment {
 					.findViewById(R.id.restaurant_item_restaurant_street_address);
 			final LinearLayout lunchLayout = (LinearLayout) restaurantDayView
 					.findViewById(R.id.restaurant_item_food_layout);
-			TextView alertTV = (TextView) restaurantDayView
+			final TextView alertTV = (TextView) restaurantDayView
 					.findViewById(R.id.restaurant_item_alert_textview);
 			final LinearLayout alertLayout = (LinearLayout) restaurantDayView
 					.findViewById(R.id.restaurant_item_alert_layout);
@@ -125,17 +125,17 @@ public class OneDayLunchesFragment extends DaggerBaseFragment {
 				@Override
 				public void onClick(View v) {
 					if (lunchLayout.getVisibility() == View.VISIBLE) {
-						lunchLayout.setVisibility(View.INVISIBLE);
+						lunchLayout.setVisibility(View.GONE);
 						if (alertLayout.getVisibility() == View.VISIBLE) {
-							alertLayout.setVisibility(View.INVISIBLE);
+							alertLayout.setVisibility(View.GONE);
 						}
 						restaurantItemInfo.setVisibility(View.VISIBLE);
 					} else {
 						lunchLayout.setVisibility(View.VISIBLE);
-						if (alertLayout.getVisibility() == View.INVISIBLE) {
+						if (!isNullOrEmpty((String) alertTV.getText())) {
 							alertLayout.setVisibility(View.VISIBLE);
 						}
-						restaurantItemInfo.setVisibility(View.INVISIBLE);
+						restaurantItemInfo.setVisibility(View.GONE);
 					}
 				}
 			});
