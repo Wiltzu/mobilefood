@@ -16,6 +16,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -69,8 +70,10 @@ public class OneDayLunchesFragment extends DaggerBaseFragment {
 					mFoodsListView = (ListView) getActivity().findViewById(
 							R.id.listview_foods);
 				}
-				mFoodsListView.setAdapter(new RestaurantDayViewAdapter(
-						getActivity(), foodsByRestaurant));
+				if (mFoodsListView.getAdapter() == null) {
+					mFoodsListView.setAdapter(new RestaurantDayViewAdapter(
+							getActivity(), foodsByRestaurant));
+				}
 			} else {
 				Log.d(TAG, "Empty Foods set to listView of the fragment");
 				mFoodsListView
@@ -86,6 +89,9 @@ public class OneDayLunchesFragment extends DaggerBaseFragment {
 	class RestaurantDayViewAdapter extends ArrayAdapter<RestaurantDay> {
 		private static final String TAG = "RestaurantDayViewAdapter";
 
+		private boolean[] infoWasOpened = new boolean[getCount()];
+		private boolean[] hasAlert = new boolean[getCount()];
+
 		public RestaurantDayViewAdapter(Context context,
 				List<RestaurantDay> items) {
 			super(context, R.layout.restaurant_item, items);
@@ -93,7 +99,7 @@ public class OneDayLunchesFragment extends DaggerBaseFragment {
 		}
 
 		@Override
-		public View getView(int position, View convertView,
+		public View getView(final int position, View convertView,
 				final ViewGroup parent) {
 			final LayoutInflater inflater = getActivity().getLayoutInflater();
 			final View restaurantDayView = inflater.inflate(
@@ -119,31 +125,40 @@ public class OneDayLunchesFragment extends DaggerBaseFragment {
 			final View restaurantItemInfo = (View) restaurantDayView
 					.findViewById(R.id.restaurant_item_info_layout);
 
-			ImageButton restaurantInfoBtn = (ImageButton) restaurantDayView
+			final ImageButton restaurantInfoBtn = (ImageButton) restaurantDayView
 					.findViewById(R.id.restaurant_item_restaurant_info_button);
+			final ImageButton foodListBtn = (ImageButton) restaurantDayView
+					.findViewById(R.id.restaurant_item_food_list_button);
+
 			restaurantInfoBtn.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					if (lunchLayout.getVisibility() == View.VISIBLE) {
-						lunchLayout.setVisibility(View.GONE);
-						if (alertLayout.getVisibility() == View.VISIBLE) {
-							alertLayout.setVisibility(View.GONE);
-						}
-						restaurantItemInfo.setVisibility(View.VISIBLE);
-					} else {
-						lunchLayout.setVisibility(View.VISIBLE);
-						if (!isNullOrEmpty((String) alertTV.getText())) {
-							alertLayout.setVisibility(View.VISIBLE);
-						}
-						restaurantItemInfo.setVisibility(View.GONE);
-					}
+					infoWasOpened[position] = true;
+					showRestaurantInfo(lunchLayout, alertLayout,
+							restaurantItemInfo, restaurantInfoBtn, foodListBtn);
 				}
 			});
 
-			RestaurantDay restaurantDay = getItem(position);
+			foodListBtn.setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					infoWasOpened[position] = false;
+					showFoods(lunchLayout, alertTV, alertLayout,
+							restaurantItemInfo, restaurantInfoBtn, foodListBtn,
+							position);
+				}
+			});
+
+			if (infoWasOpened[position]) {
+				showRestaurantInfo(lunchLayout, alertLayout,
+						restaurantItemInfo, restaurantInfoBtn, foodListBtn);
+			}
+
+			final RestaurantDay restaurantDay = getItem(position);
 
 			String alert = restaurantDay.getAlert();
 			if (!isNullOrEmpty(alert)) {
+				hasAlert[position] = true;
 				alertTV.setText(alert);
 			} else {
 				alertLayout.setVisibility(View.GONE);
@@ -193,6 +208,33 @@ public class OneDayLunchesFragment extends DaggerBaseFragment {
 				// add Euro sign if there are prices
 				pricesTV.setText(pricesTV.getText() + " €");
 			}
+		}
+
+		private void showFoods(final LinearLayout lunchLayout,
+				final TextView alertTV, final LinearLayout alertLayout,
+				final View restaurantItemInfo,
+				final ImageButton restaurantInfoBtn,
+				final ImageButton foodListBtn, int position) {
+			lunchLayout.setVisibility(View.VISIBLE);
+			if (hasAlert[position]) {
+				alertLayout.setVisibility(View.VISIBLE);
+			}
+			restaurantItemInfo.setVisibility(View.GONE);
+			foodListBtn.setVisibility(View.INVISIBLE);
+			restaurantInfoBtn.setVisibility(View.VISIBLE);
+		}
+
+		private void showRestaurantInfo(final LinearLayout lunchLayout,
+				final LinearLayout alertLayout, final View restaurantItemInfo,
+				final ImageButton restaurantInfoBtn,
+				final ImageButton foodListBtn) {
+			lunchLayout.setVisibility(View.GONE);
+			if (alertLayout.getVisibility() == View.VISIBLE) {
+				alertLayout.setVisibility(View.GONE);
+			}
+			restaurantItemInfo.setVisibility(View.VISIBLE);
+			foodListBtn.setVisibility(View.VISIBLE);
+			restaurantInfoBtn.setVisibility(View.INVISIBLE);
 		}
 
 		@Override
