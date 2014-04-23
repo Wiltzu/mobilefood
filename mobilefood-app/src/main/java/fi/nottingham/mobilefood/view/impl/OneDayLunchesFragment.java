@@ -16,7 +16,6 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -70,7 +69,9 @@ public class OneDayLunchesFragment extends DaggerBaseFragment {
 					mFoodsListView = (ListView) getActivity().findViewById(
 							R.id.listview_foods);
 				}
-				if (mFoodsListView.getAdapter() == null) {
+				if (mFoodsListView.getAdapter() == null
+						|| mFoodsListView.getAdapter().getCount() != foodsByRestaurant
+								.size()) {
 					mFoodsListView.setAdapter(new RestaurantDayViewAdapter(
 							getActivity(), foodsByRestaurant));
 				}
