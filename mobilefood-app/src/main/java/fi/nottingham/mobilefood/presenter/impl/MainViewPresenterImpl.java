@@ -54,7 +54,7 @@ public class MainViewPresenterImpl implements IMainViewPresenter,
 			@Nullable Integer savedSelectedWeekDay) {
 		checkNotNull("mainView cannot be null", mainView);
 		this.mainView = mainView;
-		// TODO: reconsider can we set this here
+		
 		mainView.setAvailableWeekDays(DateUtils
 				.getRestOfTheWeeksDayNumbersFrom(timeNow.get()));
 
