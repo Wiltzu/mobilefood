@@ -20,6 +20,7 @@ import fi.nottingham.mobilefood.service.IFoodService;
 import fi.nottingham.mobilefood.service.exceptions.FoodServiceException;
 import fi.nottingham.mobilefood.service.exceptions.NoInternetConnectionException;
 import fi.nottingham.mobilefood.util.DateUtils;
+import fi.nottingham.mobilefood.view.DailyFoodView;
 import fi.nottingham.mobilefood.view.IMainView;
 import fi.nottingham.mobilefood.view.ViewIsReadyListener;
 
@@ -37,6 +38,8 @@ public class MainViewPresenterImpl implements IMainViewPresenter,
 	private boolean hasInternetConnection = true;
 
 	private IMainView mainView;
+
+	private boolean viewIsReady;
 
 	@Inject
 	public MainViewPresenterImpl(IFoodService foodService,
@@ -61,7 +64,7 @@ public class MainViewPresenterImpl implements IMainViewPresenter,
 			mainView.setSelectedDate(savedSelectedWeekDay);
 		}
 
-		mainView.showLoadingIcon();
+		//mainView.showLoadingIcon();
 		getInitialFoodsFromService();
 	}
 
@@ -69,8 +72,8 @@ public class MainViewPresenterImpl implements IMainViewPresenter,
 		int dayOfTheWeek = DateUtils.getDayOfTheWeek(selectedDate);
 		int weekNumber = DateUtils.getWeekOfYear(selectedDate);
 
-		foodsFromInternalStorage = foodService.getFoodsFromInternalStorageBy(weekNumber,
-				dayOfTheWeek);
+		foodsFromInternalStorage = foodService.getFoodsFromInternalStorageBy(
+				weekNumber, dayOfTheWeek);
 
 		if (foodsFromInternalStorage == null) {
 			currentFoodsFuture = foodService.getFoodsBy(weekNumber,
@@ -78,16 +81,18 @@ public class MainViewPresenterImpl implements IMainViewPresenter,
 		}
 	}
 
-	protected void updateUI(final IMainView mainView, List<RestaurantDay> foods) {
-			mainView.hideLoadingIcon();
-			if (foods != null) {
-				mainView.setFoods(foods);
-			} else {
-				mainView.setFoods(new ArrayList<RestaurantDay>());
-			}
+	protected void updateUI(final IMainView mainView, DailyFoodView foodView,
+			List<RestaurantDay> foods) {
+		mainView.hideLoadingIcon();
+		if (foods != null) {
+			foodView.setFoods(foods);
+		} else {
+			foodView.setFoods(new ArrayList<RestaurantDay>());
+		}
 	}
 
-	private void updateUIFromWebService(final IMainView mainView) {
+	private void updateUIFromWebService(final IMainView mainView,
+			final DailyFoodView foodView) {
 		List<RestaurantDay> foods = null;
 		try {
 			logger.debug("Setting foods from WebService...");
@@ -107,7 +112,7 @@ public class MainViewPresenterImpl implements IMainViewPresenter,
 				logger.error("Unexpected error", e);
 			}
 		} finally {
-			updateUI(mainView, foods);
+			updateUI(mainView, foodView, foods);
 		}
 	}
 
@@ -126,22 +131,32 @@ public class MainViewPresenterImpl implements IMainViewPresenter,
 
 	@Override
 	public void onDateChanged(IMainView mainView, int selectedWeekDay) {
-		currentFoodsFuture = null;
-		selectedDate = DateUtils.getDateInThisWeekBy(selectedDate,
-				selectedWeekDay);		
-		foodsFromInternalStorage = foodService.getFoodsFromInternalStorageBy(
-				DateUtils.getWeekOfYear(selectedDate),
-				DateUtils.getDayOfTheWeek(selectedDate));
-		
-		updateUI(mainView, foodsFromInternalStorage);
+		if (viewIsReady) {
+			currentFoodsFuture = null;
+			selectedDate = DateUtils.getDateInThisWeekBy(selectedDate,
+					selectedWeekDay);
+			foodsFromInternalStorage = foodService
+					.getFoodsFromInternalStorageBy(
+							DateUtils.getWeekOfYear(selectedDate),
+							DateUtils.getDayOfTheWeek(selectedDate));
+
+			// TODO: make this work
+			updateUI(mainView, null, foodsFromInternalStorage);
+		}
 	}
 
 	@Override
-	public void viewIsReady() {
-		if(foodsFromInternalStorage == null) {
-			updateUIFromWebService(mainView);
-		} else {			
-			updateUI(mainView, foodsFromInternalStorage);
+	public void viewIsReady(DailyFoodView foodView) {
+		viewIsReady = true;
+		if (currentFoodsFuture != null) {
+			updateUIFromWebService(mainView, foodView);
+			currentFoodsFuture = null;
+		} else {
+			foodsFromInternalStorage = foodService
+					.getFoodsFromInternalStorageBy(
+							DateUtils.getWeekOfYear(timeNow.get()),
+							foodView.getWeekDay());
+			updateUI(mainView, foodView, foodsFromInternalStorage);
 		}
 	}
 
@@ -149,7 +164,8 @@ public class MainViewPresenterImpl implements IMainViewPresenter,
 	public void refreshFoods(IMainView mainView) {
 		mainView.showLoadingIcon();
 		getInitialFoodsFromService();
-		updateUIFromWebService(mainView);
+		// TODO: make this work
+		updateUIFromWebService(mainView, null);
 	}
 
 }

@@ -2,7 +2,7 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:orientation="vertical" 
-    android:background="#CCCCCC">
+    android:background="@color/fragment_lunch_gray_bg">
 
     <ListView
         android:id="@+id/listview_foods"

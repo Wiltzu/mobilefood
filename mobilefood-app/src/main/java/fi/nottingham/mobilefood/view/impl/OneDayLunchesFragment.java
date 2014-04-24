@@ -25,22 +25,28 @@ import fi.nottingham.mobilefood.DaggerBaseFragment;
 import fi.nottingham.mobilefood.R;
 import fi.nottingham.mobilefood.model.Food;
 import fi.nottingham.mobilefood.model.RestaurantDay;
+import fi.nottingham.mobilefood.view.DailyFoodView;
 import fi.nottingham.mobilefood.view.ViewIsReadyListener;
 
-public class OneDayLunchesFragment extends DaggerBaseFragment {
+public class OneDayLunchesFragment extends DaggerBaseFragment implements
+		DailyFoodView {
+	public static ViewIsReadyListener listener;
 
 	private static final String TAG = "OneDayLunchesFragment";
 	private ListView mFoodsListView;
-	private ViewIsReadyListener listener;
+	private Integer weekDay;
 
-	public void setListener(ViewIsReadyListener listener) {
-		this.listener = listener;
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		setRetainInstance(false);
+		weekDay = getArguments().getInt("weekDay");
+		super.onCreate(savedInstanceState);
 	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
-		View rootView = inflater.inflate(R.layout.activity_main, container,
+		View rootView = inflater.inflate(R.layout.fragment_lunch, container,
 				false);
 		mFoodsListView = checkNotNull(
 				(ListView) rootView.findViewById(R.id.listview_foods),
@@ -52,11 +58,22 @@ public class OneDayLunchesFragment extends DaggerBaseFragment {
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 		Log.d(TAG, "Activity has been created");
+
 		if (listener != null) {
-			listener.viewIsReady();
+			Log.d(TAG,
+					"Notified listener that Fragment UI is ready to be created.");
+			listener.viewIsReady(this);
 		}
 	}
 
+	@Override
+	public void onResume() {
+		Log.d(TAG, String.format("Fragment for week day %s is initialized",
+				getArguments() != null ? getArguments().getInt("weekDay") : ""));
+		super.onResume();
+	}
+
+	@Override
 	public void setFoods(List<RestaurantDay> foodsByRestaurant) {
 		checkNotNull(foodsByRestaurant, "foodsByRestaurant cannot be null");
 
@@ -87,6 +104,29 @@ public class OneDayLunchesFragment extends DaggerBaseFragment {
 
 	}
 
+	@Override
+	public Integer getWeekDay() {
+		return weekDay;
+	}
+
+	static class ViewHolder {
+		public ImageView chainLogo;
+		public TextView restaurantNameTV;
+		public TextView restaurantStreetAddressTV;
+		public LinearLayout lunchLayout;
+		public LinearLayout alertLayout;
+		public TextView alertTV;
+		public ImageButton restaurantInfoBtn;
+		public ImageButton foodListBtn;
+		public View restaurantItemInfo;
+	}
+	
+	static class LunchViewHolder {
+		public TextView nameTV;
+		public TextView dietsTV;
+		public TextView pricesTV;
+	}
+
 	class RestaurantDayViewAdapter extends ArrayAdapter<RestaurantDay> {
 		private static final String TAG = "RestaurantDayViewAdapter";
 
@@ -102,57 +142,65 @@ public class OneDayLunchesFragment extends DaggerBaseFragment {
 		@Override
 		public View getView(final int position, View convertView,
 				final ViewGroup parent) {
-			final LayoutInflater inflater = getActivity().getLayoutInflater();
-			final View restaurantDayView = inflater.inflate(
-					R.layout.restaurant_item, parent, false);
+			View rowView = convertView;
+			LayoutInflater inflater = null;
 
+			if (rowView == null) {
+				inflater = getActivity().getLayoutInflater();
+				rowView = inflater.inflate(R.layout.restaurant_item, parent,
+						false);
+
+				ViewHolder holder = new ViewHolder();
+
+				holder.chainLogo = (ImageView) rowView
+						.findViewById(R.id.restaurant_item_chain_logo);
+				holder.restaurantNameTV = (TextView) rowView
+						.findViewById(R.id.restaurant_item_restaurant_name);
+				holder.restaurantStreetAddressTV = (TextView) rowView
+						.findViewById(R.id.restaurant_item_restaurant_street_address);
+				holder.lunchLayout = (LinearLayout) rowView
+						.findViewById(R.id.restaurant_item_food_layout);
+				holder.alertTV = (TextView) rowView
+						.findViewById(R.id.restaurant_item_alert_textview);
+				holder.alertLayout = (LinearLayout) rowView
+						.findViewById(R.id.restaurant_item_alert_layout);
+				holder.restaurantItemInfo = (View) rowView
+						.findViewById(R.id.restaurant_item_info_layout);
+
+				holder.restaurantInfoBtn = (ImageButton) rowView
+						.findViewById(R.id.restaurant_item_restaurant_info_button);
+				holder.foodListBtn = (ImageButton) rowView
+						.findViewById(R.id.restaurant_item_food_list_button);
+				rowView.setTag(holder);
+			}
+			
 			if (position == 0) {
 				// top margin for first item to make it look good
-				addTopMarginForItem(restaurantDayView);
+				addTopMarginForItem(rowView);
+			} else {
+				removeTopMarginForItem(rowView);
 			}
 
-			ImageView chainLogo = (ImageView) restaurantDayView
-					.findViewById(R.id.restaurant_item_chain_logo);
-			TextView restaurantNameTV = (TextView) restaurantDayView
-					.findViewById(R.id.restaurant_item_restaurant_name);
-			TextView restaurantStreetAddressTV = (TextView) restaurantDayView
-					.findViewById(R.id.restaurant_item_restaurant_street_address);
-			final LinearLayout lunchLayout = (LinearLayout) restaurantDayView
-					.findViewById(R.id.restaurant_item_food_layout);
-			final TextView alertTV = (TextView) restaurantDayView
-					.findViewById(R.id.restaurant_item_alert_textview);
-			final LinearLayout alertLayout = (LinearLayout) restaurantDayView
-					.findViewById(R.id.restaurant_item_alert_layout);
-			final View restaurantItemInfo = (View) restaurantDayView
-					.findViewById(R.id.restaurant_item_info_layout);
+			final ViewHolder holder = (ViewHolder) rowView.getTag();
 
-			final ImageButton restaurantInfoBtn = (ImageButton) restaurantDayView
-					.findViewById(R.id.restaurant_item_restaurant_info_button);
-			final ImageButton foodListBtn = (ImageButton) restaurantDayView
-					.findViewById(R.id.restaurant_item_food_list_button);
-
-			restaurantInfoBtn.setOnClickListener(new OnClickListener() {
+			holder.restaurantInfoBtn.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
 					infoWasOpened[position] = true;
-					showRestaurantInfo(lunchLayout, alertLayout,
-							restaurantItemInfo, restaurantInfoBtn, foodListBtn);
+					showRestaurantInfo(holder);
 				}
 			});
 
-			foodListBtn.setOnClickListener(new OnClickListener() {
+			holder.foodListBtn.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
 					infoWasOpened[position] = false;
-					showFoods(lunchLayout, alertTV, alertLayout,
-							restaurantItemInfo, restaurantInfoBtn, foodListBtn,
-							position);
+					showFoods(holder, position);
 				}
 			});
 
 			if (infoWasOpened[position]) {
-				showRestaurantInfo(lunchLayout, alertLayout,
-						restaurantItemInfo, restaurantInfoBtn, foodListBtn);
+				showRestaurantInfo(holder);
 			}
 
 			final RestaurantDay restaurantDay = getItem(position);
@@ -160,28 +208,58 @@ public class OneDayLunchesFragment extends DaggerBaseFragment {
 			String alert = restaurantDay.getAlert();
 			if (!isNullOrEmpty(alert)) {
 				hasAlert[position] = true;
-				alertTV.setText(alert);
+				holder.alertTV.setText(alert);
 			} else {
-				alertLayout.setVisibility(View.GONE);
+				holder.alertLayout.setVisibility(View.GONE);
 			}
 
-			chainLogo.setImageResource(R.drawable.unica_logo);
-			restaurantNameTV.setText(restaurantDay.getRestaurantName());
+			holder.chainLogo.setImageResource(R.drawable.unica_logo);
+			holder.restaurantNameTV.setText(restaurantDay.getRestaurantName());
 			if (restaurantDay.getRestaurant() != null) {
-				restaurantStreetAddressTV.setText(restaurantDay.getRestaurant()
-						.getAddress());
+				holder.restaurantStreetAddressTV.setText(restaurantDay
+						.getRestaurant().getAddress());
 			}
 
-			for (Food lunch : restaurantDay.getLunches()) {
-				lunchLayout.addView(createLunchLayout(parent, inflater, lunch));
+			List<Food> lunches = restaurantDay.getLunches();
+			
+			if (inflater == null) {
+				inflater = getActivity().getLayoutInflater();
+			}
+			
+			int lunchCount = 0;
+			for (Food lunch : lunches) {
+				View lunchView = holder.lunchLayout.getChildAt(lunchCount);
+				if (lunchView == null) {
+					lunchView = createLunchLayout(parent, inflater, lunch);
+					holder.lunchLayout.addView(lunchView);
+				}
+				LunchViewHolder lunchHolder = (LunchViewHolder) lunchView.getTag();
+				lunchHolder.nameTV.setText(lunch.getName());
+				lunchHolder.dietsTV.setText(lunch.getDiets());
+				setLunchPrices(lunch.getPrices(), lunchHolder.pricesTV);
+				
+				lunchCount++;
+			}
+			
+			for(int i = lunchCount; i < holder.lunchLayout.getChildCount(); i++) {
+				//remove views that are not needed
+				holder.lunchLayout.removeViewAt(i);
 			}
 
 			Log.d(TAG, "Restaurant added to ui:" + restaurantDay);
-			return restaurantDayView;
+			return rowView;
 		}
 
-		private void addTopMarginForItem(View restaurantDayView) {
-			LinearLayout restaurantItemLayout = (LinearLayout) restaurantDayView
+		private void removeTopMarginForItem(View rowView) {
+			LinearLayout restaurantItemLayout = (LinearLayout) rowView
+					.findViewById(R.id.restaurant_item_layout);
+			LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) restaurantItemLayout
+					.getLayoutParams();
+			layoutParams.topMargin = 0;
+		}
+
+		private void addTopMarginForItem(View rowView) {
+			LinearLayout restaurantItemLayout = (LinearLayout) rowView
 					.findViewById(R.id.restaurant_item_layout);
 			LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) restaurantItemLayout
 					.getLayoutParams();
@@ -192,18 +270,18 @@ public class OneDayLunchesFragment extends DaggerBaseFragment {
 				LayoutInflater inflater, Food lunch) {
 			View lunchlayoutItem = inflater.inflate(R.layout.food_item, parent,
 					false);
-			((TextView) lunchlayoutItem.findViewById(R.id.food_item_name))
-					.setText(lunch.getFoodName());
-			((TextView) lunchlayoutItem.findViewById(R.id.food_item_diets))
-					.setText(lunch.getDiets());
-
-			TextView pricesTV = (TextView) lunchlayoutItem
+			
+			LunchViewHolder holder = new LunchViewHolder();
+			holder.nameTV = (TextView) lunchlayoutItem.findViewById(R.id.food_item_name);
+			holder.dietsTV = (TextView) lunchlayoutItem.findViewById(R.id.food_item_diets);
+			holder.pricesTV = (TextView) lunchlayoutItem
 					.findViewById(R.id.food_item_prices);
-			setPrices(lunch.getPrices(), pricesTV);
+			lunchlayoutItem.setTag(holder);
+			
 			return lunchlayoutItem;
 		}
 
-		private void setPrices(List<String> prices, TextView pricesTV) {
+		private void setLunchPrices(List<String> prices, TextView pricesTV) {
 			pricesTV.setText(Joiner.on(" / ").join(prices));
 			if (!prices.isEmpty()) {
 				// add Euro sign if there are prices
@@ -211,31 +289,24 @@ public class OneDayLunchesFragment extends DaggerBaseFragment {
 			}
 		}
 
-		private void showFoods(final LinearLayout lunchLayout,
-				final TextView alertTV, final LinearLayout alertLayout,
-				final View restaurantItemInfo,
-				final ImageButton restaurantInfoBtn,
-				final ImageButton foodListBtn, int position) {
-			lunchLayout.setVisibility(View.VISIBLE);
+		private void showFoods(ViewHolder holder, int position) {
+			holder.lunchLayout.setVisibility(View.VISIBLE);
 			if (hasAlert[position]) {
-				alertLayout.setVisibility(View.VISIBLE);
+				holder.alertLayout.setVisibility(View.VISIBLE);
 			}
-			restaurantItemInfo.setVisibility(View.GONE);
-			foodListBtn.setVisibility(View.INVISIBLE);
-			restaurantInfoBtn.setVisibility(View.VISIBLE);
+			holder.restaurantItemInfo.setVisibility(View.GONE);
+			holder.foodListBtn.setVisibility(View.INVISIBLE);
+			holder.restaurantInfoBtn.setVisibility(View.VISIBLE);
 		}
 
-		private void showRestaurantInfo(final LinearLayout lunchLayout,
-				final LinearLayout alertLayout, final View restaurantItemInfo,
-				final ImageButton restaurantInfoBtn,
-				final ImageButton foodListBtn) {
-			lunchLayout.setVisibility(View.GONE);
-			if (alertLayout.getVisibility() == View.VISIBLE) {
-				alertLayout.setVisibility(View.GONE);
+		private void showRestaurantInfo(ViewHolder holder) {
+			holder.lunchLayout.setVisibility(View.GONE);
+			if (holder.alertLayout.getVisibility() == View.VISIBLE) {
+				holder.alertLayout.setVisibility(View.GONE);
 			}
-			restaurantItemInfo.setVisibility(View.VISIBLE);
-			foodListBtn.setVisibility(View.VISIBLE);
-			restaurantInfoBtn.setVisibility(View.INVISIBLE);
+			holder.restaurantItemInfo.setVisibility(View.VISIBLE);
+			holder.foodListBtn.setVisibility(View.VISIBLE);
+			holder.restaurantInfoBtn.setVisibility(View.INVISIBLE);
 		}
 
 		@Override

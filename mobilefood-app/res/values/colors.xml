@@ -1,0 +1,7 @@
+<resources>
+
+    <color name="fragment_lunch_gray_bg">#CCCCCC</color>
+    <color name="alert_red">#CC0000</color>
+    <color name="restaurant_item_white">#FFFFFF</color>
+
+</resources>

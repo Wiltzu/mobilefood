@@ -6,17 +6,22 @@
     <string name="no_internet">Fetching lunches failed. Please check that you have Internet connection enabled.</string>
     <string name="no_foods_available">Fetching lunches failed. Lunches are unavailable at the moment. Please try again later.</string>
     <string name="refresh_foods">Try to fetch lunches again</string>
+
     <string-array name="week_days">
         <item>Monday</item>
-        <item>Tuesday</item>  
-        <item>Wednesday</item>  
-        <item>Thursday</item>  
-        <item>Friday</item>  
+        <item>Tuesday</item>
+        <item>Wednesday</item>
+        <item>Thursday</item>
+        <item>Friday</item>
         <item>Saturday</item>
-        <item>Sunday</item>         
+        <item>Sunday</item>
     </string-array>
     <string-array name="no_food_for_day">
         <item>There are no lunches available for this day.</item>
     </string-array>
+
+    <string name="title_activity_splash_screen">SplashScreenActivity</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
 
 </resources>

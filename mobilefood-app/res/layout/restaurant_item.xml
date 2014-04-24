@@ -95,7 +95,7 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="5dp"
             android:layout_marginRight="5dp"
-            android:background="#CC0000"
+            android:background="@color/alert_red"
             android:orientation="horizontal" >
 
             <ImageView

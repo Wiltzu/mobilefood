@@ -28,7 +28,7 @@ public class Food {
 		this.diets = diet;
 	}
 
-	public String getFoodName() {
+	public String getName() {
 		return name;
 	}
 
@@ -51,7 +51,7 @@ public class Food {
 
 	@Override
 	public int hashCode() {
-		return Objects.hashCode(getFoodName(), getPrices(), getDiets());
+		return Objects.hashCode(getName(), getPrices(), getDiets());
 	}
 
 	@Override

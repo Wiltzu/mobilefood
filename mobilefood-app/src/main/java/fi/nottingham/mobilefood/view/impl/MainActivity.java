@@ -1,71 +1,29 @@
 package fi.nottingham.mobilefood.view.impl;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.List;
-import java.util.Map;
 
 import javax.inject.Inject;
 
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentStatePagerAdapter;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBar.Tab;
-import android.support.v7.app.ActionBar.TabListener;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.Toast;
-
-import com.google.common.collect.Maps;
-
 import fi.nottingham.mobilefood.DaggerBaseActivity;
 import fi.nottingham.mobilefood.R;
 import fi.nottingham.mobilefood.model.RestaurantDay;
 import fi.nottingham.mobilefood.presenter.IMainViewPresenter;
 import fi.nottingham.mobilefood.view.IMainView;
 import fi.nottingham.mobilefood.view.ViewIsReadyListener;
+import fi.nottingham.mobilefood.view.impl.TabsAdapter.TabInfo;
 
-public class MainActivity extends DaggerBaseActivity implements IMainView,
-		TabListener {
-
-	public class LunchDayPagerAdapter extends FragmentStatePagerAdapter {
-		private final ActionBar actionBar;
-
-		public LunchDayPagerAdapter(FragmentManager fm, ActionBar actionBar) {
-			super(fm);
-			this.actionBar = checkNotNull(actionBar, "ActionBar cannot be null");
-		}
-
-		@Override
-		public int getCount() {
-			return actionBar.getTabCount();
-		}
-
-		@Override
-		public Fragment getItem(int position) {
-			Log.d("LunchDayPagerAdapter", "fragment created");
-			OneDayLunchesFragment lunchFragment = new OneDayLunchesFragment();
-			lunchFragment.setListener((ViewIsReadyListener) presenter);
-			mLunchFragmentsMap.put(position, lunchFragment);
-			return lunchFragment;
-		}
-
-		@Override
-		public void destroyItem(ViewGroup container, int position, Object object) {
-			mLunchFragmentsMap.remove(position);
-			super.destroyItem(container, position, object);
-		}
-
-	}
+public class MainActivity extends DaggerBaseActivity implements IMainView {
 
 	private static final String LAST_WEEK_DAY_SELECTION = "lastWeekDaySelection";
 	private static final String TAG = "MainActivity";
@@ -75,7 +33,7 @@ public class MainActivity extends DaggerBaseActivity implements IMainView,
 	private ActionBar mActionbar;
 	private ViewPager mViewPager;
 
-	private Map<Integer, OneDayLunchesFragment> mLunchFragmentsMap = Maps.newHashMap();
+	private TabsAdapter tabsAdapter;
 
 	@Inject
 	IMainViewPresenter presenter;
@@ -92,7 +50,8 @@ public class MainActivity extends DaggerBaseActivity implements IMainView,
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.main_activity_parent);
+		setContentView(R.layout.activity_main_parent);
+		Log.d(TAG, "onCreate called");
 
 		mViewPager = (ViewPager) findViewById(R.id.slide_view_pager);
 
@@ -111,40 +70,40 @@ public class MainActivity extends DaggerBaseActivity implements IMainView,
 			}
 		});
 
+		if (OneDayLunchesFragment.listener == null) {
+			OneDayLunchesFragment.listener = (ViewIsReadyListener) presenter;
+		}
+
 		Integer savedSelectedWeekDay = null;
 		if (savedInstanceState != null) {
 			savedSelectedWeekDay = savedInstanceState
 					.getInt(LAST_WEEK_DAY_SELECTION);
 		}
 		presenter.onViewCreation(this, savedSelectedWeekDay);
-		
 
-		mViewPager
-				.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-					@Override
-					public void onPageSelected(int position) {
-						mActionbar.setSelectedNavigationItem(position);
-//						presenter.onDateChanged(MainActivity.this,
-//								(Integer) mActionbar.getTabAt(position)
-//										.getTag());
-					}
-					@Override
-					public void onPageScrolled(int arg0, float arg1, int arg2) {
-					}
-					@Override
-					public void onPageScrollStateChanged(int arg0) {
-					}
-				});
-		//just cache all days
-		mViewPager.setOffscreenPageLimit(7);
-
+		/*
+		 * mViewPager .setOnPageChangeListener(new
+		 * ViewPager.OnPageChangeListener() {
+		 * 
+		 * @Override public void onPageSelected(int position) {
+		 * mActionbar.setSelectedNavigationItem(position); //
+		 * presenter.onDateChanged(MainActivity.this, // (Integer)
+		 * mActionbar.getTabAt(position) // .getTag()); }
+		 * 
+		 * @Override public void onPageScrolled(int arg0, float arg1, int arg2)
+		 * { }
+		 * 
+		 * @Override public void onPageScrollStateChanged(int arg0) { } }); //
+		 * just cache all days mViewPager.setOffscreenPageLimit(7);
+		 */
 	}
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
-		//getMenuInflater().inflate(fi.nottingham.mobilefood.R.menu.main, menu);
-		//return true;
+		// getMenuInflater().inflate(fi.nottingham.mobilefood.R.menu.main,
+		// menu);
+		// return true;
 		return false;
 	}
 
@@ -152,12 +111,15 @@ public class MainActivity extends DaggerBaseActivity implements IMainView,
 		return presenter;
 	}
 
+	@Override
 	public void setFoods(List<RestaurantDay> foodsByRestaurant) {
-		OneDayLunchesFragment currentLunchFragment = mLunchFragmentsMap
-				.get(mActionbar.getSelectedTab().getPosition());
-		if (currentLunchFragment != null) {
-			currentLunchFragment.setFoods(foodsByRestaurant);
-		}
+		//TODO: is this method needed any longer??
+//		Log.d(TAG, "setFoods called");
+//		OneDayLunchesFragment currentLunchFragment = mLunchFragmentsMap
+//				.get(mActionbar.getSelectedTab().getPosition());
+//		if (currentLunchFragment != null) {
+//			currentLunchFragment.setFoods(foodsByRestaurant);
+//		}
 	}
 
 	@Override
@@ -169,15 +131,19 @@ public class MainActivity extends DaggerBaseActivity implements IMainView,
 	@Override
 	public void setAvailableWeekDays(int[] availableWeekDays) {
 		if (mActionbar.getTabCount() == 0) {
+			Log.d(TAG, "Resetting week day tabs...");
+			tabsAdapter = new TabsAdapter(this, mViewPager);
+
 			String[] weekDayNames = getResources().getStringArray(
 					R.array.week_days);
 			for (int weekDayNumber : availableWeekDays) {
-				mActionbar.addTab(mActionbar.newTab()
-						.setText(weekDayNames[weekDayNumber])
-						.setTag(weekDayNumber).setTabListener(this));
+				Bundle args = new Bundle();
+				args.putInt("weekDay", weekDayNumber);
+				tabsAdapter.addTab(
+						mActionbar.newTab()
+								.setText(weekDayNames[weekDayNumber]),
+						OneDayLunchesFragment.class, args);
 			}
-			mViewPager.setAdapter(new LunchDayPagerAdapter(
-					getSupportFragmentManager(), mActionbar));
 		}
 	}
 
@@ -201,21 +167,15 @@ public class MainActivity extends DaggerBaseActivity implements IMainView,
 
 	@Override
 	public void hideLoadingIcon() {
-		if (mProgressBar.isShown()) {
-			mProgressBar.setVisibility(View.INVISIBLE);
-		}
+		mProgressBar.setVisibility(View.INVISIBLE);
+		mProgressBar.invalidate();
 	}
 
-	@Override
-	public void onTabSelected(Tab tab, FragmentTransaction arg1) {
-		mViewPager.setCurrentItem(tab.getPosition());
-		presenter.onDateChanged(this, (Integer) tab.getTag());
-	}
 
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
-		outState.putInt(LAST_WEEK_DAY_SELECTION, (Integer) mActionbar
-				.getSelectedTab().getTag());
+		outState.putInt(LAST_WEEK_DAY_SELECTION, ((TabInfo) mActionbar
+				.getSelectedTab().getTag()).args.getInt("weekDay"));
 		super.onSaveInstanceState(outState);
 	}
 
@@ -223,19 +183,10 @@ public class MainActivity extends DaggerBaseActivity implements IMainView,
 	public void setSelectedDate(int dayOfTheWeek) {
 		for (int tabIndex = 0; tabIndex < mActionbar.getTabCount(); tabIndex++) {
 			Tab currentTab = mActionbar.getTabAt(tabIndex);
-			if (dayOfTheWeek == (Integer) currentTab.getTag()) {
+			if (dayOfTheWeek == (Integer) ((TabInfo) currentTab.getTag()).args
+					.getInt("weekDay")) {
 				mActionbar.selectTab(currentTab);
 			}
 		}
-	}
-
-	@Override
-	public void onTabReselected(Tab arg0, FragmentTransaction arg1) {
-		// NOT NEEDED
-	}
-
-	@Override
-	public void onTabUnselected(Tab arg0, FragmentTransaction arg1) {
-		// NOT NEEDED EITHER
 	}
 }

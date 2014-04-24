@@ -23,17 +23,12 @@ import javax.inject.Inject;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.json.JSONTokener;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.typesafe.config.ConfigFactory;
 
-import fi.nottingham.mobilefood.model.Food;
 import fi.nottingham.mobilefood.model.Restaurant;
 import fi.nottingham.mobilefood.model.RestaurantDay;
 import fi.nottingham.mobilefood.service.IFileSystemService;
@@ -184,7 +179,6 @@ public class FoodServiceImpl implements IFoodService {
 			HttpURLConnection connection = (HttpURLConnection) new URL(
 					getRequestURL(weekNumber)).openConnection();
 			connection.setConnectTimeout(connectTimeout);
-			// TODO: set timeouts for connecting and receiving data from service
 
 			String response = IOUtils.toString(connection.getInputStream(),
 					"UTF-8");
