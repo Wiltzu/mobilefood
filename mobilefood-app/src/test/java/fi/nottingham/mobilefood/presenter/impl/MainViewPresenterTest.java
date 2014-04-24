@@ -33,9 +33,9 @@ import fi.nottingham.mobilefood.service.INetworkStatusService;
 import fi.nottingham.mobilefood.service.exceptions.FoodServiceException;
 import fi.nottingham.mobilefood.service.exceptions.NoInternetConnectionException;
 import fi.nottingham.mobilefood.util.DateUtils;
-import fi.nottingham.mobilefood.view.DailyFoodView;
+import fi.nottingham.mobilefood.view.IDailyFoodView;
 import fi.nottingham.mobilefood.view.IMainView;
-import fi.nottingham.mobilefood.view.ViewIsReadyListener;
+import fi.nottingham.mobilefood.view.IViewIsReadyListener;
 
 public class MainViewPresenterTest {
 	//TODO: fix these tests
@@ -44,7 +44,7 @@ public class MainViewPresenterTest {
 	IMainView mainView;
 	IFoodService foodService;
 	INetworkStatusService networkStatusService;
-	DailyFoodView foodView;
+	IDailyFoodView foodView;
 
 	Provider<Date> dateProvider = new Provider<Date>() {
 		@Override
@@ -58,7 +58,7 @@ public class MainViewPresenterTest {
 		mainView = mock(IMainView.class);
 		foodService = mock(IFoodService.class);
 		networkStatusService = mock(INetworkStatusService.class);
-		foodView = mock(DailyFoodView.class);
+		foodView = mock(IDailyFoodView.class);
 		mainViewPresenter = new MainViewPresenterImpl(foodService, dateProvider);
 	}
 
@@ -143,7 +143,7 @@ public class MainViewPresenterTest {
 
 		mainViewPresenter.onViewCreation(mainView, null);
 		//TODO: fix!
-		((ViewIsReadyListener) mainViewPresenter).viewIsReady(Mockito.any(DailyFoodView.class));
+		((IViewIsReadyListener) mainViewPresenter).viewIsReady(Mockito.any(IDailyFoodView.class));
 
 		verify(foodService).getFoodsBy(Mockito.anyInt(), Mockito.anyInt());
 		verify(mainView).notifyThatFoodsAreCurrentlyUnavailable();
@@ -163,7 +163,7 @@ public class MainViewPresenterTest {
 
 		mainViewPresenter.onViewCreation(mainView, null);
 		//TODO: fix!
-		((ViewIsReadyListener) mainViewPresenter).viewIsReady(Mockito.any(DailyFoodView.class));
+		((IViewIsReadyListener) mainViewPresenter).viewIsReady(Mockito.any(IDailyFoodView.class));
 
 		verify(foodService).getFoodsBy(Mockito.anyInt(), Mockito.anyInt());
 		
@@ -185,7 +185,7 @@ public class MainViewPresenterTest {
 
 		mainViewPresenter.onViewCreation(mainView, null);
 		//TODO: fix!
-		((ViewIsReadyListener) mainViewPresenter).viewIsReady(Mockito.any(DailyFoodView.class));
+		((IViewIsReadyListener) mainViewPresenter).viewIsReady(Mockito.any(IDailyFoodView.class));
 
 		verify(foodService).getFoodsBy(Mockito.anyInt(), Mockito.anyInt());
 		

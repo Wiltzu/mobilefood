@@ -20,13 +20,13 @@ import fi.nottingham.mobilefood.service.IFoodService;
 import fi.nottingham.mobilefood.service.exceptions.FoodServiceException;
 import fi.nottingham.mobilefood.service.exceptions.NoInternetConnectionException;
 import fi.nottingham.mobilefood.util.DateUtils;
-import fi.nottingham.mobilefood.view.DailyFoodView;
+import fi.nottingham.mobilefood.view.IDailyFoodView;
 import fi.nottingham.mobilefood.view.IMainView;
-import fi.nottingham.mobilefood.view.ViewIsReadyListener;
+import fi.nottingham.mobilefood.view.IViewIsReadyListener;
 
 //TODO: refactor this class and make tests for it
 public class MainViewPresenterImpl implements IMainViewPresenter,
-		ViewIsReadyListener {
+		IViewIsReadyListener {
 	private final Logger logger = Logger.getLogger(this.getClass());
 
 	private final IFoodService foodService;
@@ -81,7 +81,7 @@ public class MainViewPresenterImpl implements IMainViewPresenter,
 		}
 	}
 
-	protected void updateUI(final IMainView mainView, DailyFoodView foodView,
+	protected void updateUI(final IMainView mainView, IDailyFoodView foodView,
 			List<RestaurantDay> foods) {
 		mainView.hideLoadingIcon();
 		if (foods != null) {
@@ -92,7 +92,7 @@ public class MainViewPresenterImpl implements IMainViewPresenter,
 	}
 
 	private void updateUIFromWebService(final IMainView mainView,
-			final DailyFoodView foodView) {
+			final IDailyFoodView foodView) {
 		List<RestaurantDay> foods = null;
 		try {
 			logger.debug("Setting foods from WebService...");
@@ -146,7 +146,7 @@ public class MainViewPresenterImpl implements IMainViewPresenter,
 	}
 
 	@Override
-	public void viewIsReady(DailyFoodView foodView) {
+	public void viewIsReady(IDailyFoodView foodView) {
 		viewIsReady = true;
 		if (currentFoodsFuture != null) {
 			updateUIFromWebService(mainView, foodView);

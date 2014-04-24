@@ -4,7 +4,7 @@ import java.util.List;
 
 import fi.nottingham.mobilefood.model.RestaurantDay;
 
-public interface DailyFoodView {
+public interface IDailyFoodView {
 
 	void setFoods(List<RestaurantDay> dailyFoodsByrestaurant);
 	

@@ -14,13 +14,13 @@ import android.widget.ListView;
 import fi.nottingham.mobilefood.DaggerBaseFragment;
 import fi.nottingham.mobilefood.R;
 import fi.nottingham.mobilefood.model.RestaurantDay;
-import fi.nottingham.mobilefood.view.DailyFoodView;
-import fi.nottingham.mobilefood.view.ViewIsReadyListener;
+import fi.nottingham.mobilefood.view.IDailyFoodView;
+import fi.nottingham.mobilefood.view.IViewIsReadyListener;
 import fi.nottingham.mobilefood.view.adapter.RestaurantDayArrayAdapter;
 
 public class OneDayLunchesFragment extends DaggerBaseFragment implements
-		DailyFoodView {
-	public static ViewIsReadyListener listener;
+		IDailyFoodView {
+	public static IViewIsReadyListener listener;
 
 	private static final String TAG = "OneDayLunchesFragment";
 	private ListView mFoodsListView;

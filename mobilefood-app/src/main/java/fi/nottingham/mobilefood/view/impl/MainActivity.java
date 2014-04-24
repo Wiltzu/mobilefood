@@ -17,7 +17,7 @@ import fi.nottingham.mobilefood.DaggerBaseActivity;
 import fi.nottingham.mobilefood.R;
 import fi.nottingham.mobilefood.presenter.IMainViewPresenter;
 import fi.nottingham.mobilefood.view.IMainView;
-import fi.nottingham.mobilefood.view.ViewIsReadyListener;
+import fi.nottingham.mobilefood.view.IViewIsReadyListener;
 import fi.nottingham.mobilefood.view.adapter.TabsAdapter;
 import fi.nottingham.mobilefood.view.adapter.TabsAdapter.TabInfo;
 
@@ -71,7 +71,7 @@ public class MainActivity extends DaggerBaseActivity implements IMainView {
 		mRefreshButton.setOnClickListener(new RefreshButtonListener());
 
 		if (OneDayLunchesFragment.listener == null) {
-			OneDayLunchesFragment.listener = (ViewIsReadyListener) presenter;
+			OneDayLunchesFragment.listener = (IViewIsReadyListener) presenter;
 		}
 
 		Integer savedSelectedWeekDay = null;

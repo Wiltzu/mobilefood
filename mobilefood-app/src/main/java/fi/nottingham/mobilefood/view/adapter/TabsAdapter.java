@@ -13,8 +13,6 @@ import android.support.v7.app.ActionBar.Tab;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.ViewGroup;
-import fi.nottingham.mobilefood.view.IMainView;
-import fi.nottingham.mobilefood.view.ViewIsReadyListener;
 
 public class TabsAdapter extends FragmentStatePagerAdapter implements
 		ActionBar.TabListener, ViewPager.OnPageChangeListener {
