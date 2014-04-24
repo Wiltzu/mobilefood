@@ -21,7 +21,8 @@ import fi.nottingham.mobilefood.model.RestaurantDay;
 import fi.nottingham.mobilefood.presenter.IMainViewPresenter;
 import fi.nottingham.mobilefood.view.IMainView;
 import fi.nottingham.mobilefood.view.ViewIsReadyListener;
-import fi.nottingham.mobilefood.view.impl.TabsAdapter.TabInfo;
+import fi.nottingham.mobilefood.view.adapter.TabsAdapter;
+import fi.nottingham.mobilefood.view.adapter.TabsAdapter.TabInfo;
 
 public class MainActivity extends DaggerBaseActivity implements IMainView {
 

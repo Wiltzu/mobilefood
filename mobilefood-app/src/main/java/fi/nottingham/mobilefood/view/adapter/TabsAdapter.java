@@ -1,4 +1,4 @@
-package fi.nottingham.mobilefood.view.impl;
+package fi.nottingham.mobilefood.view.adapter;
 
 import java.util.ArrayList;
 
