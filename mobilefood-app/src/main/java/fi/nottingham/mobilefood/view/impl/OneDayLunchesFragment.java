@@ -24,6 +24,7 @@ import com.google.common.base.Joiner;
 import fi.nottingham.mobilefood.DaggerBaseFragment;
 import fi.nottingham.mobilefood.R;
 import fi.nottingham.mobilefood.model.Food;
+import fi.nottingham.mobilefood.model.Restaurant;
 import fi.nottingham.mobilefood.model.RestaurantDay;
 import fi.nottingham.mobilefood.view.DailyFoodView;
 import fi.nottingham.mobilefood.view.ViewIsReadyListener;
@@ -120,7 +121,7 @@ public class OneDayLunchesFragment extends DaggerBaseFragment implements
 		public ImageButton foodListBtn;
 		public View restaurantItemInfo;
 	}
-	
+
 	static class LunchViewHolder {
 		public TextView nameTV;
 		public TextView dietsTV;
@@ -132,6 +133,48 @@ public class OneDayLunchesFragment extends DaggerBaseFragment implements
 
 		private boolean[] infoWasOpened = new boolean[getCount()];
 		private boolean[] hasAlert = new boolean[getCount()];
+		
+		private class RestaurantInfoListener implements OnClickListener {
+			private final int position;
+			private final ViewHolder holder;
+			
+			public RestaurantInfoListener(int position, ViewHolder holder) {
+				this.position = position;
+				this.holder = holder;
+			}
+			
+			@Override
+			public void onClick(View v) {
+				infoWasOpened[position] = true;
+				showRestaurantInfo(holder);	
+			}	
+		}
+		
+		private class FoodListener implements OnClickListener {
+			private final int position;
+			private final ViewHolder holder;
+			
+			public FoodListener(int position, ViewHolder holder) {
+				this.position = position;
+				this.holder = holder;
+			}
+			
+			@Override
+			public void onClick(View v) {
+				infoWasOpened[position] = false;
+				showFoods();	
+			}
+			
+			private void showFoods() {
+				holder.lunchLayout.setVisibility(View.VISIBLE);
+				if (hasAlert[position]) {
+					holder.alertLayout.setVisibility(View.VISIBLE);
+				}
+				holder.restaurantItemInfo.setVisibility(View.GONE);
+				holder.foodListBtn.setVisibility(View.INVISIBLE);
+				holder.restaurantInfoBtn.setVisibility(View.VISIBLE);
+			}
+		}
 
 		public RestaurantDayViewAdapter(Context context,
 				List<RestaurantDay> items) {
@@ -173,81 +216,79 @@ public class OneDayLunchesFragment extends DaggerBaseFragment implements
 						.findViewById(R.id.restaurant_item_food_list_button);
 				rowView.setTag(holder);
 			}
-			
+
+			// top margin for first item to make it look good
 			if (position == 0) {
-				// top margin for first item to make it look good
 				addTopMarginForItem(rowView);
 			} else {
 				removeTopMarginForItem(rowView);
 			}
 
 			final ViewHolder holder = (ViewHolder) rowView.getTag();
+			
+			holder.chainLogo.setImageResource(R.drawable.unica_logo);
 
-			holder.restaurantInfoBtn.setOnClickListener(new OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					infoWasOpened[position] = true;
-					showRestaurantInfo(holder);
-				}
-			});
-
-			holder.foodListBtn.setOnClickListener(new OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					infoWasOpened[position] = false;
-					showFoods(holder, position);
-				}
-			});
+			holder.restaurantInfoBtn.setOnClickListener(new RestaurantInfoListener(position, holder));
+			holder.foodListBtn.setOnClickListener(new FoodListener(position, holder));
 
 			if (infoWasOpened[position]) {
 				showRestaurantInfo(holder);
 			}
 
 			final RestaurantDay restaurantDay = getItem(position);
+			
+			initAlertLayout(restaurantDay.getAlert(), holder, position);
+			holder.restaurantNameTV.setText(restaurantDay.getRestaurantName());
+			initLunchLayout(restaurantDay.getLunches(), holder, inflater,
+					parent);
+			
+			Restaurant restaurant = restaurantDay.getRestaurant();
+			if (restaurant != null) {
+				holder.restaurantStreetAddressTV.setText(restaurant.getAddress());
+			}
 
-			String alert = restaurantDay.getAlert();
+			Log.d(TAG, "Restaurant added to ui:" + restaurantDay);
+			return rowView;
+		}
+
+		private void initAlertLayout(String alert, final ViewHolder holder,
+				final int position) {
 			if (!isNullOrEmpty(alert)) {
 				hasAlert[position] = true;
 				holder.alertTV.setText(alert);
 			} else {
 				holder.alertLayout.setVisibility(View.GONE);
 			}
+		}
 
-			holder.chainLogo.setImageResource(R.drawable.unica_logo);
-			holder.restaurantNameTV.setText(restaurantDay.getRestaurantName());
-			if (restaurantDay.getRestaurant() != null) {
-				holder.restaurantStreetAddressTV.setText(restaurantDay
-						.getRestaurant().getAddress());
-			}
-
-			List<Food> lunches = restaurantDay.getLunches();
+		private void initLunchLayout(List<Food> lunches,
+				final ViewHolder holder, LayoutInflater inflater,
+				final ViewGroup parent) {
 			
 			if (inflater == null) {
 				inflater = getActivity().getLayoutInflater();
 			}
-			
-			int lunchCount = 0;
+
+			int lunchIndex = 0;
 			for (Food lunch : lunches) {
-				View lunchView = holder.lunchLayout.getChildAt(lunchCount);
+				View lunchView = holder.lunchLayout.getChildAt(lunchIndex);
 				if (lunchView == null) {
 					lunchView = createLunchLayout(parent, inflater, lunch);
 					holder.lunchLayout.addView(lunchView);
 				}
-				LunchViewHolder lunchHolder = (LunchViewHolder) lunchView.getTag();
+				LunchViewHolder lunchHolder = (LunchViewHolder) lunchView
+						.getTag();
 				lunchHolder.nameTV.setText(lunch.getName());
 				lunchHolder.dietsTV.setText(lunch.getDiets());
 				setLunchPrices(lunch.getPrices(), lunchHolder.pricesTV);
-				
-				lunchCount++;
+
+				lunchIndex++;
 			}
 			
-			for(int i = lunchCount; i < holder.lunchLayout.getChildCount(); i++) {
-				//remove views that are not needed
+			for (int i = lunchIndex; i < holder.lunchLayout.getChildCount();) {
+				// remove views that are not needed
 				holder.lunchLayout.removeViewAt(i);
 			}
-
-			Log.d(TAG, "Restaurant added to ui:" + restaurantDay);
-			return rowView;
 		}
 
 		private void removeTopMarginForItem(View rowView) {
@@ -270,14 +311,16 @@ public class OneDayLunchesFragment extends DaggerBaseFragment implements
 				LayoutInflater inflater, Food lunch) {
 			View lunchlayoutItem = inflater.inflate(R.layout.food_item, parent,
 					false);
-			
+
 			LunchViewHolder holder = new LunchViewHolder();
-			holder.nameTV = (TextView) lunchlayoutItem.findViewById(R.id.food_item_name);
-			holder.dietsTV = (TextView) lunchlayoutItem.findViewById(R.id.food_item_diets);
+			holder.nameTV = (TextView) lunchlayoutItem
+					.findViewById(R.id.food_item_name);
+			holder.dietsTV = (TextView) lunchlayoutItem
+					.findViewById(R.id.food_item_diets);
 			holder.pricesTV = (TextView) lunchlayoutItem
 					.findViewById(R.id.food_item_prices);
 			lunchlayoutItem.setTag(holder);
-			
+
 			return lunchlayoutItem;
 		}
 
@@ -288,17 +331,7 @@ public class OneDayLunchesFragment extends DaggerBaseFragment implements
 				pricesTV.setText(pricesTV.getText() + " €");
 			}
 		}
-
-		private void showFoods(ViewHolder holder, int position) {
-			holder.lunchLayout.setVisibility(View.VISIBLE);
-			if (hasAlert[position]) {
-				holder.alertLayout.setVisibility(View.VISIBLE);
-			}
-			holder.restaurantItemInfo.setVisibility(View.GONE);
-			holder.foodListBtn.setVisibility(View.INVISIBLE);
-			holder.restaurantInfoBtn.setVisibility(View.VISIBLE);
-		}
-
+		
 		private void showRestaurantInfo(ViewHolder holder) {
 			holder.lunchLayout.setVisibility(View.GONE);
 			if (holder.alertLayout.getVisibility() == View.VISIBLE) {
