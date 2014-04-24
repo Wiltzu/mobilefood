@@ -131,6 +131,7 @@ public class MainViewPresenterImpl implements IMainViewPresenter,
 
 	@Override
 	public void onDateChanged(IMainView mainView, int selectedWeekDay) {
+		//TODO: this method is probably no longer needed?
 		if (viewIsReady) {
 			currentFoodsFuture = null;
 			selectedDate = DateUtils.getDateInThisWeekBy(selectedDate,
@@ -140,7 +141,6 @@ public class MainViewPresenterImpl implements IMainViewPresenter,
 							DateUtils.getWeekOfYear(selectedDate),
 							DateUtils.getDayOfTheWeek(selectedDate));
 
-			// TODO: make this work
 			updateUI(mainView, null, foodsFromInternalStorage);
 		}
 	}
@@ -164,7 +164,7 @@ public class MainViewPresenterImpl implements IMainViewPresenter,
 	public void refreshFoods(IMainView mainView) {
 		mainView.showLoadingIcon();
 		getInitialFoodsFromService();
-		// TODO: make this work
+		// TODO: make this work!!!!
 		updateUIFromWebService(mainView, null);
 	}
 

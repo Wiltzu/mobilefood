@@ -33,18 +33,18 @@ import fi.nottingham.mobilefood.service.INetworkStatusService;
 import fi.nottingham.mobilefood.service.exceptions.FoodServiceException;
 import fi.nottingham.mobilefood.service.exceptions.NoInternetConnectionException;
 import fi.nottingham.mobilefood.util.DateUtils;
+import fi.nottingham.mobilefood.view.DailyFoodView;
 import fi.nottingham.mobilefood.view.IMainView;
 import fi.nottingham.mobilefood.view.ViewIsReadyListener;
 
 public class MainViewPresenterTest {
-	@InjectMocks
+	//TODO: fix these tests
 	IMainViewPresenter mainViewPresenter;
-	@Mock
-	List<RestaurantDay> currentFoods;
 
 	IMainView mainView;
 	IFoodService foodService;
 	INetworkStatusService networkStatusService;
+	DailyFoodView foodView;
 
 	Provider<Date> dateProvider = new Provider<Date>() {
 		@Override
@@ -58,6 +58,7 @@ public class MainViewPresenterTest {
 		mainView = mock(IMainView.class);
 		foodService = mock(IFoodService.class);
 		networkStatusService = mock(INetworkStatusService.class);
+		foodView = mock(DailyFoodView.class);
 		mainViewPresenter = new MainViewPresenterImpl(foodService, dateProvider);
 	}
 
@@ -141,7 +142,8 @@ public class MainViewPresenterTest {
 		when(foodService.getFoodsBy(Mockito.anyInt(), Mockito.anyInt())).thenReturn(foodsFuture);
 
 		mainViewPresenter.onViewCreation(mainView, null);
-		((ViewIsReadyListener) mainViewPresenter).viewIsReady();
+		//TODO: fix!
+		((ViewIsReadyListener) mainViewPresenter).viewIsReady(Mockito.any(DailyFoodView.class));
 
 		verify(foodService).getFoodsBy(Mockito.anyInt(), Mockito.anyInt());
 		verify(mainView).notifyThatFoodsAreCurrentlyUnavailable();
@@ -160,7 +162,8 @@ public class MainViewPresenterTest {
 
 
 		mainViewPresenter.onViewCreation(mainView, null);
-		((ViewIsReadyListener) mainViewPresenter).viewIsReady();
+		//TODO: fix!
+		((ViewIsReadyListener) mainViewPresenter).viewIsReady(Mockito.any(DailyFoodView.class));
 
 		verify(foodService).getFoodsBy(Mockito.anyInt(), Mockito.anyInt());
 		
@@ -181,7 +184,8 @@ public class MainViewPresenterTest {
 
 
 		mainViewPresenter.onViewCreation(mainView, null);
-		((ViewIsReadyListener) mainViewPresenter).viewIsReady();
+		//TODO: fix!
+		((ViewIsReadyListener) mainViewPresenter).viewIsReady(Mockito.any(DailyFoodView.class));
 
 		verify(foodService).getFoodsBy(Mockito.anyInt(), Mockito.anyInt());
 		
@@ -193,21 +197,21 @@ public class MainViewPresenterTest {
 	public void updateUI_ifHasFoods_setsFoods() {
 		@SuppressWarnings("unchecked")
 		List<RestaurantDay> foods = Collections.emptyList();
-		((MainViewPresenterImpl) mainViewPresenter).updateUI(mainView, foods);
+		((MainViewPresenterImpl) mainViewPresenter).updateUI(mainView, foodView, foods);
 
-		verify(mainView).setFoods(foods);
+		verify(foodView).setFoods(foods);
 	}
 	
 	@Test
 	public void updateUI_ifFoodsAreNull_setsFoods() {
-		((MainViewPresenterImpl) mainViewPresenter).updateUI(mainView, null);
+		((MainViewPresenterImpl) mainViewPresenter).updateUI(mainView, foodView, null);
 
-		verify(mainView).setFoods(Mockito.anyList());
+		verify(foodView).setFoods(Mockito.anyList());
 	}
 	
 	@Test
 	public void updateUI_hidesLoadingIcon() {
-		((MainViewPresenterImpl) mainViewPresenter).updateUI(mainView, null);
+		((MainViewPresenterImpl) mainViewPresenter).updateUI(mainView, foodView, null);
 
 		verify(mainView).hideLoadingIcon();
 	}
