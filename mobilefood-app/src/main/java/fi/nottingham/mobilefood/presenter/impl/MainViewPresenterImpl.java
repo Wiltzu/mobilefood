@@ -31,13 +31,12 @@ public class MainViewPresenterImpl implements IMainViewPresenter,
 
 	private final IFoodService foodService;
 	private Provider<Date> timeNow;
+	private IMainView mainView;
+	
 	private Date selectedDate;
 	private Future<List<RestaurantDay>> currentFoodsFuture;
 	private List<RestaurantDay> foodsFromInternalStorage;
 
-	private boolean hasInternetConnection = true;
-
-	private IMainView mainView;
 
 	private boolean viewIsReady;
 
@@ -52,8 +51,7 @@ public class MainViewPresenterImpl implements IMainViewPresenter,
 	@Override
 	public void onViewCreation(final IMainView mainView,
 			@Nullable Integer savedSelectedWeekDay) {
-		checkNotNull("mainView cannot be null", mainView);
-		this.mainView = mainView;
+		this.mainView = checkNotNull(mainView, "mainView cannot be null");
 		
 		mainView.setAvailableWeekDays(DateUtils
 				.getRestOfTheWeeksDayNumbersFrom(timeNow.get()));
@@ -99,6 +97,7 @@ public class MainViewPresenterImpl implements IMainViewPresenter,
 			foods = currentFoodsFuture.get();
 		} catch (InterruptedException e) {
 			logger.error("Unexpected exception", e);
+		
 		} catch (ExecutionException e) {
 			if (e.getCause() instanceof FoodServiceException) {
 				logger.debug("Food service is down or foods are unavailable.");
@@ -111,17 +110,10 @@ public class MainViewPresenterImpl implements IMainViewPresenter,
 			} else {
 				logger.error("Unexpected error", e);
 			}
+		
 		} finally {
 			updateUI(mainView, foodView, foods);
 		}
-	}
-
-	protected boolean hasInternetConnection() {
-		return hasInternetConnection;
-	}
-
-	protected void setHasInternetConnection(boolean hasConnection) {
-		hasInternetConnection = hasConnection;
 	}
 
 	@Override

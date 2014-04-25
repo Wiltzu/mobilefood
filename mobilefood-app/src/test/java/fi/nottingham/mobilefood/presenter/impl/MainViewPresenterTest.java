@@ -89,8 +89,9 @@ public class MainViewPresenterTest {
 		verify(mainView).setSelectedDate(savedWeekDay);
 	}
 
-	@Test
+	//@Test
 	public void OnViewCreation_loadingNotificationIsShowed() {
+		//Loading icon is at least temporary disabled
 		mainViewPresenter.onViewCreation(mainView, null);
 		verify(mainView).showLoadingIcon();
 	}
@@ -110,8 +111,9 @@ public class MainViewPresenterTest {
 		verify(mainView).setAvailableWeekDays(expectedWeekDays);
 	}
 	
-	@Test
+	//@Test
 	public void onDateChanged_setsFoodsForSelectedDate() {
+		//OnDateChanged method will likely be removed
 		int selectedWeekDay = 3;
 		mainViewPresenter.onDateChanged(mainView, selectedWeekDay);
 		
@@ -142,8 +144,7 @@ public class MainViewPresenterTest {
 		when(foodService.getFoodsBy(Mockito.anyInt(), Mockito.anyInt())).thenReturn(foodsFuture);
 
 		mainViewPresenter.onViewCreation(mainView, null);
-		//TODO: fix!
-		((IViewIsReadyListener) mainViewPresenter).viewIsReady(Mockito.any(IDailyFoodView.class));
+		((IViewIsReadyListener) mainViewPresenter).viewIsReady(foodView);
 
 		verify(foodService).getFoodsBy(Mockito.anyInt(), Mockito.anyInt());
 		verify(mainView).notifyThatFoodsAreCurrentlyUnavailable();
@@ -162,8 +163,7 @@ public class MainViewPresenterTest {
 
 
 		mainViewPresenter.onViewCreation(mainView, null);
-		//TODO: fix!
-		((IViewIsReadyListener) mainViewPresenter).viewIsReady(Mockito.any(IDailyFoodView.class));
+		((IViewIsReadyListener) mainViewPresenter).viewIsReady(foodView);
 
 		verify(foodService).getFoodsBy(Mockito.anyInt(), Mockito.anyInt());
 		
@@ -184,8 +184,7 @@ public class MainViewPresenterTest {
 
 
 		mainViewPresenter.onViewCreation(mainView, null);
-		//TODO: fix!
-		((IViewIsReadyListener) mainViewPresenter).viewIsReady(Mockito.any(IDailyFoodView.class));
+		((IViewIsReadyListener) mainViewPresenter).viewIsReady(foodView);
 
 		verify(foodService).getFoodsBy(Mockito.anyInt(), Mockito.anyInt());
 		
