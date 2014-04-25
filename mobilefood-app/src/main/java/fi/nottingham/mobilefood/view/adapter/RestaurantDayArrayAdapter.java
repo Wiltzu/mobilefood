@@ -23,7 +23,6 @@ import fi.nottingham.mobilefood.model.Food;
 import fi.nottingham.mobilefood.model.Restaurant;
 import fi.nottingham.mobilefood.model.RestaurantDay;
 
-
 public class RestaurantDayArrayAdapter extends ArrayAdapter<RestaurantDay> {
 	static class ViewHolder {
 		public ImageView chainLogo;
@@ -35,21 +34,21 @@ public class RestaurantDayArrayAdapter extends ArrayAdapter<RestaurantDay> {
 		public ImageButton restaurantInfoBtn;
 		public ImageButton foodListBtn;
 		public View restaurantItemInfo;
+		public TextView restaurantInfoAddress;
 	}
-	
+
 	static class LunchViewHolder {
 		public TextView nameTV;
 		public TextView dietsTV;
 		public TextView pricesTV;
 	}
-	
+
 	private static final String TAG = "RestaurantDayViewAdapter";
 
 	private boolean[] infoWasOpened = new boolean[getCount()];
 	private boolean[] hasAlert = new boolean[getCount()];
-	
-	public RestaurantDayArrayAdapter(Context context,
-			List<RestaurantDay> items) {
+
+	public RestaurantDayArrayAdapter(Context context, List<RestaurantDay> items) {
 		super(context, R.layout.restaurant_item, items);
 		Log.d(TAG, "Added Following RestaurantDays" + items);
 	}
@@ -62,8 +61,7 @@ public class RestaurantDayArrayAdapter extends ArrayAdapter<RestaurantDay> {
 
 		if (rowView == null) {
 			inflater = getLayoutInflater();
-			rowView = inflater.inflate(R.layout.restaurant_item, parent,
-					false);
+			rowView = inflater.inflate(R.layout.restaurant_item, parent, false);
 
 			ViewHolder holder = new ViewHolder();
 
@@ -81,11 +79,14 @@ public class RestaurantDayArrayAdapter extends ArrayAdapter<RestaurantDay> {
 					.findViewById(R.id.restaurant_item_alert_layout);
 			holder.restaurantItemInfo = (View) rowView
 					.findViewById(R.id.restaurant_item_info_layout);
+			holder.restaurantInfoAddress = (TextView) rowView
+					.findViewById(R.id.restaurant_item_info_address);
 
 			holder.restaurantInfoBtn = (ImageButton) rowView
 					.findViewById(R.id.restaurant_item_restaurant_info_button);
 			holder.foodListBtn = (ImageButton) rowView
 					.findViewById(R.id.restaurant_item_food_list_button);
+
 			rowView.setTag(holder);
 		}
 
@@ -97,26 +98,31 @@ public class RestaurantDayArrayAdapter extends ArrayAdapter<RestaurantDay> {
 		}
 
 		final ViewHolder holder = (ViewHolder) rowView.getTag();
-		
+
 		holder.chainLogo.setImageResource(R.drawable.unica_logo);
 
-		holder.restaurantInfoBtn.setOnClickListener(new RestaurantInfoListener(position, holder));
-		holder.foodListBtn.setOnClickListener(new FoodListener(position, holder));
+		holder.restaurantInfoBtn.setOnClickListener(new RestaurantInfoListener(
+				position, holder));
+		holder.foodListBtn
+				.setOnClickListener(new FoodListener(position, holder));
 
 		if (infoWasOpened[position]) {
 			showRestaurantInfo(holder);
 		}
 
 		final RestaurantDay restaurantDay = getItem(position);
-		
+
 		initAlertLayout(restaurantDay.getAlert(), holder, position);
 		holder.restaurantNameTV.setText(restaurantDay.getRestaurantName());
-		initLunchLayout(restaurantDay.getLunches(), holder, inflater,
-				parent);
-		
+		initLunchLayout(restaurantDay.getLunches(), holder, inflater, parent);
+
 		Restaurant restaurant = restaurantDay.getRestaurant();
 		if (restaurant != null) {
 			holder.restaurantStreetAddressTV.setText(restaurant.getAddress());
+			String longAddress = String.format("%s \n%s %s",
+					restaurant.getAddress(), restaurant.getZip(),
+					restaurant.getPostOffice());
+			holder.restaurantInfoAddress.setText(longAddress);
 		}
 
 		Log.d(TAG, "Restaurant added to ui:" + restaurantDay);
@@ -133,10 +139,9 @@ public class RestaurantDayArrayAdapter extends ArrayAdapter<RestaurantDay> {
 		}
 	}
 
-	private void initLunchLayout(List<Food> lunches,
-			final ViewHolder holder, LayoutInflater inflater,
-			final ViewGroup parent) {
-		
+	private void initLunchLayout(List<Food> lunches, final ViewHolder holder,
+			LayoutInflater inflater, final ViewGroup parent) {
+
 		if (inflater == null) {
 			inflater = getLayoutInflater();
 		}
@@ -148,15 +153,14 @@ public class RestaurantDayArrayAdapter extends ArrayAdapter<RestaurantDay> {
 				lunchView = createLunchLayout(parent, inflater, lunch);
 				holder.lunchLayout.addView(lunchView);
 			}
-			LunchViewHolder lunchHolder = (LunchViewHolder) lunchView
-					.getTag();
+			LunchViewHolder lunchHolder = (LunchViewHolder) lunchView.getTag();
 			lunchHolder.nameTV.setText(lunch.getName());
 			lunchHolder.dietsTV.setText(lunch.getDiets());
 			setLunchPrices(lunch.getPrices(), lunchHolder.pricesTV);
 
 			lunchIndex++;
 		}
-		
+
 		for (int i = lunchIndex; i < holder.lunchLayout.getChildCount();) {
 			// remove lunch items that are not needed
 			holder.lunchLayout.removeViewAt(i);
@@ -179,8 +183,8 @@ public class RestaurantDayArrayAdapter extends ArrayAdapter<RestaurantDay> {
 		layoutParams.topMargin = layoutParams.bottomMargin;
 	}
 
-	private View createLunchLayout(ViewGroup parent,
-			LayoutInflater inflater, Food lunch) {
+	private View createLunchLayout(ViewGroup parent, LayoutInflater inflater,
+			Food lunch) {
 		View lunchlayoutItem = inflater.inflate(R.layout.food_item, parent,
 				false);
 
@@ -203,7 +207,7 @@ public class RestaurantDayArrayAdapter extends ArrayAdapter<RestaurantDay> {
 			pricesTV.setText(pricesTV.getText() + " €");
 		}
 	}
-	
+
 	private void showRestaurantInfo(ViewHolder holder) {
 		holder.lunchLayout.setVisibility(View.GONE);
 		if (holder.alertLayout.getVisibility() == View.VISIBLE) {
@@ -215,7 +219,8 @@ public class RestaurantDayArrayAdapter extends ArrayAdapter<RestaurantDay> {
 	}
 
 	private LayoutInflater getLayoutInflater() {
-		return (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		return (LayoutInflater) getContext().getSystemService(
+				Context.LAYOUT_INFLATER_SERVICE);
 	}
 
 	@Override
@@ -227,34 +232,34 @@ public class RestaurantDayArrayAdapter extends ArrayAdapter<RestaurantDay> {
 	class RestaurantInfoListener implements OnClickListener {
 		private final int position;
 		private final ViewHolder holder;
-		
+
 		public RestaurantInfoListener(int position, ViewHolder holder) {
 			this.position = position;
 			this.holder = holder;
 		}
-		
+
 		@Override
 		public void onClick(View v) {
 			infoWasOpened[position] = true;
-			showRestaurantInfo(holder);	
-		}	
+			showRestaurantInfo(holder);
+		}
 	}
 
 	class FoodListener implements OnClickListener {
 		private final int position;
 		private final ViewHolder holder;
-		
+
 		public FoodListener(int position, ViewHolder holder) {
 			this.position = position;
 			this.holder = holder;
 		}
-		
+
 		@Override
 		public void onClick(View v) {
 			infoWasOpened[position] = false;
-			showFoods();	
+			showFoods();
 		}
-		
+
 		private void showFoods() {
 			holder.lunchLayout.setVisibility(View.VISIBLE);
 			if (hasAlert[position]) {
@@ -267,4 +272,3 @@ public class RestaurantDayArrayAdapter extends ArrayAdapter<RestaurantDay> {
 	}
 
 }
-
