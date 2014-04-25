@@ -5,6 +5,7 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 import java.util.List;
 import java.util.Locale;
 
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -19,6 +20,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.common.base.Joiner;
 
@@ -133,12 +135,18 @@ public class RestaurantDayArrayAdapter extends ArrayAdapter<RestaurantDay> {
 			holder.restaurantShowInMapBtn.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					String label = restaurant.getName();
-					float latitude = restaurant.getLatitude();
-					float longitude = restaurant.getLongitude();
-					String uri = String.format(Locale.ENGLISH, "geo:%f,%f?q=%f,%f(%s)&z=10", latitude, longitude, latitude, longitude, label);
-					Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
-					getContext().startActivity(intent);
+					try {
+						String label = restaurant.getName();
+						float latitude = restaurant.getLatitude();
+						float longitude = restaurant.getLongitude();
+						String uri = String.format(Locale.ENGLISH, "geo:%f,%f?q=%f,%f(%s)&z=10", latitude, longitude, latitude, longitude, label);
+						Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
+						getContext().startActivity(intent);						
+					} catch (ActivityNotFoundException e) {
+						Log.d(TAG, "There were no capabable applications to display location in the map", e);
+						//TODO: fix string at least!
+						Toast.makeText(getContext(), "This feature is not available, because Google Maps is not installed!", Toast.LENGTH_SHORT);
+					}
 				}
 			});
 		}
