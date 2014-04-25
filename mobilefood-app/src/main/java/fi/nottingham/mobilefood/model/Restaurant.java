@@ -12,11 +12,11 @@ public class Restaurant {
 	private final String zip;
 	private final String postOffice;
 	//TODO: change to long??
-	private final String longitude;
-	private final String latitude;
+	private final float longitude;
+	private final float latitude;
 
 	public Restaurant(String name, String address, String zip,
-			String postOffice, String longitude, String latitude) {
+			String postOffice, float longitude, float latitude) {
 		this.name = name;
 		this.address = address;
 		this.zip = zip;
@@ -25,11 +25,11 @@ public class Restaurant {
 		this.latitude = latitude;
 	}
 
-	public String getLatitude() {
+	public float getLatitude() {
 		return latitude;
 	}
 
-	public String getLongitude() {
+	public float getLongitude() {
 		return longitude;
 	}
 

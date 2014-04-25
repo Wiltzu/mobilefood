@@ -3,14 +3,18 @@ package fi.nottingham.mobilefood.view.adapter;
 import static com.google.common.base.Strings.isNullOrEmpty;
 
 import java.util.List;
+import java.util.Locale;
 
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.View.OnClickListener;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -35,6 +39,7 @@ public class RestaurantDayArrayAdapter extends ArrayAdapter<RestaurantDay> {
 		public ImageButton foodListBtn;
 		public View restaurantItemInfo;
 		public TextView restaurantInfoAddress;
+		public Button restaurantShowInMapBtn;
 	}
 
 	static class LunchViewHolder {
@@ -81,6 +86,8 @@ public class RestaurantDayArrayAdapter extends ArrayAdapter<RestaurantDay> {
 					.findViewById(R.id.restaurant_item_info_layout);
 			holder.restaurantInfoAddress = (TextView) rowView
 					.findViewById(R.id.restaurant_item_info_address);
+			holder.restaurantShowInMapBtn = (Button) rowView
+					.findViewById(R.id.restaurant_item_info_showInMap_button);
 
 			holder.restaurantInfoBtn = (ImageButton) rowView
 					.findViewById(R.id.restaurant_item_restaurant_info_button);
@@ -116,13 +123,24 @@ public class RestaurantDayArrayAdapter extends ArrayAdapter<RestaurantDay> {
 		holder.restaurantNameTV.setText(restaurantDay.getRestaurantName());
 		initLunchLayout(restaurantDay.getLunches(), holder, inflater, parent);
 
-		Restaurant restaurant = restaurantDay.getRestaurant();
+		final Restaurant restaurant = restaurantDay.getRestaurant();
 		if (restaurant != null) {
 			holder.restaurantStreetAddressTV.setText(restaurant.getAddress());
 			String longAddress = String.format("%s \n%s %s",
 					restaurant.getAddress(), restaurant.getZip(),
 					restaurant.getPostOffice());
 			holder.restaurantInfoAddress.setText(longAddress);
+			holder.restaurantShowInMapBtn.setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					String label = restaurant.getName();
+					float latitude = restaurant.getLatitude();
+					float longitude = restaurant.getLongitude();
+					String uri = String.format(Locale.ENGLISH, "geo:%f,%f?q=%f,%f(%s)&z=10", latitude, longitude, latitude, longitude, label);
+					Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
+					getContext().startActivity(intent);
+				}
+			});
 		}
 
 		Log.d(TAG, "Restaurant added to ui:" + restaurantDay);
