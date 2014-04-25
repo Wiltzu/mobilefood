@@ -134,7 +134,7 @@
             <include
                 android:id="@+id/restaurant_item_info_layout"
                 layout="@layout/restaurant_item_info" 
-                android:visibility="invisible"/>
+                android:visibility="gone"/>
         </RelativeLayout>
     </LinearLayout>
 
