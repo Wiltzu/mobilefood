@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import fi.nottingham.mobilefood.DaggerBaseFragment;
 import fi.nottingham.mobilefood.R;
 import fi.nottingham.mobilefood.model.RestaurantDay;
@@ -24,6 +25,7 @@ public class OneDayLunchesFragment extends DaggerBaseFragment implements
 
 	private static final String TAG = "OneDayLunchesFragment";
 	private ListView mFoodsListView;
+	private RelativeLayout mNoLunchesLayout;
 	private Integer weekDay;
 
 	@Override
@@ -38,9 +40,8 @@ public class OneDayLunchesFragment extends DaggerBaseFragment implements
 			Bundle savedInstanceState) {
 		View rootView = inflater.inflate(R.layout.fragment_lunch, container,
 				false);
-		mFoodsListView = checkNotNull(
-				(ListView) rootView.findViewById(R.id.listview_foods),
-				"Somehow ListView is happened to be null...");
+		mFoodsListView = (ListView) rootView.findViewById(R.id.listview_foods);
+		mNoLunchesLayout = (RelativeLayout) rootView.findViewById(R.id.no_foods_view);
 		return rootView;
 	}
 
@@ -68,14 +69,14 @@ public class OneDayLunchesFragment extends DaggerBaseFragment implements
 		checkNotNull(foodsByRestaurant, "foodsByRestaurant cannot be null");
 
 		if (isAdded()) {
-			Log.d(TAG, "Fragment is added to activity");
+			if (mFoodsListView == null) {
+				// ListView might just null but don't know why
+				mFoodsListView = (ListView) getActivity().findViewById(
+						R.id.listview_foods);
+			}
+			
 			if (!foodsByRestaurant.isEmpty()) {
-				Log.d(TAG, "Foods set to listView of the fragment");
-				if (mFoodsListView == null) {
-					// ListView might just null but don't know why
-					mFoodsListView = (ListView) getActivity().findViewById(
-							R.id.listview_foods);
-				}
+				Log.d(TAG, "Setting daily foods to listView of the fragment");
 				if (mFoodsListView.getAdapter() == null
 						|| mFoodsListView.getAdapter().getCount() != foodsByRestaurant
 								.size()) {
@@ -83,12 +84,9 @@ public class OneDayLunchesFragment extends DaggerBaseFragment implements
 							getActivity(), foodsByRestaurant));
 				}
 			} else {
-				Log.d(TAG, "Empty Foods set to listView of the fragment");
-				mFoodsListView
-						.setAdapter(new ArrayAdapter<String>(getActivity(),
-								android.R.layout.simple_list_item_1,
-								getResources().getStringArray(
-										R.array.no_food_for_day)));
+				Log.d(TAG, "Had empty foods for a day... setting no food view visible.");
+				mFoodsListView.setVisibility(View.GONE);
+				mNoLunchesLayout.setVisibility(View.VISIBLE);
 			}
 		}
 
