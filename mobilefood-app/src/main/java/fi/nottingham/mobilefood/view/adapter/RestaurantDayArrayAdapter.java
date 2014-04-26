@@ -30,6 +30,7 @@ import fi.nottingham.mobilefood.model.Restaurant;
 import fi.nottingham.mobilefood.model.RestaurantDay;
 
 public class RestaurantDayArrayAdapter extends ArrayAdapter<RestaurantDay> {
+	
 	static class ViewHolder {
 		public ImageView chainLogo;
 		public TextView restaurantNameTV;
@@ -121,38 +122,30 @@ public class RestaurantDayArrayAdapter extends ArrayAdapter<RestaurantDay> {
 
 		final RestaurantDay restaurantDay = getItem(position);
 
-		initAlertLayout(restaurantDay.getAlert(), holder, position);
 		holder.restaurantNameTV.setText(restaurantDay.getRestaurantName());
+		initAlertLayout(restaurantDay.getAlert(), holder, position);
 		initLunchLayout(restaurantDay.getLunches(), holder, inflater, parent);
 
 		final Restaurant restaurant = restaurantDay.getRestaurant();
 		if (restaurant != null) {
-			holder.restaurantStreetAddressTV.setText(restaurant.getAddress());
-			String longAddress = String.format("%s \n%s %s",
-					restaurant.getAddress(), restaurant.getZip(),
-					restaurant.getPostOffice());
-			holder.restaurantInfoAddress.setText(longAddress);
-			holder.restaurantShowInMapBtn.setOnClickListener(new OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					try {
-						String label = restaurant.getName();
-						float latitude = restaurant.getLatitude();
-						float longitude = restaurant.getLongitude();
-						String uri = String.format(Locale.ENGLISH, "geo:%f,%f?q=%f,%f(%s)&z=10", latitude, longitude, latitude, longitude, label);
-						Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
-						getContext().startActivity(intent);						
-					} catch (ActivityNotFoundException e) {
-						Log.d(TAG, "There were no capabable applications to display location in the map", e);
-						//TODO: fix string at least!
-						Toast.makeText(getContext(), "This feature is not available, because Google Maps is not installed!", Toast.LENGTH_SHORT);
-					}
-				}
-			});
+			addRestaurantInfo(holder, restaurant);
 		}
 
 		Log.d(TAG, "Restaurant added to ui:" + restaurantDay);
 		return rowView;
+	}
+
+	private void addRestaurantInfo(final ViewHolder holder,
+			final Restaurant restaurant) {
+		holder.restaurantStreetAddressTV.setText(restaurant.getAddress());
+
+		String longAddress = String.format("%s \n%s %s",
+				restaurant.getAddress(), restaurant.getZip(),
+				restaurant.getPostOffice());
+		holder.restaurantInfoAddress.setText(longAddress);
+
+		holder.restaurantShowInMapBtn
+				.setOnClickListener(new ShowRestaurantInMapListener(restaurant));
 	}
 
 	private void initAlertLayout(String alert, final ViewHolder holder,
@@ -294,6 +287,41 @@ public class RestaurantDayArrayAdapter extends ArrayAdapter<RestaurantDay> {
 			holder.restaurantItemInfo.setVisibility(View.GONE);
 			holder.foodListBtn.setVisibility(View.INVISIBLE);
 			holder.restaurantInfoBtn.setVisibility(View.VISIBLE);
+		}
+	}
+
+	class ShowRestaurantInMapListener implements OnClickListener {
+		private final Restaurant restaurant;
+	
+		public ShowRestaurantInMapListener(Restaurant restaurant) {
+			this.restaurant = restaurant;
+		}
+	
+		@Override
+		public void onClick(View v) {
+			showRestaurantInMap();
+		}
+	
+		private void showRestaurantInMap() {
+			String markerLabel = restaurant.getName();
+			float latitude = restaurant.getLatitude();
+			float longitude = restaurant.getLongitude();
+			int zoom = 10;
+			String uri = String.format(Locale.ENGLISH,
+					"geo:%f,%f?q=%f,%f(%s)&z=%s", latitude, longitude,
+					latitude, longitude, markerLabel, zoom);
+			Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
+	
+			try {
+				getContext().startActivity(intent);
+			} catch (ActivityNotFoundException e) {
+				Log.d(TAG,
+						"There were no capabable applications to display location in the map",
+						e);
+				Toast.makeText(getContext(),
+						getContext().getString(R.string.no_map_app),
+						Toast.LENGTH_SHORT);
+			}
 		}
 	}
 
