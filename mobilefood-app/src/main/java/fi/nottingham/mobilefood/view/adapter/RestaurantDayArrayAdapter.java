@@ -26,11 +26,12 @@ import com.google.common.base.Joiner;
 
 import fi.nottingham.mobilefood.R;
 import fi.nottingham.mobilefood.model.Food;
+import fi.nottingham.mobilefood.model.LunchTime;
 import fi.nottingham.mobilefood.model.Restaurant;
 import fi.nottingham.mobilefood.model.RestaurantDay;
 
 public class RestaurantDayArrayAdapter extends ArrayAdapter<RestaurantDay> {
-	
+
 	static class ViewHolder {
 		public ImageView chainLogo;
 		public TextView restaurantNameTV;
@@ -43,6 +44,7 @@ public class RestaurantDayArrayAdapter extends ArrayAdapter<RestaurantDay> {
 		public View restaurantItemInfo;
 		public TextView restaurantInfoAddress;
 		public Button restaurantShowInMapBtn;
+		public TextView restaurantInfoLunchTimes;
 	}
 
 	static class LunchViewHolder {
@@ -94,6 +96,8 @@ public class RestaurantDayArrayAdapter extends ArrayAdapter<RestaurantDay> {
 
 			holder.restaurantInfoBtn = (ImageButton) rowView
 					.findViewById(R.id.restaurant_item_restaurant_info_button);
+			holder.restaurantInfoLunchTimes = (TextView) rowView
+					.findViewById(R.id.restaurant_item_info_lunch_times);
 			holder.foodListBtn = (ImageButton) rowView
 					.findViewById(R.id.restaurant_item_food_list_button);
 
@@ -143,6 +147,18 @@ public class RestaurantDayArrayAdapter extends ArrayAdapter<RestaurantDay> {
 				restaurant.getAddress(), restaurant.getZip(),
 				restaurant.getPostOffice());
 		holder.restaurantInfoAddress.setText(longAddress);
+		
+		
+		String lunchTimes = "";
+		for(LunchTime lunchTime : restaurant.getLunchTimes()) {
+			String weekDays = lunchTime.getWeekDays();
+			if(weekDays.length() > 2) {
+				//take start and end from e.g. "matiketo"
+				weekDays = String.format("%s-%s", weekDays.substring(0, 2), weekDays.substring(weekDays.length()-2));
+			}
+			lunchTimes += String.format("%s %s\n", weekDays, lunchTime.getHours());
+		}
+		holder.restaurantInfoLunchTimes.setText(lunchTimes);
 
 		holder.restaurantShowInMapBtn
 				.setOnClickListener(new ShowRestaurantInMapListener(restaurant));
@@ -292,16 +308,16 @@ public class RestaurantDayArrayAdapter extends ArrayAdapter<RestaurantDay> {
 
 	class ShowRestaurantInMapListener implements OnClickListener {
 		private final Restaurant restaurant;
-	
+
 		public ShowRestaurantInMapListener(Restaurant restaurant) {
 			this.restaurant = restaurant;
 		}
-	
+
 		@Override
 		public void onClick(View v) {
 			showRestaurantInMap();
 		}
-	
+
 		private void showRestaurantInMap() {
 			String markerLabel = restaurant.getName();
 			float latitude = restaurant.getLatitude();
@@ -311,7 +327,7 @@ public class RestaurantDayArrayAdapter extends ArrayAdapter<RestaurantDay> {
 					"geo:%f,%f?q=%f,%f(%s)&z=%s", latitude, longitude,
 					latitude, longitude, markerLabel, zoom);
 			Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
-	
+
 			try {
 				getContext().startActivity(intent);
 			} catch (ActivityNotFoundException e) {

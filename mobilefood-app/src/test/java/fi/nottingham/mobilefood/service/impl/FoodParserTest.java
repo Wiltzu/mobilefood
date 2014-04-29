@@ -86,7 +86,7 @@ public class FoodParserTest {
 	public void parseRestaurants_returnsCorrectData()
 			throws FoodParserException {
 		Restaurant restaurant = new Restaurant("Tottis", "osoite", "20500",
-				"Turku", "22.222", "23.111");
+				"Turku", 22.222f, 23.111f, null);
 		List<Restaurant> expectedRestaurants = Lists.newArrayList(restaurant);
 		String json = getOKMessageWith("",
 				new Gson().toJson(expectedRestaurants));
@@ -107,6 +107,7 @@ public class FoodParserTest {
 		assertFalse(foods.isEmpty());
 	}
 
+	@Test
 	public void parseRestaurants_withRealData() throws FileNotFoundException,
 			IOException, URISyntaxException, FoodParserException {
 		InputStream foodTestJSONFileAsInputStream = FoodServiceTestHelper
@@ -115,6 +116,7 @@ public class FoodParserTest {
 		foodTestJSONFileAsInputStream.close();
 
 		List<Restaurant> restaurants = parser.parseRestaurants(dataJSON);
+		System.out.println(restaurants);
 		assertFalse(restaurants.isEmpty());
 	}
 

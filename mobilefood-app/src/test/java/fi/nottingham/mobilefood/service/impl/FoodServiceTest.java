@@ -268,7 +268,7 @@ public class FoodServiceTest {
 	
 	@Test
 	public void convertRestaurantsListToMap_worksCorrectly() {
-		Restaurant expectedRestaurant =  new Restaurant("tottis", null, null, null, null, null);
+		Restaurant expectedRestaurant =  new Restaurant("tottis", null, null, null, 1f, 1f, null);
 		List<Restaurant> testRestaurants = Lists.newArrayList(expectedRestaurant);
 		
 		Map<String, Restaurant> covertedRestaurants = ((FoodServiceImpl) foodService).covertRestaurantsListToMap(testRestaurants);
@@ -279,7 +279,7 @@ public class FoodServiceTest {
 	@Test
 	public void getFoodsFromInternalStorage_inSuccesfulAttempt_includesRestaurants() throws FileNotFoundException, FoodParserException {
 		int dayOfTheWeek = 0, weekNumber = 1;
-		Restaurant expectedRestaurant =  new Restaurant("tottis", null, null, null, null, null);
+		Restaurant expectedRestaurant =  new Restaurant("tottis", null, null, null, 1f, 1f, null);
 		List<Restaurant> testRestaurants = Lists.newArrayList(expectedRestaurant);
 		
 		RestaurantDay restaurantDay = new RestaurantDay("tottis", new ArrayList<Food>(), null);
@@ -298,7 +298,7 @@ public class FoodServiceTest {
 	@Test
 	public void getFoodsBy_inSuccesfulAttempt_includesRestaurants() throws FileNotFoundException, FoodParserException, InterruptedException, ExecutionException {
 		int dayOfTheWeek = 0, weekNumber = 1;
-		Restaurant expectedRestaurant =  new Restaurant("tottis", null, null, null, null, null);
+		Restaurant expectedRestaurant =  new Restaurant("tottis", null, null, null, 1f, 1f, null);
 		List<Restaurant> testRestaurants = Lists.newArrayList(expectedRestaurant);
 		
 		RestaurantDay restaurantDay = new RestaurantDay("tottis", new ArrayList<Food>(), null);

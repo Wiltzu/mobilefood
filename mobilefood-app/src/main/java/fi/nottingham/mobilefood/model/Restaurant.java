@@ -1,5 +1,7 @@
 package fi.nottingham.mobilefood.model;
 
+import java.util.List;
+
 import javax.annotation.concurrent.Immutable;
 
 import com.google.common.base.Objects;
@@ -11,18 +13,19 @@ public class Restaurant {
 	private final String address;
 	private final String zip;
 	private final String postOffice;
-	//TODO: change to long??
 	private final float longitude;
 	private final float latitude;
+	private final List<LunchTime> lunchTimes;
 
 	public Restaurant(String name, String address, String zip,
-			String postOffice, float longitude, float latitude) {
+			String postOffice, float longitude, float latitude, List<LunchTime> lunchTimes) {
 		this.name = name;
 		this.address = address;
 		this.zip = zip;
 		this.postOffice = postOffice;
 		this.longitude = longitude;
 		this.latitude = latitude;
+		this.lunchTimes = lunchTimes;
 	}
 
 	public float getLatitude() {
@@ -49,13 +52,18 @@ public class Restaurant {
 		return name;
 	}
 
+	public List<LunchTime> getLunchTimes() {
+		return lunchTimes;
+	}
+
 	@Override
 	public String toString() {
 		return Objects.toStringHelper(this.getClass()).add("name", getName())
 				.add("address", getAddress()).add("zip", getZip())
 				.add("postOffice", getPostOffice())
 				.add("longitude", getLongitude())
-				.add("latitude", getLatitude()).toString();
+				.add("latitude", getLatitude())
+				.add("lunchTimes", getLunchTimes()).toString();
 	}
 
 	@Override
