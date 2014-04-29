@@ -3,6 +3,8 @@ package fi.nottingham.mobilefood.model;
 import com.google.common.base.Objects;
 
 public class LunchTime {
+	
+	public static String[] WEEK_DAYS = {"ma", "ti", "ke", "to", "pe", "la", "su"};
 
 	private final String weekDays;
 	private final String hours;

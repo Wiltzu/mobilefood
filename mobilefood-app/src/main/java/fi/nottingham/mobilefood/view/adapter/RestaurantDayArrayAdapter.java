@@ -35,7 +35,7 @@ public class RestaurantDayArrayAdapter extends ArrayAdapter<RestaurantDay> {
 	static class ViewHolder {
 		public ImageView chainLogo;
 		public TextView restaurantNameTV;
-		public TextView restaurantStreetAddressTV;
+		public TextView restaurantDailyLunchTimeTV;
 		public LinearLayout lunchLayout;
 		public LinearLayout alertLayout;
 		public TextView alertTV;
@@ -57,9 +57,11 @@ public class RestaurantDayArrayAdapter extends ArrayAdapter<RestaurantDay> {
 
 	private boolean[] infoWasOpened = new boolean[getCount()];
 	private boolean[] hasAlert = new boolean[getCount()];
+	private final int weekDay;
 
-	public RestaurantDayArrayAdapter(Context context, List<RestaurantDay> items) {
+	public RestaurantDayArrayAdapter(Context context, List<RestaurantDay> items, int weekDay) {
 		super(context, R.layout.restaurant_item, items);
+		this.weekDay = weekDay;
 		Log.d(TAG, "Added Following RestaurantDays" + items);
 	}
 
@@ -79,8 +81,8 @@ public class RestaurantDayArrayAdapter extends ArrayAdapter<RestaurantDay> {
 					.findViewById(R.id.restaurant_item_chain_logo);
 			holder.restaurantNameTV = (TextView) rowView
 					.findViewById(R.id.restaurant_item_restaurant_name);
-			holder.restaurantStreetAddressTV = (TextView) rowView
-					.findViewById(R.id.restaurant_item_restaurant_street_address);
+			holder.restaurantDailyLunchTimeTV = (TextView) rowView
+					.findViewById(R.id.restaurant_item_restaurant_daily_lunchtime);
 			holder.lunchLayout = (LinearLayout) rowView
 					.findViewById(R.id.restaurant_item_food_layout);
 			holder.alertTV = (TextView) rowView
@@ -141,24 +143,30 @@ public class RestaurantDayArrayAdapter extends ArrayAdapter<RestaurantDay> {
 
 	private void addRestaurantInfo(final ViewHolder holder,
 			final Restaurant restaurant) {
-		holder.restaurantStreetAddressTV.setText(restaurant.getAddress());
-
 		String longAddress = String.format("%s \n%s %s",
 				restaurant.getAddress(), restaurant.getZip(),
 				restaurant.getPostOffice());
 		holder.restaurantInfoAddress.setText(longAddress);
 		
-		
 		String lunchTimes = "";
+		String lunchToday = "";
 		for(LunchTime lunchTime : restaurant.getLunchTimes()) {
 			String weekDays = lunchTime.getWeekDays();
+			String lunchHours = lunchTime.getHours();
+			
+			if(weekDays.contains(LunchTime.WEEK_DAYS[weekDay])) {
+				String lunchPrefix = getContext().getString(R.string.lunch_today);
+				lunchToday = String.format("%s %s", lunchPrefix, lunchHours);
+			}
+			
 			if(weekDays.length() > 2) {
 				//take start and end from e.g. "matiketo"
 				weekDays = String.format("%s-%s", weekDays.substring(0, 2), weekDays.substring(weekDays.length()-2));
 			}
-			lunchTimes += String.format("%s %s\n", weekDays, lunchTime.getHours());
+			lunchTimes += String.format("%s %s\n", weekDays, lunchHours);
 		}
 		holder.restaurantInfoLunchTimes.setText(lunchTimes);
+		holder.restaurantDailyLunchTimeTV.setText(lunchToday);
 
 		holder.restaurantShowInMapBtn
 				.setOnClickListener(new ShowRestaurantInMapListener(restaurant));

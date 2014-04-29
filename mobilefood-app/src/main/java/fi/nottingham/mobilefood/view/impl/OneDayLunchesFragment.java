@@ -9,7 +9,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import fi.nottingham.mobilefood.DaggerBaseFragment;
@@ -81,7 +80,7 @@ public class OneDayLunchesFragment extends DaggerBaseFragment implements
 						|| mFoodsListView.getAdapter().getCount() != foodsByRestaurant
 								.size()) {
 					mFoodsListView.setAdapter(new RestaurantDayArrayAdapter(
-							getActivity(), foodsByRestaurant));
+							getActivity(), foodsByRestaurant, weekDay));
 				}
 			} else {
 				Log.d(TAG, "Had empty foods for a day... setting no food view visible.");

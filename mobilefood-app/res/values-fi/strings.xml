@@ -7,7 +7,8 @@
     <string name="no_foods_available">Ruokien haku epäonnistui. Ruuat eivät ole tällä hetkellä saatavissa. Yritä myöhemmin uudelleen.</string>
     <string name="refresh_foods">Yritä ruokien hakua uudelleen</string>
     <string name="no_food_for_day">Ruokia ei ole saatavilla tälle päivälle.</string>
-     <string name="no_map_app">Tämä ominaisuus ei ole käytettävissä, koska puhelimessasi ei ole kartta sovellusta asennettuna!</string>
+    <string name="no_map_app">Tämä ominaisuus ei ole käytettävissä, koska puhelimessasi ei ole kartta sovellusta asennettuna!</string>
+    <string name="lunch_today">lounas</string>
     
     <string-array name="week_days">
         <item>Maanantai</item>

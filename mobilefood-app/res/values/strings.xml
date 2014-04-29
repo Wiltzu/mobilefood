@@ -8,6 +8,7 @@
     <string name="refresh_foods">Try to fetch lunches again</string>
     <string name="no_food_for_day">There are no lunches available for this day.</string>
     <string name="no_map_app">This feature is not available, because Google Maps is not installed!</string>
+    <string name="lunch_today">lunch</string>
 
     <string-array name="week_days">
         <item>Monday</item>
