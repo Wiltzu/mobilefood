@@ -59,7 +59,8 @@ public class RestaurantDayArrayAdapter extends ArrayAdapter<RestaurantDay> {
 	private boolean[] hasAlert = new boolean[getCount()];
 	private final int weekDay;
 
-	public RestaurantDayArrayAdapter(Context context, List<RestaurantDay> items, int weekDay) {
+	public RestaurantDayArrayAdapter(Context context,
+			List<RestaurantDay> items, int weekDay) {
 		super(context, R.layout.restaurant_item, items);
 		this.weekDay = weekDay;
 		Log.d(TAG, "Added Following RestaurantDays" + items);
@@ -147,21 +148,23 @@ public class RestaurantDayArrayAdapter extends ArrayAdapter<RestaurantDay> {
 				restaurant.getAddress(), restaurant.getZip(),
 				restaurant.getPostOffice());
 		holder.restaurantInfoAddress.setText(longAddress);
-		
+
 		String lunchTimes = "";
 		String lunchToday = "";
-		for(LunchTime lunchTime : restaurant.getLunchTimes()) {
+		for (LunchTime lunchTime : restaurant.getLunchTimes()) {
 			String weekDays = lunchTime.getWeekDays();
 			String lunchHours = lunchTime.getHours();
-			
-			if(weekDays.contains(LunchTime.WEEK_DAYS[weekDay])) {
-				String lunchPrefix = getContext().getString(R.string.lunch_today);
+
+			if (weekDays.contains(LunchTime.WEEK_DAYS[weekDay])) {
+				String lunchPrefix = getContext().getString(
+						R.string.lunch_today);
 				lunchToday = String.format("%s %s", lunchPrefix, lunchHours);
 			}
-			
-			if(weekDays.length() > 2) {
-				//take start and end from e.g. "matiketo"
-				weekDays = String.format("%s-%s", weekDays.substring(0, 2), weekDays.substring(weekDays.length()-2));
+
+			if (weekDays.length() > 2) {
+				// take start and end from e.g. "matiketo"
+				weekDays = String.format("%s-%s", weekDays.substring(0, 2),
+						weekDays.substring(weekDays.length() - 2));
 			}
 			lunchTimes += String.format("%s %s\n", weekDays, lunchHours);
 		}
@@ -175,6 +178,7 @@ public class RestaurantDayArrayAdapter extends ArrayAdapter<RestaurantDay> {
 	private void initAlertLayout(String alert, final ViewHolder holder,
 			final int position) {
 		if (!isNullOrEmpty(alert)) {
+			holder.alertLayout.setVisibility(View.VISIBLE);
 			hasAlert[position] = true;
 			holder.alertTV.setText(alert);
 		} else {
@@ -253,9 +257,7 @@ public class RestaurantDayArrayAdapter extends ArrayAdapter<RestaurantDay> {
 
 	private void showRestaurantInfo(ViewHolder holder) {
 		holder.lunchLayout.setVisibility(View.GONE);
-		if (holder.alertLayout.getVisibility() == View.VISIBLE) {
-			holder.alertLayout.setVisibility(View.GONE);
-		}
+		holder.alertLayout.setVisibility(View.GONE);
 		holder.restaurantItemInfo.setVisibility(View.VISIBLE);
 		holder.foodListBtn.setVisibility(View.VISIBLE);
 		holder.restaurantInfoBtn.setVisibility(View.INVISIBLE);
